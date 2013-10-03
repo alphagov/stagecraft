@@ -1,0 +1,219 @@
+Browse page response, items from config
+GET /limelight/services
+
+{
+  "page-type": "browse",
+  "path": "services",
+  "title": "Services",
+  "tagline": "Services integrated with the Performance Platform",
+  "items": [
+    {
+      "title": "Services",
+      "items": [
+        {
+          "href": "licensing",
+          "title": "Licensing"
+        },
+        {
+          "href": "hmrc",
+          "title": "HMRC"
+        },
+        {
+          "href": "lasting-power-of-attorney",
+          "title": "Lasting Power of Attorney"
+        },
+        {
+          "href": "pay-legalisation-post",
+          "title": "Pay to get documents legalised by post"
+        },
+        {
+          "href": "pay-legalisation-drop-off",
+          "title": "Pay to legalise documents using the premium service"
+        },
+        {
+          "href": "pay-register-birth-abroad",
+          "title": "Payment to register a birth abroad in the UK"
+        },
+        {
+          "href": "pay-register-death-abroad",
+          "title": "Payment to register a death abroad"
+        },
+        {
+          "href": "pay-foreign-marriage-certificates",
+          "title": "Payment for certificates to get married abroad"
+        },
+        {
+          "href": "deposit-foreign-marriage",
+          "title": "Deposit foreign marriage or civil partnership certificates"
+        },
+        {
+          "href": "sorn",
+          "title": "SORN (Statutory Off Road Notification)"
+        },
+        {
+          "href": "tax-disc",
+          "title": "Tax disc"
+        }
+      ]
+    },
+    {
+      "title": "Service groups",
+      "items": [
+        {
+          "href": "vehicle-licensing",
+          "title": "Vehicle licensing"
+        }
+      ]
+    }
+  ]
+}
+
+
+
+Browse page response, items from backdrop query
+GET /limelight/licensing/authorities
+{
+  "page-type": "browse",
+  "path": "licensing/authorities",
+  "title": "Authorities",
+  "strapline": "Licensing performance",
+  "tagline": "(authorities on GOV.UK only)",
+  "filter-label": "Find a licencing authority named:",
+  "filter-placeholder": "Example: Westminster",
+  "items": [
+    {
+      "title": "National and local authorities",
+      "query": "licensing/applications?group_by=authorityUrlSlug&collect=authorityName&sort_by=authorityName:ascending"
+    }
+  ]
+}
+
+
+GET /limelight/licensing/licences
+{
+  "page-type": "browse",
+  "path": "licensing/licences",
+  "title": "Licences",
+  "strapline": "Licensing performance",
+  "tagline": "(licences on GOV.UK only)",
+  "filter-label": "Find an application, licence, notice or registration named:",
+  "filter-placeholder": "Example: Temporary event notice",
+  "items": [
+    {
+      "title": "Applications, Licences, Notices and Registrations",
+      "query": "licensing/applications?group_by=licenceUrlSlug&collect=licenceName&sort_by=licenceName:ascending"
+    }
+  ],
+  "siblings": [
+    {
+      "title": "Licensing overview",
+      "href": "licensing",
+      "active": true
+    },
+    {
+      "title": "Authorities",
+      "href": "licensing/authorities"
+    },
+    {
+      "title": "Licences",
+      "href": "licensing/licences"
+    }
+  ]
+}
+
+
+
+Dashboard page response
+GET /limelight/licensing
+{
+  "page-type": "dashboard",
+  "title": "Licensing",
+  "strapline": "Service performance",
+  "tagline": "(licences and authorities on GOV.UK only)",
+  "siblings": [
+    {
+      "title": "Licensing overview",
+      "href": "licensing",
+      "active": true
+    },
+    {
+      "title": "Authorities",
+      "href": "licensing/authorities"
+    },
+    {
+      "title": "Licences",
+      "href": "licensing/licences"
+    }
+  ],
+  "modules": [
+    {
+      "module-type": "application-volumes",
+      "data-group": "licensing",
+      "data-type": "application"
+    },
+    {
+      "module-type": "realtime",
+      "data-group": "licensing",
+      "data-type": "realtime"
+    },
+    {
+      "module-type": "completion-rate",
+      "data-group": "licensing",
+      "data-type": "journey"
+    },
+    {
+      "module-type": "drop-offs",
+      "data-group": "licensing",
+      "data-type": "journey"
+    }
+  ]
+}
+
+GET /limelight/licensing/westminster
+{
+  "page-type": "licensing-dashboard",
+  "title": "London Borough of {authorityName}",
+  "strapline": "Licensing performance",
+  "siblings": [
+    {
+      "title": "Licensing overview",
+      "href": "licensing"
+    },
+    {
+      "title": "Authorities",
+      "href": "licensing/authorities",
+      "active": true
+    },
+    {
+      "title": "Licences",
+      "href": "licensing/licences"
+    }
+  ],
+  "modules": [
+    {
+      "module-type": "application-volumes",
+      "data-group": "licensing",
+      "data-type": "application",
+      "filterBy": "authorityUrlSlug:westminster",
+      "top5": true,
+      "info-text": "This module shows application volumes of {authorityName}"
+    },
+    {
+      "module-type": "application-table",
+      "data-group": "licensing",
+      "data-type": "application",
+      "filterBy": "authorityUrlSlug:westminster"
+    }
+  ]
+}
+
+Single module response
+GET /limelight/licensing/availability
+
+{
+  "page-type": "module",
+  "module-type": "availability",
+  "title": "Service availability",
+  "data-group": "licensing",
+  "data-type": "monitoring"
+}
