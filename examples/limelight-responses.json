@@ -169,7 +169,7 @@ GET /limelight/licensing
   ]
 }
 
-GET /limelight/licensing/westminster
+GET /limelight/licensing/authorities/westminster
 {
   "page-type": "licensing-dashboard",
   "title": "London Borough of {authorityName}",
@@ -209,6 +209,8 @@ GET /limelight/licensing/westminster
 
 Single module response
 GET /limelight/licensing/availability
+or
+GET /limelight/licensing/modules/availability
 
 {
   "page-type": "module",
