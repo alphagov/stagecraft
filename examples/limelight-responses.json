@@ -104,11 +104,10 @@ GET /limelight/licensing/licences
       "query": "licensing/applications?group_by=licenceUrlSlug&collect=licenceName&sort_by=licenceName:ascending"
     }
   ],
-  "siblings": [
+  "group-nav": [
     {
       "title": "Licensing overview",
-      "href": "licensing",
-      "active": true
+      "href": "licensing"
     },
     {
       "title": "Authorities",
@@ -130,11 +129,10 @@ GET /limelight/licensing
   "title": "Licensing",
   "strapline": "Service performance",
   "tagline": "(licences and authorities on GOV.UK only)",
-  "siblings": [
+  "group-nav": [
     {
       "title": "Licensing overview",
-      "href": "licensing",
-      "active": true
+      "href": "licensing"
     },
     {
       "title": "Authorities",
@@ -174,15 +172,14 @@ GET /limelight/licensing/authorities/westminster
   "page-type": "licensing-dashboard",
   "title": "London Borough of {authorityName}",
   "strapline": "Licensing performance",
-  "siblings": [
+  "group-nav": [
     {
       "title": "Licensing overview",
       "href": "licensing"
     },
     {
       "title": "Authorities",
-      "href": "licensing/authorities",
-      "active": true
+      "href": "licensing/authorities"
     },
     {
       "title": "Licences",
