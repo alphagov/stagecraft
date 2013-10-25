@@ -1,5 +1,5 @@
 Browse page response, items from config
-GET /limelight/services
+GET /spotlight/services
 
 {
   "page-type": "browse",
@@ -71,7 +71,7 @@ GET /limelight/services
 
 
 Browse page response, items from backdrop query
-GET /limelight/licensing/authorities
+GET /spotlight/licensing/authorities
 {
   "page-type": "browse",
   "path": "licensing/authorities",
@@ -89,7 +89,7 @@ GET /limelight/licensing/authorities
 }
 
 
-GET /limelight/licensing/licences
+GET /spotlight/licensing/licences
 {
   "page-type": "browse",
   "path": "licensing/licences",
@@ -123,7 +123,7 @@ GET /limelight/licensing/licences
 
 
 Dashboard page response
-GET /limelight/licensing
+GET /spotlight/licensing
 {
   "page-type": "dashboard",
   "title": "Licensing",
@@ -167,7 +167,7 @@ GET /limelight/licensing
   ]
 }
 
-GET /limelight/licensing/authorities/westminster
+GET /spotlight/licensing/authorities/westminster
 {
   "page-type": "licensing-dashboard",
   "title": "London Borough of {authorityName}",
@@ -205,9 +205,9 @@ GET /limelight/licensing/authorities/westminster
 }
 
 Single module response
-GET /limelight/licensing/availability
+GET /spotlight/licensing/availability
 or
-GET /limelight/licensing/modules/availability
+GET /spotlight/licensing/modules/availability
 
 {
   "page-type": "module",
