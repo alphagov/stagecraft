@@ -3,7 +3,6 @@ GET /spotlight/services
 
 {
   "page-type": "browse",
-  "path": "services",
   "title": "Services",
   "tagline": "Services integrated with the Performance Platform",
   "items": [
@@ -146,21 +145,40 @@ GET /spotlight/licensing
   "modules": [
     {
       "module-type": "application-volumes",
+      "title": "Application volumes",
+      "description": "Description for application volumes",
       "data-group": "licensing",
-      "data-type": "application"
+      "data-type": "application",
+      "info": [
+        "Info text line 1",
+        "Info text line 2"
+      ]
     },
     {
       "module-type": "realtime",
+      "title": "Realtime",
+      "description": "Description for realtime",
       "data-group": "licensing",
-      "data-type": "realtime"
+      "data-type": "realtime",
+      "info": [
+        "Info text line 1",
+        "Info text line 2"
+      ]
     },
     {
       "module-type": "completion-rate",
+      "title": "Module with no description",
       "data-group": "licensing",
-      "data-type": "journey"
+      "data-type": "journey",
+      "info": [
+        "Info text line 1",
+        "Info text line 2"
+      ]
     },
     {
-      "module-type": "drop-offs",
+      "module-type": "journey",
+      "title": "Journey",
+      "description": "Module without 'more info' button",
       "data-group": "licensing",
       "data-type": "journey"
     }
@@ -170,7 +188,7 @@ GET /spotlight/licensing
 GET /spotlight/licensing/authorities/westminster
 {
   "page-type": "licensing-dashboard",
-  "title": "London Borough of {authorityName}",
+  "title": "{authorityName}",
   "strapline": "Licensing performance",
   "group-nav": [
     {
@@ -213,6 +231,13 @@ GET /spotlight/licensing/modules/availability
   "page-type": "module",
   "module-type": "availability",
   "title": "Service availability",
+  "description": "Description for availability module",
+  "dashboard-title": "Licensing",
+  "dashboard-strapline": "Service performance",
+  "info": [
+    "Info text line 1",
+    "Info text line 2"
+  ],
   "data-group": "licensing",
   "data-type": "monitoring"
 }
