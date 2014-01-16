@@ -15,7 +15,8 @@ GET /backdrop/bucket/<name>
   "upload_format": null,
   "upload_filters": [],
   "queryable": true,
-  "raw_queries_allowed": false
+  "raw_queries_allowed": false,
+  "max_age_expected": 86400 // in seconds
 }
 
 
