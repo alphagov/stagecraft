@@ -1,0 +1,3 @@
+# requirements/production.txt: lean and mean.
+
+-r common.txt

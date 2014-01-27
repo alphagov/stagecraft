@@ -1,0 +1,3 @@
+# requirements/development.txt: for running on developer machines
+
+-r common.txt
