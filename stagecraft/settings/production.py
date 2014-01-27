@@ -17,6 +17,8 @@ except KeyError:
 
 ALLOWED_HOSTS = []  # TODO: set this.
 
+DATABASES = load_databases_from_environment()
+
 CSRF_COOKIE_SECURE = True  # avoid transmitting the CSRF cookie over HTTP
 
 SESSION_COOKIE_SECURE = True  # avoid transmitting the session cookie over HTTP

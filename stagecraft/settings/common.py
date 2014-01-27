@@ -8,8 +8,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
-from os.path import abspath, dirname, join as pjoin
+import os
 import sys
+from os.path import abspath, dirname, join as pjoin
+from urlparse import urlparse
 
 BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 
@@ -22,6 +24,21 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
+
+
+def load_databases_from_environment():
+    # eg postgres://user3123:pass123@database.foo.com:6212/db982398
+    DATABASE_URL = urlparse(os.environ['DATABASE_URL'])
+    return {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': DATABASE_URL.path[1:],
+            'USER': DATABASE_URL.username,
+            'PASSWORD': DATABASE_URL.password,
+            'HOST': DATABASE_URL.hostname,
+            'PORT': DATABASE_URL.port,
+        }
+    }
 
 
 # Application definition
