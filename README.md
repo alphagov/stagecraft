@@ -36,3 +36,5 @@ Then, to actually run the development server:
 ```
 python manage runserver 8080
 ```
+
+You should now be able to access the [admin control panel](http://localhost:8080/admin/) (note the trailing slash)
