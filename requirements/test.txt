@@ -1,3 +1,0 @@
-# requirements/test.txt: required for running unit tests, coverage etc.
-
--r common.txt
