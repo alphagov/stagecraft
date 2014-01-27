@@ -8,9 +8,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+from os.path import abspath, dirname, join as pjoin
+import sys
+
+BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
+
+sys.path.append(pjoin(BASE_DIR, 'apps'))
+sys.path.append(pjoin(BASE_DIR, 'libs'))
 
 
 # Defined here for safety, they should also be defined in each environment.
