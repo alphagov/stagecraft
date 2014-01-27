@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import sys
 from os.path import abspath, dirname, join as pjoin
-from urlparse import urlparse
+
+try:
+    from urllib.parse import urlparse  # Python 3
+except ImportError:
+    from urlparse import urlparse  # Python 2
 
 BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 

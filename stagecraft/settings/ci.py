@@ -1,3 +1,3 @@
-from production import *
+from .production import *
 
-from development import DATABASES  # Don't really use postgresql
+from .development import DATABASES  # Don't really use postgresql

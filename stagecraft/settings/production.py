@@ -2,7 +2,7 @@
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 #
 
-from common import *
+from .common import *
 
 import os
 
