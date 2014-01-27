@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []  # required if DEBUG is False
 INSTALLED_APPS += (
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES += (
 )
 
 # Database
