@@ -1,0 +1,11 @@
+
+# Python
+*.pyc
+*.pyo
+
+# Vim editor
+.*.swp
+
+# Pip temporary directories
+/source
+/build
