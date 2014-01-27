@@ -1,3 +1,7 @@
+# Django development
+/db.sqlite3
+/venv
+
 
 # Python
 *.pyc
