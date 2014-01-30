@@ -1,0 +1,6 @@
+# requirements/preview.txt: for the performance platform preview environment
+
+-r common.txt
+
+# psycopg2 requires the libpq-dev package
+psycopg2==2.5.2

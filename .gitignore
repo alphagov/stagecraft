@@ -1,0 +1,15 @@
+# Django development
+/db.sqlite3
+/venv
+
+
+# Python
+*.pyc
+*.pyo
+
+# Vim editor
+.*.swp
+
+# Pip temporary directories
+/source
+/build

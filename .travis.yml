@@ -1,0 +1,17 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+install: 
+  - pip install -r requirements/ci.txt --use-mirrors
+env:
+  - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://a:b@foo:999/db
+script:
+  - python manage.py test
+after_script:
+  - coveralls
+branches:
+  except:
+    - release
+notifications:
+  email: false

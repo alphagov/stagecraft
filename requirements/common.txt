@@ -1,0 +1,3 @@
+# requirements/common.txt: Used on *all* environments.
+
+django==1.6.1
