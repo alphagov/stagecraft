@@ -10,6 +10,7 @@ You'll need a virtualenv and if you're developing locally you'll want to use
 ```
 mkdir venv
 virtualenv venv
+source venv/bin/activate
 pip install -r requirements/development.txt
 ```
 
