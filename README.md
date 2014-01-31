@@ -29,7 +29,7 @@ called ``database.sqlite3``. You'll get the opportunity to make yourself an
 administrator user.
 
 ```
-python manage.py syncdb
+python manage.py syncdb --migrate
 ```
 
 Then, to actually run the development server:
