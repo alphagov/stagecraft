@@ -27,6 +27,7 @@ ALLOWED_HOSTS = []  # required if DEBUG is False
 # Application definition
 
 INSTALLED_APPS += (
+    'django_nose',
 )
 
 MIDDLEWARE_CLASSES += (
