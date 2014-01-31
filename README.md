@@ -35,7 +35,10 @@ python manage.py syncdb
 Then, to actually run the development server:
 
 ```
-python manage.py runserver 8080
+python manage.py runserver 0.0.0.0:8080
 ```
 
-You should now be able to access the [admin control panel](http://localhost:8080/admin/) (note the trailing slash)
+**NOTE** If you're using pp-development, until we do the puppet story you'll
+need to add a firewall rule: ``sudo ufw allow in 8080``
+
+You should now be able to access the [admin control panel](http://www.perfplat.dev:8080/admin/) (note the trailing slash)
