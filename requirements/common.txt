@@ -1,3 +1,4 @@
 # requirements/common.txt: Used on *all* environments.
 
 django==1.6.1
+South==0.8.4
