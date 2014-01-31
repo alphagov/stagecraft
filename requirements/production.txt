@@ -1,6 +1,6 @@
 # requirements/production.txt: lean and mean.
 
--r common.txt
+-r _common.txt
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.2
