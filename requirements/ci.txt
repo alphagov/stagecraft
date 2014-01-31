@@ -1,5 +1,4 @@
 # requirements/ci.txt: required for running continuous integration
 
 -r production.txt
-
-nose
+-r _testing.txt

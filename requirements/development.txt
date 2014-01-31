@@ -1,3 +1,6 @@
 # requirements/development.txt: for running on developer machines
 
 -r common.txt
+-r _testing.txt
+
+# Any other development-specific requirements here:

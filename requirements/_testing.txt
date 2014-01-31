@@ -1,0 +1,4 @@
+# Not an environment, this is pulled in by other requirements files.
+
+nose
+
