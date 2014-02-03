@@ -26,7 +26,9 @@ python manage.py syncdb --migrate
 
 This project uses django-reversion to provide version control functionality.
 Whenever a model is added it should be registered with the VersionAdmin class
-(for an example, see [here](stagecraft/apps/datasets/admin/data_type.py)), and
+(for an example, see
+[here](https://github.com/alphagov/stagecraft/blob/add-django-reversion/stagecraft/apps/datasets/admin/data_type.py)
+), and
 
 ```
 python manage.py createinitialrevisions
