@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/bash -e
+
+# Usage: run_development.sh [port]
+#
+# This will not mess with your virtualenv - you have to manage that yourself.
+
 export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
 
-if [ -d "venv" ]; then
-    source venv/bin/activate
-fi
-
-python manage.py runserver 0.0.0.0:8080
-
+python manage.py runserver 0.0.0.0:${1-8080}
