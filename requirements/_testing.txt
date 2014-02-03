@@ -1,5 +1,7 @@
 # Not an environment, this is pulled in by other requirements files.
 
+#is this still needed?
 nose
 
 django-nose==1.2
+pep8==1.4.5
