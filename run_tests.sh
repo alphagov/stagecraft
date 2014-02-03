@@ -2,14 +2,6 @@
 
 set -o pipefail
 
-export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
-
-if [ -d "venv" ]; then
-    source venv/bin/activate
-fi
-
-python manage.py test
-
 function display_result {
     RESULT=$1
     EXIT_STATUS=$2
@@ -30,8 +22,20 @@ function display_result {
 basedir=$(dirname $0)
 outdir="$basedir/out"
 
-rm -f "$outdir/*"
+# cleanup output dir
 mkdir -p "$outdir"
+rm -f "$outdir/*"
+rm -f ".coverage"
+
+export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
+
+if [ -d "venv" ]; then
+    source venv/bin/activate
+fi
+
+#run unit tests
+python manage.py test --with-coverage --cover-package=datasets
+display_result $? 1 "Unit tests"
 
 # run style check
 $basedir/pep-it.sh | tee "$outdir/pep8.out"
