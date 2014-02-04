@@ -14,6 +14,30 @@ source venv/bin/activate
 pip install -r requirements/development.txt
 ```
 
+# Initialising/adding models
+
+Before the server is run for the first time, and whenever a model is changed,
+the local database (called ``database.sqlite3``) needs to be synced. The first
+time this happens an administrator user can be set up.
+
+```
+python manage.py syncdb --migrate
+```
+
+This project uses django-reversion to provide version control functionality.
+Whenever a model is added it should be registered with the VersionAdmin class
+(for an example, see
+[here](https://github.com/alphagov/stagecraft/blob/add-django-reversion/stagecraft/apps/datasets/admin/data_type.py)
+), and
+
+```
+python manage.py createinitialrevisions
+```
+
+should be used to populate the version database with an initial set of model
+data. Depending on the number of rows in the database, this command can take a
+while to execute.
+
 # Running
 
 Because we use environment-specific settings, you need to specify which
@@ -22,14 +46,6 @@ you run through ``manage.py``.
 
 ```
 export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
-```
-
-The first time you run, you'll need to initialise your local database, which is
-called ``database.sqlite3``. You'll get the opportunity to make yourself an
-administrator user.
-
-```
-python manage.py syncdb --migrate
 ```
 
 Then, to actually run the development server:
