@@ -6,3 +6,4 @@ if [ -d "venv" ]; then
 fi
 
 python manage.py runserver 0.0.0.0:8080
+
