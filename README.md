@@ -24,6 +24,12 @@ time this happens an administrator user can be set up.
 python manage.py syncdb --migrate
 ```
 
+In order to generate migrations for a newly added model run:
+
+```
+python manage.py schemamigration datasets --auto
+```
+
 This project uses django-reversion to provide version control functionality.
 Whenever a model is added it should be registered with the VersionAdmin class
 (for an example, see
