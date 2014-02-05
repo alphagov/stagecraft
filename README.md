@@ -19,11 +19,12 @@ pip install -r requirements/development.txt
 Before the server is run for the first time, and whenever a model is changed,
 the local database (called ``database.sqlite3``) needs to be synced.
 
+*Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
+
 ```
 python manage.py syncdb --migrate
 ```
 
-*Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
 
 In order to generate migrations for a newly added model run:
 
