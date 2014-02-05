@@ -14,6 +14,16 @@ source venv/bin/activate
 pip install -r requirements/development.txt
 ```
 
+# Set Django environment
+
+Because we use environment-specific settings, you need to specify which
+settings module to use in your environment. You'll need this for all commands
+you run through ``manage.py``.
+
+```bash
+export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
+```
+
 # Initialising/adding models
 
 Before the server is run for the first time, and whenever a model is changed,
@@ -46,15 +56,8 @@ while to execute.
 
 # Running
 
-Because we use environment-specific settings, you need to specify which
-settings module to use in your environment. You'll need this for all commands
-you run through ``manage.py``.
 
-```
-export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
-```
-
-Then, to actually run the development server:
+To run the development server:
 
 ```
 python manage.py runserver 0.0.0.0:8080
