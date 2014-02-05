@@ -69,3 +69,26 @@ python manage.py runserver 0.0.0.0:8080
 need to add a firewall rule: ``sudo ufw allow in 8080``
 
 You should now be able to access the [admin control panel](http://stagecraft.perfplat.dev:8080/admin/) (note the trailing slash)
+
+# More on reversions
+
+**NOTE: Reversions are not compatible with schema changes. Without special migrations, revisions saved before schema changes will be lost after these changes**
+
+In contexts other than the Admin app there are things you must keep in mind in order to get reversions:
+
+- When the operation is part of a request, the `reversion.middleware.RevisionMiddleware` middleware class will ensure that database modifying operations are accompanied by revisions on **registered models** (e.g. models with reversion.register(ModelName)).
+- **NOTE:** When doing a request you will need to test this - this is our current understanding but we could be wrong...
+
+**However**
+
+> 'Warning: Due to changes in the Django 1.6 transaction handling, revision data will be saved in a separate database transaction to the one used to save your models, even if you set ATOMIC_REQUESTS = True. If you need to ensure that your models and revisions are saved in the save transaction, please use the reversion.create_revision() context manager or decorator in combination with transaction.atomic().'
+
+**In Addition**
+
+Outside of requests (e.g. in scripts) you will need to use the following:
+
+- `import reversion`.
+- Ensure the model is registered with `reversion.register(DataGroup)` if used in a context where the admin registration has not run.
+- Run all database modifying operations in functions with the `@reversion.create_revision()` decorator or in the `reversion.create_revision():` context manager.
+
+See [the docs](http://django-reversion.readthedocs.org/en/latest/api.html) for more info.
