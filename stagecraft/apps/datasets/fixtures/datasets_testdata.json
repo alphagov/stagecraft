@@ -1,0 +1,66 @@
+[
+{
+    "pk": 1, 
+    "model": "datasets.datagroup", 
+    "fields": {
+        "name": "group1"
+    }
+},
+{
+    "pk": 2, 
+    "model": "datasets.datagroup", 
+    "fields": {
+        "name": "group2"
+    }
+},
+{
+    "pk": 1, 
+    "model": "datasets.datatype", 
+    "fields": {
+        "name": "type1"
+    }
+},
+{
+    "pk": 2, 
+    "model": "datasets.datatype", 
+    "fields": {
+        "name": "type2"
+    }
+},
+{
+    "pk": 1, 
+    "model": "datasets.dataset", 
+    "fields": {
+        "bearer_token": "", 
+        "capped_size": null, 
+        "name": "set1", 
+        "data_type": 1, 
+        "realtime": false, 
+        "auto_ids": "", 
+        "max_age_expected": 86400, 
+        "data_group": 1, 
+        "upload_filters": "", 
+        "queryable": true, 
+        "upload_format": "", 
+        "raw_queries_allowed": true
+    }
+},
+{
+    "pk": 2, 
+    "model": "datasets.dataset", 
+    "fields": {
+        "bearer_token": "", 
+        "capped_size": null, 
+        "name": "set2", 
+        "data_type": 1, 
+        "realtime": false, 
+        "auto_ids": "", 
+        "max_age_expected": 86400, 
+        "data_group": 2, 
+        "upload_filters": "", 
+        "queryable": true, 
+        "upload_format": "", 
+        "raw_queries_allowed": true
+    }
+}
+]
