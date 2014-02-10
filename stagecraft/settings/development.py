@@ -42,3 +42,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+BACKDROP_URL = 'http://localhost:3039'
+CREATE_COLLECTION_ENDPOINT_TOKEN = 'dev-create-endpoint-token'
