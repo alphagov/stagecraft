@@ -14,14 +14,14 @@ class DataSet(models.Model):
     raw_queries_allowed = models.BooleanField(default=True)
     bearer_token = models.CharField(max_length=255, blank=True)
     upload_format = models.CharField(max_length=255, blank=True)
-    upload_filters = models.TextField(blank=True) # a comma delimited list
-    auto_ids = models.TextField(blank=True) # a comma delimited list
+    upload_filters = models.TextField(blank=True)  # a comma delimited list
+    auto_ids = models.TextField(blank=True)  # a comma delimited list
     queryable = models.BooleanField(default=True)
     realtime = models.BooleanField(default=False)
     capped_size = models.PositiveIntegerField(null=True, blank=True,
-        default=None)
+                                              default=None)
     max_age_expected = models.PositiveIntegerField(null=True, blank=True,
-        default=60 * 60 * 24) # 1 day in seconds
+                                                   default=60 * 60 * 24)
 
     def __str__(self):
         return "DataSet({})".format(self.name)
