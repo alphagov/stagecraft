@@ -25,7 +25,7 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
             },
         ]
-        self.assertEqual(json.loads(resp.content), expected)
+        self.assertEqual(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_list_by_data_group(self):
         resp = self.client.get('/data-sets?data-group=group1')
@@ -39,7 +39,7 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
             },
         ]
-        self.assertEqual(json.loads(resp.content), expected)
+        self.assertEqual(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_list_by_data_type(self):
         resp = self.client.get('/data-sets?data-type=type1')
@@ -60,7 +60,7 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
             },
         ]
-        self.assertEqual(json.loads(resp.content), expected)
+        self.assertEqual(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_list_nonexistant_key(self):
         resp = self.client.get('/data-sets?nonexistant-key=something')
@@ -70,7 +70,7 @@ class DataSetsViewsTestCase(TestCase):
         resp = self.client.get('/data-sets?data-group=nonexistant-group')
         self.assertEqual(resp.status_code, 200)
         expected = []
-        self.assertEqual(json.loads(resp.content), expected)
+        self.assertEqual(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_detail(self):
         resp = self.client.get('/data-sets/set1')
@@ -82,7 +82,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_filters': '', 'queryable': True, 'upload_format': '',
             'raw_queries_allowed': True,
         }
-        self.assertEqual(json.loads(resp.content), expected)
+        self.assertEqual(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_detail_nonexistant_dataset(self):
         resp = self.client.get('/data-sets/nonexistant-dataset')
