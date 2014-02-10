@@ -26,7 +26,9 @@ class DataSetTestCase(TestCase):
         cls.data_type1.delete()
         cls.data_type2.delete()
 
-    def test_data_set_name_must_be_unique(self):
+    # intercept call to backdrop_client.create_dataset
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_data_set_name_must_be_unique(self, mocked):
         a = DataSet.objects.create(
             name='foo',
             data_group=self.data_group1,
@@ -38,10 +40,11 @@ class DataSetTestCase(TestCase):
             name='foo',
             data_group=self.data_group1,
             data_type=self.data_type2)
-
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    def test_data_group_data_type_combo_must_be_unique(self):
+    # intercept call to backdrop_client.create_dataset
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_data_group_data_type_combo_must_be_unique(self, mocked):
         dataset1 = DataSet.objects.create(
             name='dataset1',
             data_group=self.data_group1,

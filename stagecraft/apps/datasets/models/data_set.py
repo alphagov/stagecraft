@@ -1,9 +1,12 @@
 from __future__ import unicode_literals
+
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
 
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
+
+from stagecraft.libs.backdrop_client import create_dataset, BackdropError
 
 
 @python_2_unicode_compatible
@@ -25,6 +28,12 @@ class DataSet(models.Model):
 
     def __str__(self):
         return "DataSet({})".format(self.name)
+
+    def save(self, *args, **kwargs):
+        size_bytes = self.capped_size if self.capped_size else 0
+
+        create_dataset(self.name, size_bytes)  # can raise
+        super(DataSet, self).save(*args, **kwargs)
 
     class Meta:
         app_label = 'datasets'
