@@ -7,7 +7,7 @@ install:
 env:
   - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://a:b@foo:999/db
 script:
-  - python manage.py test
+  - ./run_tests.sh
 after_script:
   - coveralls
 branches:
