@@ -1,7 +1,7 @@
 import json
 
 from django.core import serializers
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 
 from stagecraft.apps.datasets.models import DataSet
@@ -27,9 +27,9 @@ def list(request, data_group=None, data_type=None):
         'data-type': 'data_type__name',
     }
 
-    # 404 if any query string keys were not in allowed set
+    # 400 if any query string keys were not in allowed set
     if not set(request.GET).issubset(key_map):
-        raise Http404
+        return HttpResponseBadRequest()
 
     # get allowed filter parameters
     kwargs = {key_map[k]: v for k, v in request.GET.items() if k in key_map}

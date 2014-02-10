@@ -64,7 +64,7 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_list_nonexistant_key(self):
         resp = self.client.get('/data-sets?nonexistant-key=something')
-        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 400)
 
     def test_list_nonexistant_record(self):
         resp = self.client.get('/data-sets?data-group=nonexistant-group')
