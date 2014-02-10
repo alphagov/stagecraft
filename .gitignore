@@ -13,3 +13,7 @@
 # Pip temporary directories
 /source
 /build
+
+# Test outputs
+/out
+/.coverage
