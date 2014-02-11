@@ -9,10 +9,10 @@ from contextlib import contextmanager
 
 from nose.tools import assert_raises
 
-from django.test import TestCase, TransactionTestCase
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.db.models.deletion import ProtectedError
 from django.db.models.manager import Manager
-
+from django.test import TestCase, TransactionTestCase
 
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.libs.backdrop_client import BackdropError
@@ -63,6 +63,63 @@ class DataSetTestCase(TestCase):
             data_group=self.data_group1,
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
+
+    def test_data_set_name_cant_change_existing(self):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        data_set.name = 'Fred'
+        assert_raises(Exception, lambda: data_set.save())
+
+    def test_data_set_name_can_set_new(self):
+        data_set = DataSet.objects.create(
+            name='Barney',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+    def test_data_set_capped_size_cant_change_existing(self):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        data_set.capped_size = 42
+        assert_raises(Exception, lambda: data_set.save())
+
+    def test_data_set_capped_size_can_set_new(self):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1,
+            capped_size=42)
+
+    def test_data_set_cant_delete(self):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        assert_raises(Exception, lambda: data_set.delete())
+
+    def test_data_group_cant_delete_referenced(self):
+        refed_data_group = DataGroup.objects.create(name='refed_data_group')
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=refed_data_group,
+            data_type=self.data_type1)
+
+        assert_raises(ProtectedError, lambda: refed_data_group.delete())
+
+    def test_data_type_cant_delete_referenced(self):
+        refed_data_type = DataType.objects.create(name='refed_data_type')
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=refed_data_type)
+
+        assert_raises(ProtectedError, lambda: refed_data_type.delete())
 
 
 def test_character_allowed_in_name():
