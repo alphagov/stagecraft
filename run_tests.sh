@@ -27,7 +27,9 @@ mkdir -p "$outdir"
 rm -f "$outdir/*"
 rm -f ".coverage"
 
-export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
+if [ -z "$DJANGO_SETTINGS_MODULE" ]; then
+    export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
+fi
 
 if [ -d "venv" ]; then
     source venv/bin/activate
