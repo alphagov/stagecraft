@@ -26,6 +26,21 @@ class DataSet(models.Model):
     def __str__(self):
         return "DataSet({})".format(self.name)
 
+    readonly_fields = ['name', 'capped_size']  # used below and by DataSetAdmin
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:  # record already exists
+            old = DataSet.objects.get(pk=self.pk).__dict__
+            new = self.__dict__
+            bad_fields = [i for i in self.readonly_fields if new[i] != old[i]]
+            if len(bad_fields) > 0:
+                bad_fields_csv = ', '.join(bad_fields)
+                raise Exception('{} cannot be modified'.format(bad_fields_csv))
+        super(DataSet, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise Exception("Data Sets cannot be deleted")
+
     class Meta:
         app_label = 'datasets'
         unique_together = ['data_group', 'data_type']
