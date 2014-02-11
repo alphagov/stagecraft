@@ -51,18 +51,18 @@ class DataSetTestCase(TestCase):
     # intercept call to backdrop_client.create_dataset
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
     def test_data_group_data_type_combo_must_be_unique(self, mocked):
-        dataset1 = DataSet.objects.create(
-            name='dataset1',
+        data_set1 = DataSet.objects.create(
+            name='data_set1',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-        dataset1.validate_unique()
+        data_set1.validate_unique()
 
-        dataset2 = DataSet(
-            name='dataset2',
+        data_set2 = DataSet(
+            name='data_set2',
             data_group=self.data_group1,
             data_type=self.data_type1)
-        assert_raises(ValidationError, lambda: dataset2.validate_unique())
+        assert_raises(ValidationError, lambda: data_set2.validate_unique())
 
 
 def test_character_allowed_in_name():
