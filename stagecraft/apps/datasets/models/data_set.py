@@ -9,8 +9,8 @@ from stagecraft.apps.datasets.models.data_type import DataType
 @python_2_unicode_compatible
 class DataSet(models.Model):
     name = models.SlugField(max_length=50, unique=True)
-    data_group = models.ForeignKey(DataGroup)
-    data_type = models.ForeignKey(DataType)
+    data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
+    data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
     bearer_token = models.CharField(max_length=255, blank=True)
     upload_format = models.CharField(max_length=255, blank=True)
