@@ -35,6 +35,11 @@ if [ -d "venv" ]; then
     source venv/bin/activate
 fi
 
+# clean up stray python bytecode
+find $basedir -iname '*.pyc' -exec rm {} \;
+find $basedir -iname '__pycache__' -exec rmdir {} \;
+
+
 #run unit tests
 python manage.py test --with-coverage --cover-package=datasets
 display_result $? 1 "Unit tests"
