@@ -64,38 +64,38 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
 
-    def test_data_set_name_cant_change_existing(self):
+    def test_name_cannot_be_changed(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
         data_set.name = 'Fred'
-        assert_raises(Exception, lambda: data_set.save())
+        assert_raises(ValidationError, data_set.save)
 
-    def test_data_set_name_can_set_new(self):
+    def test_name_can_be_set_on_creation(self):
         data_set = DataSet.objects.create(
             name='Barney',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-    def test_data_set_capped_size_cant_change_existing(self):
+    def test_capped_size_cannot_be_changed(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
         data_set.capped_size = 42
-        assert_raises(Exception, lambda: data_set.save())
+        assert_raises(ValidationError, data_set.save)
 
-    def test_data_set_capped_size_can_set_new(self):
+    def test_capped_size_can_be_set_on_creation(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
             capped_size=42)
 
-    def test_data_set_cant_delete(self):
+    def test_cant_delete_data_set(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -103,7 +103,7 @@ class DataSetTestCase(TestCase):
 
         assert_raises(Exception, lambda: data_set.delete())
 
-    def test_data_group_cant_delete_referenced(self):
+    def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         data_set = DataSet.objects.create(
             name='data_set',
@@ -112,7 +112,7 @@ class DataSetTestCase(TestCase):
 
         assert_raises(ProtectedError, lambda: refed_data_group.delete())
 
-    def test_data_type_cant_delete_referenced(self):
+    def test_cant_delete_referenced_data_type(self):
         refed_data_type = DataType.objects.create(name='refed_data_type')
         data_set = DataSet.objects.create(
             name='data_set',
