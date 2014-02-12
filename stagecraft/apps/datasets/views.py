@@ -1,10 +1,10 @@
 import json
 
-from django.core import serializers
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.shortcuts import render
 
+from stagecraft.libs.serialize import serialize_to_json
 from stagecraft.apps.datasets.models import DataSet
 
 
@@ -16,9 +16,7 @@ def detail(request, name):
                  'message': "No Data Set named '{}' exists".format(name)}
         return HttpResponseNotFound(json.dumps(error))
 
-    serialized = serializers.serialize('python', [data_set])
-    result = serialized[0]['fields']
-    json_str = json.dumps(result)
+    json_str = serialize_to_json(data_set)
 
     return HttpResponse(json_str, content_type='application/json')
 
@@ -45,8 +43,6 @@ def list(request, data_group=None, data_type=None):
 
     filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
     data_sets = DataSet.objects.filter(**filter_kwargs)
-    serialized = serializers.serialize('python', data_sets)
-    results = [i['fields'] for i in serialized]
-    json_str = json.dumps(results)
+    json_str = serialize_to_json(data_sets)
 
     return HttpResponse(json_str, content_type='application/json')
