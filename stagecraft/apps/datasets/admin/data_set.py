@@ -9,6 +9,7 @@ from django.contrib import messages
 import reversion
 
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.libs.backdrop_client import BackdropError
 
 
 class DataSetAdmin(reversion.VersionAdmin):
@@ -36,7 +37,7 @@ class DataSetAdmin(reversion.VersionAdmin):
     def save_model(self, request, *args, **kwargs):
         try:
             super(DataSetAdmin, self).save_model(request, *args, **kwargs)
-        except Exception as e:
+        except BackdropError as e:
             self.successful_save = False
             logger.exception(e)
             self.exception = e
