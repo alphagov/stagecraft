@@ -33,6 +33,13 @@ class DataSetAdmin(reversion.VersionAdmin):
         self.successful_save = False
         self.exception = None
 
+    # Get fields that are only editable on creation
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # record already exists
+            return DataSet.READONLY_FIELDS
+        else:
+            return set()
+
     def save_model(self, request, *args, **kwargs):
         try:
             super(DataSetAdmin, self).save_model(request, *args, **kwargs)
@@ -80,6 +87,5 @@ class DataSetAdmin(reversion.VersionAdmin):
         messages.error(request, "Failed to modify: {}".format(
             repr(self.exception)))
         return self.response_post_save_change(request, obj)
-
 
 admin.site.register(DataSet, DataSetAdmin)
