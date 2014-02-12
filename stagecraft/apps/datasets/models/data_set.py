@@ -14,6 +14,9 @@ from stagecraft.libs.backdrop_client import create_dataset, BackdropError
 
 @python_2_unicode_compatible
 class DataSet(models.Model):
+    # used in save() below and by DataSetAdmin
+    READONLY_FIELDS = set(['name', 'capped_size'])
+
     name = models.SlugField(max_length=50, unique=True)
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
@@ -53,7 +56,7 @@ class DataSet(models.Model):
         if self.pk is not None:  # record already exists
             old = DataSet.objects.get(pk=self.pk).__dict__
             new = self.__dict__
-            bad_fields = [i for i in self.readonly_fields if new[i] != old[i]]
+            bad_fields = [i for i in READONLY_FIELDS if new[i] != old[i]]
             if len(bad_fields) > 0:
                 bad_fields_csv = ', '.join(bad_fields)
                 raise Exception('{} cannot be modified'.format(bad_fields_csv))

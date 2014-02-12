@@ -34,11 +34,12 @@ class DataSetAdmin(reversion.VersionAdmin):
         self.successful_save = False
         self.exception = None
 
+    # Get fields that are only editable on creation
     def get_readonly_fields(self, request, obj=None):
         if obj:  # record already exists
-            return DataSet.readonly_fields
+            return DataSet.READONLY_FIELDS
         else:
-            return []
+            return set()
 
     def save_model(self, request, *args, **kwargs):
         try:
