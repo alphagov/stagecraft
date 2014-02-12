@@ -24,6 +24,10 @@ def detail(request, name):
 
 
 def list(request, data_group=None, data_type=None):
+    def get_filter_kwargs(key_map, query_params):
+        """Return Django filter kwargs from query parameters"""
+        return {key_map[k]: v for k, v in query_params if k in key_map}
+
     # map filter parameter names to query string keys
     key_map = {
         'data-group': 'data_group__name',
@@ -39,10 +43,8 @@ def list(request, data_group=None, data_type=None):
                             .format(str(unrecognised_text))}
         return HttpResponseBadRequest(json.dumps(error))
 
-    # get allowed filter parameters
-    kwargs = {key_map[k]: v for k, v in request.GET.items() if k in key_map}
-
-    data_sets = DataSet.objects.filter(**kwargs)
+    filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
+    data_sets = DataSet.objects.filter(**filter_kwargs)
     serialized = serializers.serialize('python', data_sets)
     results = [i['fields'] for i in serialized]
     json_str = json.dumps(results)
