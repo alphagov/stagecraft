@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
+from django.db import transaction
 
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
@@ -29,11 +30,19 @@ class DataSet(models.Model):
     def __str__(self):
         return "DataSet({})".format(self.name)
 
+    @transaction.commit_on_success
     def save(self, *args, **kwargs):
-        size_bytes = self.capped_size if self.capped_size else 0
-
-        create_dataset(self.name, size_bytes)  # can raise
+        size_bytes = self.capped_size if self.is_capped else 0
         super(DataSet, self).save(*args, **kwargs)
+        # Backdrop can't be rolled back dude.
+        # Ensure this is the final action of the save method.
+        create_dataset(self.name, size_bytes)
+
+    @property
+    def is_capped(self):
+        # Actually mongo's limit for cap size minimum is currently 4096 :-(
+        return (self.capped_size is not None
+                and self.capped_size > 0)
 
     class Meta:
         app_label = 'datasets'
