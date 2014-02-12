@@ -30,10 +30,10 @@ class DataSet(models.Model):
     def __str__(self):
         return "DataSet({})".format(self.name)
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def save(self, *args, **kwargs):
-        size_bytes = self.capped_size if self.is_capped else 0
         super(DataSet, self).save(*args, **kwargs)
+        size_bytes = self.capped_size if self.is_capped else 0
         # Backdrop can't be rolled back dude.
         # Ensure this is the final action of the save method.
         create_dataset(self.name, size_bytes)
