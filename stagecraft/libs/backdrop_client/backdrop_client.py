@@ -16,7 +16,10 @@ def create_dataset(name, capped_size):
     Specify ``capped_size`` in bytes to create a capped collection, or 0 to
     create an uncapped collection.
     """
-    assert isinstance(capped_size, int)
+    if not isinstance(capped_size, int) or capped_size < 0:
+        raise BackdropError(
+            "capped_size must be 0 or a positive integer number of bytes.")
+
     json_request = json.dumps({'capped_size': capped_size})
 
     backdrop_url = '{url}/data-sets/{name}'.format(
