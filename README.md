@@ -65,6 +65,12 @@ To run the development server:
 python manage.py runserver 0.0.0.0:3204
 ```
 
+or do it the "bowl" way:
+
+```
+./start-app.sh
+```
+
 **NOTE** If you're using pp-development, until we do the puppet story you'll
 need to add a firewall rule: ``sudo ufw allow in 3204``
 
