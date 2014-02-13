@@ -1,9 +1,13 @@
 from __future__ import unicode_literals
+
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
+from django.db import transaction
 
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
+
+from stagecraft.libs.backdrop_client import create_dataset, BackdropError
 
 
 @python_2_unicode_compatible
@@ -25,6 +29,20 @@ class DataSet(models.Model):
 
     def __str__(self):
         return "DataSet({})".format(self.name)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        super(DataSet, self).save(*args, **kwargs)
+        size_bytes = self.capped_size if self.is_capped else 0
+        # Backdrop can't be rolled back dude.
+        # Ensure this is the final action of the save method.
+        create_dataset(self.name, size_bytes)
+
+    @property
+    def is_capped(self):
+        # Actually mongo's limit for cap size minimum is currently 4096 :-(
+        return (self.capped_size is not None
+                and self.capped_size > 0)
 
     class Meta:
         app_label = 'datasets'
