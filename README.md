@@ -62,13 +62,13 @@ while to execute.
 To run the development server:
 
 ```
-python manage.py runserver 0.0.0.0:8080
+python manage.py runserver 0.0.0.0:3204
 ```
 
 **NOTE** If you're using pp-development, until we do the puppet story you'll
-need to add a firewall rule: ``sudo ufw allow in 8080``
+need to add a firewall rule: ``sudo ufw allow in 3204``
 
-You should now be able to access the [admin control panel](http://stagecraft.perfplat.dev:8080/admin/) (note the trailing slash)
+You should now be able to access the [admin control panel](http://stagecraft.perfplat.dev:3204/admin/) (note the trailing slash)
 
 # More on reversions
 
