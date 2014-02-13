@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from collections import OrderedDict
+
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
 from django.db import transaction
@@ -29,6 +31,22 @@ class DataSet(models.Model):
 
     def __str__(self):
         return "DataSet({})".format(self.name)
+
+    def serialize(self):
+        return OrderedDict([
+            ('name',                self.name),
+            ('data_group',          self.data_group.name),
+            ('data_type',           self.data_type.name),
+            ('raw_queries_allowed', self.raw_queries_allowed),
+            ('bearer_token',        self.bearer_token),
+            ('upload_format',       self.upload_format),
+            ('upload_filters',      self.upload_filters),
+            ('auto_ids',            self.auto_ids),
+            ('queryable',           self.queryable),
+            ('realtime',            self.realtime),
+            ('capped_size',         self.capped_size),
+            ('max_age_expected',    self.max_age_expected),
+        ])
 
     @transaction.atomic
     def save(self, *args, **kwargs):

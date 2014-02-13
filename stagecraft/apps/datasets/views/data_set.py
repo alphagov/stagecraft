@@ -2,9 +2,7 @@ import json
 
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
-from django.shortcuts import render
 
-from stagecraft.libs.serialize import serialize_to_json
 from stagecraft.apps.datasets.models import DataSet
 
 
@@ -16,7 +14,7 @@ def detail(request, name):
                  'message': "No Data Set named '{}' exists".format(name)}
         return HttpResponseNotFound(json.dumps(error))
 
-    json_str = serialize_to_json(data_set)
+    json_str = json.dumps(data_set.serialize())
 
     return HttpResponse(json_str, content_type='application/json')
 
@@ -29,7 +27,9 @@ def list(request, data_group=None, data_type=None):
     # map filter parameter names to query string keys
     key_map = {
         'data-group': 'data_group__name',
+        'data_group': 'data_group__name',
         'data-type': 'data_type__name',
+        'data_type': 'data_type__name',
     }
 
     # 400 if any query string keys were not in allowed set
@@ -43,6 +43,6 @@ def list(request, data_group=None, data_type=None):
 
     filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
     data_sets = DataSet.objects.filter(**filter_kwargs)
-    json_str = serialize_to_json(data_sets)
+    json_str = json.dumps([ds.serialize() for ds in data_sets])
 
     return HttpResponse(json_str, content_type='application/json')
