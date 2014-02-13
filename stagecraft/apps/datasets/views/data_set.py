@@ -27,7 +27,9 @@ def list(request, data_group=None, data_type=None):
     # map filter parameter names to query string keys
     key_map = {
         'data-group': 'data_group__name',
+        'data_group': 'data_group__name',
         'data-type': 'data_type__name',
+        'data_type': 'data_type__name',
     }
 
     # 400 if any query string keys were not in allowed set

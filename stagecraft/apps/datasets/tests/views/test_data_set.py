@@ -66,6 +66,17 @@ class DataSetsViewsTestCase(TestCase):
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
+    def test_list_filtering_works_with_hyphens_or_underscores(self):
+        assert_equal(
+            self.client.get('/data-sets?data-type=type1').content,
+            self.client.get('/data-sets?data_type=type1').content
+        )
+
+        assert_equal(
+            self.client.get('/data-sets?data-group=group1').content,
+            self.client.get('/data-sets?data_group=group1').content
+        )
+
     def test_list_by_data_type(self):
         resp = self.client.get('/data-sets?data-type=type1')
         assert_equal(resp.status_code, 200)
