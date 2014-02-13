@@ -11,6 +11,11 @@ class BackdropError(Exception):
 
 
 def create_dataset(name, capped_size):
+    """
+    Connect to Backdrop and create a new collection called ``name``.
+    Specify ``capped_size`` in bytes to create a capped collection, or 0 to
+    create an uncapped collection.
+    """
     assert isinstance(capped_size, int)
     json_request = json.dumps({'capped_size': capped_size})
 
