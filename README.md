@@ -27,7 +27,7 @@ export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
 # Initialising/adding models
 
 Before the server is run for the first time, and whenever a model is changed,
-the local database (called ``database.sqlite3``) needs to be synced.
+the local database (called ``db.sqlite3``) needs to be synced.
 
 *Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
 
@@ -63,6 +63,12 @@ To run the development server:
 
 ```
 python manage.py runserver 0.0.0.0:3204
+```
+
+or do it the "bowl" way:
+
+```
+./start-app.sh
 ```
 
 **NOTE** If you're using pp-development, until we do the puppet story you'll
