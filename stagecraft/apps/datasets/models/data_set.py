@@ -3,8 +3,11 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 
 from django.utils.encoding import python_2_unicode_compatible
+from django.core.exceptions import ValidationError
 from django.db import models
+
 from django.db import transaction
+from django.utils.encoding import python_2_unicode_compatible
 
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
@@ -15,8 +18,8 @@ from stagecraft.libs.backdrop_client import create_dataset, BackdropError
 @python_2_unicode_compatible
 class DataSet(models.Model):
     name = models.SlugField(max_length=50, unique=True)
-    data_group = models.ForeignKey(DataGroup)
-    data_type = models.ForeignKey(DataType)
+    data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
+    data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
     bearer_token = models.CharField(max_length=255, blank=True)
     upload_format = models.CharField(max_length=255, blank=True)
@@ -28,6 +31,14 @@ class DataSet(models.Model):
                                               default=None)
     max_age_expected = models.PositiveIntegerField(null=True, blank=True,
                                                    default=60 * 60 * 24)
+
+    # used in clean() below and by DataSetAdmin
+    READONLY_FIELDS = set(['name', 'capped_size'])
+
+    def __init__(self, *args, **kwargs):
+        super(DataSet, self).__init__(*args, **kwargs)
+        self.__previous_values = {k: self.__dict__[k]
+                                  for k in self.READONLY_FIELDS}
 
     def __str__(self):
         return "DataSet({})".format(self.name)
@@ -48,8 +59,24 @@ class DataSet(models.Model):
             ('max_age_expected',    self.max_age_expected),
         ])
 
+    def clean(self):
+        """Raise a ValidationError if a read only field has been modified.
+
+        This method is called by Model.full_clean() which is called in the
+        save() method below and when the form is validated.
+        """
+        if self.pk is not None:
+            bad_fields = [v for v in self.READONLY_FIELDS
+                          if self.__previous_values[v] != getattr(self, v)]
+
+            if len(bad_fields) > 0:
+                bad_fields_csv = ', '.join(bad_fields)
+                raise ValidationError('{} cannot be modified'
+                                      .format(bad_fields_csv))
+
     @transaction.atomic
     def save(self, *args, **kwargs):
+        self.full_clean()
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
         # Backdrop can't be rolled back dude.
@@ -61,6 +88,11 @@ class DataSet(models.Model):
         # Actually mongo's limit for cap size minimum is currently 4096 :-(
         return (self.capped_size is not None
                 and self.capped_size > 0)
+
+    readonly_fields = ['name', 'capped_size']  # used below and by DataSetAdmin
+
+    def delete(self, *args, **kwargs):
+        raise Exception("Data Sets cannot be deleted")
 
     class Meta:
         app_label = 'datasets'

@@ -9,10 +9,10 @@ from contextlib import contextmanager
 
 from nose.tools import assert_raises
 
-from django.test import TestCase, TransactionTestCase
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.db.models.deletion import ProtectedError
 from django.db.models.manager import Manager
-
+from django.test import TestCase, TransactionTestCase
 
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.libs.backdrop_client import BackdropError
@@ -48,21 +48,84 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type2)
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    # intercept call to backdrop_client.create_dataset
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
     def test_data_group_data_type_combo_must_be_unique(self, mocked):
-        dataset1 = DataSet.objects.create(
-            name='dataset1',
+        data_set1 = DataSet.objects.create(
+            name='data_set1',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-        dataset1.validate_unique()
+        data_set1.validate_unique()
 
-        dataset2 = DataSet(
-            name='dataset2',
+        data_set2 = DataSet(
+            name='data_set2',
             data_group=self.data_group1,
             data_type=self.data_type1)
-        assert_raises(ValidationError, lambda: dataset2.validate_unique())
+        assert_raises(ValidationError, lambda: data_set2.validate_unique())
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_name_cannot_be_changed(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        data_set.name = 'Fred'
+        assert_raises(ValidationError, data_set.save)
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_name_can_be_set_on_creation(self, mocked):
+        data_set = DataSet.objects.create(
+            name='Barney',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_capped_size_cannot_be_changed(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        data_set.capped_size = 42
+        assert_raises(ValidationError, data_set.save)
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_capped_size_can_be_set_on_creation(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1,
+            capped_size=42)
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_data_set(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        assert_raises(Exception, lambda: data_set.delete())
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_referenced_data_group(self, mocked):
+        refed_data_group = DataGroup.objects.create(name='refed_data_group')
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=refed_data_group,
+            data_type=self.data_type1)
+
+        assert_raises(ProtectedError, lambda: refed_data_group.delete())
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_referenced_data_type(self, mocked):
+        refed_data_type = DataType.objects.create(name='refed_data_type')
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=refed_data_type)
+
+        assert_raises(ProtectedError, lambda: refed_data_type.delete())
 
 
 def test_character_allowed_in_name():
