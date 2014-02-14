@@ -48,7 +48,6 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type2)
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    # intercept call to backdrop_client.create_dataset
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
     def test_data_group_data_type_combo_must_be_unique(self, mocked):
         data_set1 = DataSet.objects.create(
@@ -64,7 +63,8 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
 
-    def test_name_cannot_be_changed(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_name_cannot_be_changed(self, mocked):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -73,13 +73,15 @@ class DataSetTestCase(TestCase):
         data_set.name = 'Fred'
         assert_raises(ValidationError, data_set.save)
 
-    def test_name_can_be_set_on_creation(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_name_can_be_set_on_creation(self, mocked):
         data_set = DataSet.objects.create(
             name='Barney',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-    def test_capped_size_cannot_be_changed(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_capped_size_cannot_be_changed(self, mocked):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -88,14 +90,16 @@ class DataSetTestCase(TestCase):
         data_set.capped_size = 42
         assert_raises(ValidationError, data_set.save)
 
-    def test_capped_size_can_be_set_on_creation(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_capped_size_can_be_set_on_creation(self, mocked):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
             capped_size=42)
 
-    def test_cant_delete_data_set(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_data_set(self, mocked):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -103,7 +107,8 @@ class DataSetTestCase(TestCase):
 
         assert_raises(Exception, lambda: data_set.delete())
 
-    def test_cant_delete_referenced_data_group(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_referenced_data_group(self, mocked):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         data_set = DataSet.objects.create(
             name='data_set',
@@ -112,7 +117,8 @@ class DataSetTestCase(TestCase):
 
         assert_raises(ProtectedError, lambda: refed_data_group.delete())
 
-    def test_cant_delete_referenced_data_type(self):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_cant_delete_referenced_data_type(self, mocked):
         refed_data_type = DataType.objects.create(name='refed_data_type')
         data_set = DataSet.objects.create(
             name='data_set',
