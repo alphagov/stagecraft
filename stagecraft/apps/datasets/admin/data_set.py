@@ -89,4 +89,15 @@ class DataSetAdmin(reversion.VersionAdmin):
             repr(self.exception)))
         return self.response_post_save_change(request, obj)
 
+    # Remove 'Delete selected ...' from the action dropdown on the list page
+    def get_actions(self, request):
+        actions = super(DataSetAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    # Remove the delete button at the bottom of the admin form
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 admin.site.register(DataSet, DataSetAdmin)
