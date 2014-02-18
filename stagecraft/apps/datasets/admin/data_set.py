@@ -34,6 +34,13 @@ class DataSetAdmin(reversion.VersionAdmin):
         self.successful_save = False
         self.exception = None
 
+    # Get fields that are only editable on creation
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # record already exists
+            return DataSet.READONLY_FIELDS
+        else:
+            return set()
+
     def save_model(self, request, *args, **kwargs):
         try:
             super(DataSetAdmin, self).save_model(request, *args, **kwargs)
@@ -82,5 +89,15 @@ class DataSetAdmin(reversion.VersionAdmin):
             repr(self.exception)))
         return self.response_post_save_change(request, obj)
 
+    # Remove 'Delete selected ...' from the action dropdown on the list page
+    def get_actions(self, request):
+        actions = super(DataSetAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    # Remove the delete button at the bottom of the admin form
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 admin.site.register(DataSet, DataSetAdmin)
