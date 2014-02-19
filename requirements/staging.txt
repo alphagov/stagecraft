@@ -1,3 +1,0 @@
-# requirements/staging.txt: Should be identical to production.
-
--r production.txt
