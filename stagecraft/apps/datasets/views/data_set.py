@@ -12,9 +12,9 @@ def detail(request, name):
     except DataSet.DoesNotExist:
         error = {'status': 'error',
                  'message': "No Data Set named '{}' exists".format(name)}
-        return HttpResponseNotFound(json.dumps(error))
+        return HttpResponseNotFound(to_json(error))
 
-    json_str = json.dumps(data_set.serialize())
+    json_str = to_json(data_set.serialize())
 
     return HttpResponse(json_str, content_type='application/json')
 
@@ -39,10 +39,14 @@ def list(request, data_group=None, data_type=None):
         error = {'status': 'error',
                  'message': 'Unrecognised parameter(s) ({}) were provided'
                             .format(str(unrecognised_text))}
-        return HttpResponseBadRequest(json.dumps(error))
+        return HttpResponseBadRequest(to_json(error))
 
     filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
     data_sets = DataSet.objects.filter(**filter_kwargs)
-    json_str = json.dumps([ds.serialize() for ds in data_sets])
+    json_str = to_json([ds.serialize() for ds in data_sets])
 
     return HttpResponse(json_str, content_type='application/json')
+
+
+def to_json(what):
+    return json.dumps(what, indent=1)
