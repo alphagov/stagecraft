@@ -17,3 +17,6 @@
 # Test outputs
 /out
 /.coverage
+
+# IntelliJ IDE
+/.idea
