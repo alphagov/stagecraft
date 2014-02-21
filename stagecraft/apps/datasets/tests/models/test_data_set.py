@@ -145,10 +145,11 @@ def _make_temp_data_group_and_type():
     data_group = DataGroup.objects.create(name='tmp_data_group')
     data_type = DataType.objects.create(name='tmp_data_type')
 
-    yield data_group, data_type
-
-    data_group.delete()
-    data_type.delete()
+    try:
+        yield data_group, data_type
+    finally:
+        data_group.delete()
+        data_type.delete()
 
 
 def _assert_name_is_valid(name):
