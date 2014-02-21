@@ -156,7 +156,8 @@ def _assert_name_is_valid(name):
         DataSet(
             name=name,
             data_group=data_group,
-            data_type=data_type).full_clean()
+            data_type=data_type,
+            bearer_token="example-token").full_clean()
 
 
 def _assert_name_not_valid(name):
