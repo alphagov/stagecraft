@@ -1,12 +1,15 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import mock
 import requests
 
 from contextlib import contextmanager
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class BackdropError(Exception):
@@ -54,12 +57,14 @@ def create_dataset(name, capped_size):
         'Bearer {}'.format(settings.CREATE_COLLECTION_ENDPOINT_TOKEN))
     type_header = ('content-type', 'application/json')
 
-    try:
-        response = requests.post(
-            backdrop_url,
-            headers=dict([type_header, auth_header]),
-            data=json_request)
+    response = requests.post(
+        backdrop_url,
+        headers=dict([type_header, auth_header]),
+        data=json_request)
 
+    try:
         response.raise_for_status()
-    except Exception as e:
-        raise BackdropError(repr(e))
+    except requests.HTTPError as e:
+        logger.exception(e)
+        logger.error(response.content)
+        raise BackdropError("{}\n{}".format(repr(e), response.content))
