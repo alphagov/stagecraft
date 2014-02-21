@@ -4,3 +4,5 @@
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.2
+gunicorn==18.0
+logstash_formatter==0.5.8
