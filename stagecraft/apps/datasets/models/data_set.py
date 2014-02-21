@@ -31,7 +31,7 @@ class DataSet(models.Model):
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
-    bearer_token = models.CharField(max_length=255, blank=True)
+    bearer_token = models.CharField(max_length=255, blank=False, null=True)
     upload_format = models.CharField(max_length=255, blank=True)
     upload_filters = models.TextField(blank=True)  # a comma delimited list
     auto_ids = models.TextField(blank=True)  # a comma delimited list
