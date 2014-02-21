@@ -1,13 +1,37 @@
 from __future__ import unicode_literals
 
 import json
+import mock
 import requests
+
+from contextlib import contextmanager
 
 from django.conf import settings
 
 
 class BackdropError(Exception):
     pass
+
+
+@contextmanager
+def backdrop_connection_disabled():
+    """
+    Context manager to temporarily disable any connection out to Backdrop.
+    WARNING: This may not be thread-safe.
+    """
+    with mock.patch('stagecraft.libs.backdrop_client.create_dataset'):
+        yield
+
+
+def disable_backdrop_connection(func):
+    """
+    Decorator to temporarily disable any connection out to Backdrop.
+    WARNING: This may not be thread-safe.
+    """
+    def wrapper(*args, **kwargs):
+        with backdrop_connection_disabled():
+            return func(*args, **kwargs)
+    return wrapper
 
 
 def create_dataset(name, capped_size):
