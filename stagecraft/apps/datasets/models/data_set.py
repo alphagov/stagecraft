@@ -31,7 +31,8 @@ class DataSet(models.Model):
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
-    bearer_token = models.CharField(max_length=255, blank=False, null=True)
+    bearer_token = models.CharField(max_length=255, blank=True, null=False,
+                                    default="")  # "" = invalid token
     upload_format = models.CharField(max_length=255, blank=True)
     upload_filters = models.TextField(blank=True)  # a comma delimited list
     auto_ids = models.TextField(blank=True)  # a comma delimited list
@@ -46,12 +47,14 @@ class DataSet(models.Model):
         return "DataSet({})".format(self.name)
 
     def serialize(self):
+        token_or_null = self.bearer_token if self.bearer_token != '' else None
+
         return OrderedDict([
             ('name',                self.name),
             ('data_group',          self.data_group.name),
             ('data_type',           self.data_type.name),
             ('raw_queries_allowed', self.raw_queries_allowed),
-            ('bearer_token',        self.bearer_token),
+            ('bearer_token',        token_or_null),
             ('upload_format',       self.upload_format),
             ('upload_filters',      self.upload_filters),
             ('auto_ids',            self.auto_ids),
