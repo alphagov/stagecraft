@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import mock
 import requests
 
 from contextlib import contextmanager
@@ -10,6 +9,8 @@ from contextlib import contextmanager
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+_DISABLED = False
 
 
 class BackdropError(Exception):
@@ -20,16 +21,20 @@ class BackdropError(Exception):
 def backdrop_connection_disabled():
     """
     Context manager to temporarily disable any connection out to Backdrop.
-    WARNING: This may not be thread-safe.
+    WARNING: This is not thread-safe.
     """
-    with mock.patch('stagecraft.libs.backdrop_client.create_dataset'):
+    global _DISABLED
+    _DISABLED = True
+    try:
         yield
+    finally:
+        _DISABLED = False
 
 
 def disable_backdrop_connection(func):
     """
     Decorator to temporarily disable any connection out to Backdrop.
-    WARNING: This may not be thread-safe.
+    WARNING: This is not thread-safe.
     """
     def wrapper(*args, **kwargs):
         with backdrop_connection_disabled():
@@ -43,6 +48,9 @@ def create_dataset(name, capped_size):
     Specify ``capped_size`` in bytes to create a capped collection, or 0 to
     create an uncapped collection.
     """
+    if _DISABLED:
+        return
+
     if not isinstance(capped_size, int) or capped_size < 0:
         raise BackdropError(
             "capped_size must be 0 or a positive integer number of bytes.")
