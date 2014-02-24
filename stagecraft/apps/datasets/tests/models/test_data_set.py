@@ -17,7 +17,8 @@ from django.test import TestCase, TransactionTestCase
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.apps.datasets.models.data_set import (
     DeleteNotImplementedError, ImmutableFieldError)
-from stagecraft.libs.backdrop_client import BackdropError
+from stagecraft.libs.backdrop_client import (BackdropError,
+                                             disable_backdrop_connection)
 
 
 class DataSetTestCase(TestCase):
@@ -34,9 +35,8 @@ class DataSetTestCase(TestCase):
         cls.data_type1.delete()
         cls.data_type2.delete()
 
-    # intercept call to backdrop_client.create_dataset
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_data_set_name_must_be_unique(self, mocked):
+    @disable_backdrop_connection
+    def test_data_set_name_must_be_unique(self):
         a = DataSet.objects.create(
             name='foo',
             data_group=self.data_group1,
@@ -50,8 +50,8 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type2)
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_data_group_data_type_combo_must_be_unique(self, mocked):
+    @disable_backdrop_connection
+    def test_data_group_data_type_combo_must_be_unique(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
             data_group=self.data_group1,
@@ -65,8 +65,8 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_name_cannot_be_changed(self, mocked):
+    @disable_backdrop_connection
+    def test_name_cannot_be_changed(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -75,15 +75,15 @@ class DataSetTestCase(TestCase):
         data_set.name = 'Fred'
         assert_raises(ImmutableFieldError, data_set.save)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_name_can_be_set_on_creation(self, mocked):
+    @disable_backdrop_connection
+    def test_name_can_be_set_on_creation(self):
         data_set = DataSet.objects.create(
             name='Barney',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_capped_size_cannot_be_changed(self, mocked):
+    @disable_backdrop_connection
+    def test_capped_size_cannot_be_changed(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -92,16 +92,16 @@ class DataSetTestCase(TestCase):
         data_set.capped_size = 42
         assert_raises(ImmutableFieldError, data_set.save)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_capped_size_can_be_set_on_creation(self, mocked):
+    @disable_backdrop_connection
+    def test_capped_size_can_be_set_on_creation(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
             capped_size=42)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_cant_delete_data_set(self, mocked):
+    @disable_backdrop_connection
+    def test_cant_delete_data_set(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
@@ -109,8 +109,8 @@ class DataSetTestCase(TestCase):
 
         assert_raises(DeleteNotImplementedError, lambda: data_set.delete())
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_cant_delete_referenced_data_group(self, mocked):
+    @disable_backdrop_connection
+    def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         data_set = DataSet.objects.create(
             name='data_set',
@@ -119,8 +119,8 @@ class DataSetTestCase(TestCase):
 
         assert_raises(ProtectedError, lambda: refed_data_group.delete())
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_cant_delete_referenced_data_type(self, mocked):
+    @disable_backdrop_connection
+    def test_cant_delete_referenced_data_type(self):
         refed_data_type = DataType.objects.create(name='refed_data_type')
         data_set = DataSet.objects.create(
             name='data_set',
@@ -129,16 +129,16 @@ class DataSetTestCase(TestCase):
 
         assert_raises(ProtectedError, lambda: refed_data_type.delete())
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_bearer_token_defaults_to_blank(self, mocked):
+    @disable_backdrop_connection
+    def test_bearer_token_defaults_to_blank(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
         assert_equal('', data_set.bearer_token)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_that_empty_bearer_token_serializes_to_null(self, mocked):
+    @disable_backdrop_connection
+    def test_that_empty_bearer_token_serializes_to_null(self):
         data_set = DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
