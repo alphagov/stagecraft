@@ -5,11 +5,16 @@ python:
 install: 
   - pip install -r requirements/ci.txt --use-mirrors
 env:
+  matrix:
   - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://a:b@foo:999/db
+  global:
+    secure: UAYbzJPtUN0hzvH2iJXcatr20l72bAZzXBNTDLZikEZPm0IiCrKK8gpO3yygxTZq1Y5N5+d1h8HoM1yBV50FPmuwszXy9amb2ErtbXd6y9R/vACeBy6msaTR4idKfKWQgZ28K8XL74vUFzPQBRqdbn5Yux2BvNYChVIbg7wl20o=
 script:
   - ./run_tests.sh
 after_script:
   - coveralls
+after_success:
+  - ./.travis_scripts/push_release_tag.sh
 branches:
   except:
     - release
