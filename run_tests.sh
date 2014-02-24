@@ -39,11 +39,10 @@ fi
 find $basedir -iname '*.pyc' -exec rm {} \;
 find $basedir -iname '__pycache__' -exec rmdir {} \;
 
-
-#run unit tests
-python manage.py test --with-coverage --cover-package=datasets
-display_result $? 1 "Unit tests"
-
 # run style check
 $basedir/pep-it.sh | tee "$outdir/pep8.out"
 display_result $? 3 "Code style check"
+
+# run unit tests
+python manage.py test --with-coverage --cover-package=datasets
+display_result $? 1 "Unit tests"
