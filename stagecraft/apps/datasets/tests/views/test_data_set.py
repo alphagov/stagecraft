@@ -15,7 +15,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': '',
+                'bearer_token': None,
                 'capped_size': None,
                 'name': 'set1',
                 'data_type': 'type1',
@@ -29,7 +29,7 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
             },
             {
-                'bearer_token': '',
+                'bearer_token': None,
                 'capped_size': None,
                 'name': 'set2',
                 'data_type': 'type1',
@@ -50,7 +50,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': '',
+                'bearer_token': None,
                 'capped_size': None,
                 'name': 'set1',
                 'data_type': 'type1',
@@ -82,7 +82,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': '',
+                'bearer_token': None,
                 'capped_size': None,
                 'name': 'set1',
                 'data_type': 'type1',
@@ -96,7 +96,7 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
             },
             {
-                'bearer_token': '',
+                'bearer_token': None,
                 'capped_size': None,
                 'name': 'set2',
                 'data_type': 'type1',
@@ -126,7 +126,7 @@ class DataSetsViewsTestCase(TestCase):
         resp = self.client.get('/data-sets/set1')
         assert_equal(resp.status_code, 200)
         expected = {
-            'bearer_token': '',
+            'bearer_token': None,
             'capped_size': None,
             'name': 'set1',
             'data_type': 'type1',

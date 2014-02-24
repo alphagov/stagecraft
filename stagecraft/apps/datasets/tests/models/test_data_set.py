@@ -7,7 +7,7 @@ import mock
 
 from contextlib import contextmanager
 
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_equal
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.deletion import ProtectedError
@@ -129,6 +129,23 @@ class DataSetTestCase(TestCase):
 
         assert_raises(ProtectedError, lambda: refed_data_type.delete())
 
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_bearer_token_defaults_to_blank(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        assert_equal('', data_set.bearer_token)
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_that_empty_bearer_token_serializes_to_null(self, mocked):
+        data_set = DataSet.objects.create(
+            name='data_set',
+            data_group=self.data_group1,
+            data_type=self.data_type1,
+            bearer_token='')
+        assert_equal(None, data_set.serialize()['bearer_token'])
+
 
 def test_character_allowed_in_name():
     for character in 'a1_-':
@@ -157,8 +174,7 @@ def _assert_name_is_valid(name):
         DataSet(
             name=name,
             data_group=data_group,
-            data_type=data_type,
-            bearer_token="example-token").full_clean()
+            data_type=data_type).full_clean()
 
 
 def _assert_name_not_valid(name):
