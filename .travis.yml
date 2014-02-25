@@ -8,7 +8,8 @@ env:
   matrix:
   - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://a:b@foo:999/db
   global:
-    secure: UAYbzJPtUN0hzvH2iJXcatr20l72bAZzXBNTDLZikEZPm0IiCrKK8gpO3yygxTZq1Y5N5+d1h8HoM1yBV50FPmuwszXy9amb2ErtbXd6y9R/vACeBy6msaTR4idKfKWQgZ28K8XL74vUFzPQBRqdbn5Yux2BvNYChVIbg7wl20o=
+    # NOTE: contains GH_TOKEN=xxx from github user gds-pp-ci
+    secure: gY2BW8rNmXa3oc2mWv0a3780E+DEOh4ETXfz1DVDACuOMbm3PXzu5TRvAN4XcKc8biUlCHyx8ReeZzcya5M3/4dQA9LYBdSzXb4JFcWpYyxIKwrqQVeKbR79BNTYLGtJ700uJRV2lXqvLSZJD5A8CaLeoNhlBKIBjZaE1+z07Is=
 script:
   - ./run_tests.sh
 after_script:
