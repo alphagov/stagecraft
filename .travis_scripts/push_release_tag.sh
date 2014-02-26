@@ -58,6 +58,13 @@ function ensure_running_in_travis_master_branch {
   fi
 }
 
+function ensure_only_tagging_on_production_python_version {
+  if [ "${TRAVIS_PYTHON_VERSION}" != "2.7" ]; then
+    echo "Not release tagging for Python version ${TRAVIS_PYTHON_VERSION}"
+    exit 3
+  fi
+}
+
 function make_temp_repo_directory {
   TMP_REPO_DIR=$(mktemp --directory --suffix _travis_${TRAVIS_BUILD_NUMBER})
 }
@@ -96,6 +103,7 @@ function setup_fake_travis_environment {
   TRAVIS_BRANCH="master"
   TRAVIS_COMMIT="3aed87b4f7bbb62e15fef65bd9a1b27d07d6e351"
   TRAVIS_BUILD_NUMBER="123456789"
+  TRAVIS_PYTHON_VERSION="2.7"
   GH_TOKEN="${TESTING_GITHUB_TOKEN}"
 }
 
@@ -109,6 +117,7 @@ fi
 
 
 ensure_running_in_travis_master_branch
+ensure_only_tagging_on_production_python_version
 make_temp_repo_directory
 clone_repo
 make_release_tag_from_travis_build_number
