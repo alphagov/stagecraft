@@ -63,8 +63,17 @@ function make_temp_repo_directory {
 }
 
 function clone_repo {
-
+  turn_off_bash_echo
   git clone https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} ${TMP_REPO_DIR}
+  turn_on_bash_echo
+}
+
+function turn_off_bash_echo {
+  set +x
+}
+
+function turn_on_bash_echo {
+  set -x
 }
 
 function make_release_tag_from_travis_build_number {
@@ -72,10 +81,10 @@ function make_release_tag_from_travis_build_number {
 
   git checkout ${TRAVIS_COMMIT}
   git tag "${RELEASE_BRANCH_NAME}_${TRAVIS_BUILD_NUMBER}"
-  git push origin --tags
+  git push origin --tags --quiet
 
-  git tag "${RELEASE_BRANCH_NAME}"
-  git push --force origin --tags
+  git tag --force "${RELEASE_BRANCH_NAME}"
+  git push --force origin --tags --quiet
 
   popd
 }
