@@ -1,5 +1,7 @@
 # Stagecraft
 
+[![Build Status](https://travis-ci.org/alphagov/stagecraft.png?branch=master)](https://travis-ci.org/alphagov/stagecraft?branch=master)
+
 Application for managing performance platform datasets.
 
 # Installing
