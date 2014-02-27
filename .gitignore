@@ -1,7 +1,7 @@
 # Django development
 /db.sqlite3
 /venv
-
+/log/*.log
 
 # Python
 *.pyc
