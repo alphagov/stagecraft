@@ -1,9 +1,12 @@
 import json
+import logging
 
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 
 from stagecraft.apps.datasets.models import DataSet
+
+logger = logging.getLogger(__name__)
 
 
 def detail(request, name):
@@ -12,6 +15,7 @@ def detail(request, name):
     except DataSet.DoesNotExist:
         error = {'status': 'error',
                  'message': "No Data Set named '{}' exists".format(name)}
+        logger.warn(error)
         return HttpResponseNotFound(to_json(error))
 
     json_str = to_json(data_set.serialize())
@@ -39,6 +43,7 @@ def list(request, data_group=None, data_type=None):
         error = {'status': 'error',
                  'message': 'Unrecognised parameter(s) ({}) were provided'
                             .format(str(unrecognised_text))}
+        logger.error(error)
         return HttpResponseBadRequest(to_json(error))
 
     filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
