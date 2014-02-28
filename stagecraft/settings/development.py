@@ -21,7 +21,10 @@ SECRET_KEY = '^10-$qwyu##ivl7f48^mit5e8a-8q#6ceb5i5&zk86)$^(^rmn'
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []  # required if DEBUG is False
+ALLOWED_HOSTS = [  # required if DEBUG is False
+    'localhost',
+    'stagecraft.perfplat.dev',
+]
 
 
 # Application definition
