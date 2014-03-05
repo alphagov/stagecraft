@@ -8,7 +8,7 @@
 
 VENV_DIR=~/.virtualenvs/stagecraft
 
-if [ ! -d "${VENV_DIR}" ]; then
+if [ ! -f "${VENV_DIR}/bin/activate" ]; then
     mkdir -p ${VENV_DIR}
     virtualenv --no-site-packages "$VENV_DIR"
 fi
