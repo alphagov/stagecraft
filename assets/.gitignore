@@ -1,0 +1,4 @@
+# Static files are collected into this directory.
+# They are source controlled elsewhere (ie in the app they originate from)
+
+.*
