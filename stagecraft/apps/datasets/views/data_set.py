@@ -1,13 +1,9 @@
 import json
 import logging
-
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseForbidden)
-
 from stagecraft.apps.datasets.models import DataSet
-
 from django.conf import settings
-
 from stagecraft.libs.validation.validation \
     import extract_bearer_token
 
@@ -15,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def detail(request, name):
-    if not _allow_view_data_sets(request.META.get('Authorization')):
+    if not _authorized(extract_bearer_token(request)):
         error = {'status': 'error',
                  'message': 'Forbidden: invalid or no token given.'}
         return HttpResponseForbidden(to_json(error))
@@ -34,7 +30,7 @@ def detail(request, name):
 
 
 def list(request, data_group=None, data_type=None):
-    if not _allow_view_data_sets(request.META.get('Authorization')):
+    if not _authorized(extract_bearer_token(request)):
         error = {'status': 'error',
                  'message': 'Forbidden: invalid or no token given.'}
         return HttpResponseForbidden(to_json(error))
@@ -72,8 +68,7 @@ def to_json(what):
     return json.dumps(what, indent=1)
 
 
-def _allow_view_data_sets(auth_header):
-    token = extract_bearer_token(auth_header)
+def _authorized(token):
     if token == settings.STAGECRAFT_DATA_SET_QUERY_TOKEN:
         return True
 

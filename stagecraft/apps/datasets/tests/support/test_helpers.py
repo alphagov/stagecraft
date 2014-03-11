@@ -1,5 +1,4 @@
 from hamcrest.core.base_matcher import BaseMatcher
-
 import json
 
 
@@ -26,7 +25,7 @@ def is_unauthorized():
 class IsErrorResponse(BaseMatcher):
     def _matches(self, response):
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content.decode("utf-8"))
             if data.get('status') != 'error':
                 return False
             # it should not fail with out a message
