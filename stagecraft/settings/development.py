@@ -72,6 +72,14 @@ LOGGING = {
             'backupCount': 2,
             'formatter': 'standard',
         },
+        'database_log': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + "/log/database_queries.log",
+            'maxBytes': 4 * 1024 * 1024,
+            'backupCount': 2,
+            'formatter': 'standard',
+        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -83,6 +91,12 @@ LOGGING = {
             'handlers': ['console', 'logfile'],
             'level': 'INFO',
             'propagate': True,  # also handle in parent handler
+        },
+
+        'django.db.backends': {
+            'handlers': ['database_log'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
 
         'stagecraft.apps': {
