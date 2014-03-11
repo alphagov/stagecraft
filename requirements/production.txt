@@ -3,4 +3,3 @@
 -r _common.txt
 
 gunicorn==18.0
-logstash_formatter==0.5.8

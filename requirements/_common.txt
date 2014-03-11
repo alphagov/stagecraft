@@ -4,6 +4,7 @@ django==1.6.1
 django-reversion==1.8.0
 South==0.8.4
 requests==2.2.1
+logstash_formatter==0.5.7
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.2

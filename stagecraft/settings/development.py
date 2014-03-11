@@ -73,6 +73,10 @@ LOGGING = {
                        " %(message)s"),
             'datefmt': "%d-%b-%y %H:%M:%S"
         },
+        'logstash_json': {
+            '()': 'logstash_formatter.LogstashFormatter',
+            'fmt': '{"extra": {"@tags": ["application", "stagecraft"]}}',
+        },
     },
     'handlers': {
         'null': {
@@ -95,6 +99,14 @@ LOGGING = {
             'backupCount': 2,
             'formatter': 'standard',
         },
+        'json_log': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + "/log/stagecraft.log.json",
+            'maxBytes': 4 * 1024 * 1024,
+            'backupCount': 2,
+            'formatter': 'logstash_json',
+        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -103,7 +115,7 @@ LOGGING = {
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'json_log'],
             'level': 'INFO',
             'propagate': True,  # also handle in parent handler
         },
@@ -115,12 +127,12 @@ LOGGING = {
         },
 
         'stagecraft.apps': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'json_log'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'stagecraft.libs': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'json_log'],
             'level': 'DEBUG',
             'propagate': True,
         },

@@ -2,6 +2,7 @@
 /db.sqlite3
 /venv
 /log/*.log
+/log/*.log.json
 
 # Python
 *.pyc
