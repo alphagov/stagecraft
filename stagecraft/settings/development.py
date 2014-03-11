@@ -138,3 +138,5 @@ LOGGING = {
         },
     },
 }
+
+STAGECRAFT_DATA_SET_QUERY_TOKEN = "my-first-bearer-token"

@@ -1,15 +1,21 @@
 import json
 import logging
-
 from django.http import (HttpResponse, HttpResponseBadRequest,
-                         HttpResponseNotFound)
-
+                         HttpResponseNotFound, HttpResponseForbidden)
 from stagecraft.apps.datasets.models import DataSet
+from django.conf import settings
+from stagecraft.libs.validation.validation \
+    import extract_bearer_token
 
 logger = logging.getLogger(__name__)
 
 
 def detail(request, name):
+    if not _authorized(extract_bearer_token(request)):
+        error = {'status': 'error',
+                 'message': 'Forbidden: invalid or no token given.'}
+        return HttpResponseForbidden(to_json(error))
+
     try:
         data_set = DataSet.objects.get(name=name)
     except DataSet.DoesNotExist:
@@ -24,6 +30,11 @@ def detail(request, name):
 
 
 def list(request, data_group=None, data_type=None):
+    if not _authorized(extract_bearer_token(request)):
+        error = {'status': 'error',
+                 'message': 'Forbidden: invalid or no token given.'}
+        return HttpResponseForbidden(to_json(error))
+
     def get_filter_kwargs(key_map, query_params):
         """Return Django filter kwargs from query parameters"""
         return {key_map[k]: v for k, v in query_params if k in key_map}
@@ -55,3 +66,11 @@ def list(request, data_group=None, data_type=None):
 
 def to_json(what):
     return json.dumps(what, indent=1)
+
+
+def _authorized(token):
+    if token == settings.STAGECRAFT_DATA_SET_QUERY_TOKEN:
+        return True
+
+    logger.info("Bad token for create collection: '{}'".format(token))
+    return False
