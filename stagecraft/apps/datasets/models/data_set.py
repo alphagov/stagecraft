@@ -27,7 +27,7 @@ class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
     READONLY_FIELDS = set(['name', 'capped_size'])
 
-    name = models.SlugField(max_length=50, unique=True)
+    name = models.SlugField(max_length=200, unique=True)
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
