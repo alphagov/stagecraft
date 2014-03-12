@@ -6,4 +6,4 @@
 
 export DJANGO_SETTINGS_MODULE="stagecraft.settings.development"
 
-python manage.py runserver 0.0.0.0:${1-3204}
+exec python manage.py runserver 0.0.0.0:${1-3204}

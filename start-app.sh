@@ -17,4 +17,4 @@ source "$VENV_DIR/bin/activate"
 
 pip install -r requirements/development.txt
 
-./run_development.sh $*
+exec ./run_development.sh $*
