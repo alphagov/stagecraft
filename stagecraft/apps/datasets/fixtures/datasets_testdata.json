@@ -14,6 +14,13 @@
     }
 },
 {
+    "pk": 3, 
+    "model": "datasets.datagroup", 
+    "fields": {
+        "name": "group3"
+    }
+},
+{
     "pk": 1, 
     "model": "datasets.datatype", 
     "fields": {
@@ -25,6 +32,13 @@
     "model": "datasets.datatype", 
     "fields": {
         "name": "type2"
+    }
+},
+{
+    "pk": 3, 
+    "model": "datasets.datatype", 
+    "fields": {
+        "name": "type3"
     }
 },
 {
@@ -62,5 +76,24 @@
         "upload_format": "", 
         "raw_queries_allowed": true
     }
+},
+{
+    "pk": 3, 
+    "model": "datasets.dataset", 
+    "fields": {
+        "bearer_token": "", 
+        "capped_size": null, 
+        "name": "abc_-0123456789", 
+        "data_type": 3, 
+        "realtime": false, 
+        "auto_ids": "", 
+        "max_age_expected": 86400, 
+        "data_group": 3, 
+        "upload_filters": "", 
+        "queryable": true, 
+        "upload_format": "", 
+        "raw_queries_allowed": true
+    }
 }
+
 ]
