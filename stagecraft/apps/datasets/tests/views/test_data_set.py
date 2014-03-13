@@ -85,6 +85,20 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
             },
+            {
+                'name': 'abc_-0123456789',
+                'data_group': 'group3',
+                'data_type': 'type3',
+                'bearer_token': None,
+                'capped_size': None,
+                'realtime': False,
+                'auto_ids': '',
+                'max_age_expected': 86400,
+                'upload_filters': '',
+                'queryable': True,
+                'upload_format': '',
+                'raw_queries_allowed': True,
+            },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
@@ -195,6 +209,27 @@ class DataSetsViewsTestCase(TestCase):
             'auto_ids': '',
             'max_age_expected': 86400,
             'data_group': 'group1',
+            'upload_filters': '',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+        }
+        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_detail_works_with_all_slugfield_characters(self):
+        resp = self.client.get(
+            '/data-sets/abc_-0123456789',
+            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+        assert_equal(resp.status_code, 200)
+        expected = {
+            'name': 'abc_-0123456789',
+            'data_group': 'group3',
+            'data_type': 'type3',
+            'bearer_token': None,
+            'capped_size': None,
+            'realtime': False,
+            'auto_ids': '',
+            'max_age_expected': 86400,
             'upload_filters': '',
             'queryable': True,
             'upload_format': '',
