@@ -219,7 +219,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_detail_works_with_all_slugfield_characters(self):
         resp = self.client.get(
             '/data-sets/abc_-0123456789',
-            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
         assert_equal(resp.status_code, 200)
         expected = {
             'name': 'abc_-0123456789',
