@@ -26,8 +26,6 @@ ALLOWED_HOSTS = [  # required if DEBUG is False
     'stagecraft.perfplat.dev',
 ]
 
-USE_X_FORWARDED_HOST = True
-
 # Application definition
 
 INSTALLED_APPS += (

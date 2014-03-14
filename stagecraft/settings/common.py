@@ -29,6 +29,8 @@ TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
 
+USE_X_FORWARDED_HOST = True
+
 
 def load_databases_from_environment():
     # eg postgres://user3123:pass123@database.foo.com:6212/db982398
