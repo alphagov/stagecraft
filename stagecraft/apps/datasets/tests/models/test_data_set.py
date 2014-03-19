@@ -146,6 +146,46 @@ class DataSetTestCase(TestCase):
             bearer_token='')
         assert_equal(None, data_set.serialize()['bearer_token'])
 
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_clean_raise_immutablefield_name_change(self,
+                                                    mock_create_dataset):
+        data_set = DataSet.objects.create(
+            name='test_dataset',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set.name = "abc"
+        assert_raises(ImmutableFieldError, lambda: data_set.clean())
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_clean_raise_immutablefield_cappedsize_change(self,
+                                                          mock_create_dataset):
+        data_set = DataSet.objects.create(
+            name='test_dataset',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set.capped_size = 1000
+        assert_raises(ImmutableFieldError, lambda: data_set.clean())
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_clean_not_raise_immutablefield_no_change(self,
+                                                      mock_create_dataset):
+        data_set = DataSet.objects.create(
+            name='test_dataset',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set.clean()
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_clean_not_raise_immutablefield_normal_change(self,
+                                                          mock_create_dataset):
+        new_data_type = DataType.objects.create(name='new_data_type')
+        data_set = DataSet.objects.create(
+            name='test_dataset',
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set.data_type = new_data_type
+        data_set.clean()
+
 
 def test_character_allowed_in_name():
     for character in 'a1_-':
