@@ -82,7 +82,7 @@ class DataSet(models.Model):
             previous_values = {k: existing.__dict__[k]
                                for k in self.READONLY_FIELDS}
             bad_fields = [v for v in self.READONLY_FIELDS
-                          if previous_values != getattr(self, v)]
+                          if previous_values[v] != getattr(self, v)]
 
             if len(bad_fields) > 0:
                 bad_fields_csv = ', '.join(bad_fields)
