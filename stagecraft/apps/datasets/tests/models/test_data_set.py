@@ -296,3 +296,13 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             data_type=self.data_type)
 
         DataSet.objects.get(name='test_dataset')  # should succeed
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_backdrop_not_called_on_model_update(self, mock_create_dataset):
+        data_set = DataSet.objects.create(
+            name='test_dataset',
+            data_group=self.data_group,
+            data_type=self.data_type)
+        data_set.save()
+
+        mock_create_dataset.assert_called_once_with('test_dataset', 0)
