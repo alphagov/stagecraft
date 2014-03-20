@@ -15,8 +15,8 @@ def extract_bearer_token(request):
 
 def get_valid_token(auth_header):
     """
-    >>> get_valid_token(u'Bearer some-token')
-    u'some-token'
+    >>> get_valid_token(u'Bearer some-token') == 'some-token'
+    True
     >>> get_valid_token('Bearer ') is None
     True
     >>> get_valid_token('Something Else') is None
