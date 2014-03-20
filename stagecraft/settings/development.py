@@ -52,6 +52,9 @@ if os.environ.get('USE_SQLITE', 'false') != 'false':
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+elif os.environ.get('DATABASE_URL'):
+    DATABASES = load_databases_from_environment()
+    print(DATABASES)
 else:
     print("INFO: Using PostgreSQL database (USE_SQLITE=false)")
     DATABASES = {
