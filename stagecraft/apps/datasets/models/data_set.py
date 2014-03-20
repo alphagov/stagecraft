@@ -96,11 +96,13 @@ class DataSet(models.Model):
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.clean()
+        is_insert = self.pk is None
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
         # Backdrop can't be rolled back dude.
         # Ensure this is the final action of the save method.
-        create_dataset(self.name, size_bytes)
+        if is_insert:
+            create_dataset(self.name, size_bytes)
 
     @property
     def is_capped(self):
