@@ -44,5 +44,5 @@ $basedir/pep-it.sh | tee "$outdir/pep8.out"
 display_result $? 3 "Code style check"
 
 # run unit tests
-python manage.py test --with-coverage --cover-package=datasets
+python manage.py test --with-coverage --cover-package=datasets --with-doctest
 display_result $? 1 "Unit tests"
