@@ -2,6 +2,24 @@ from hamcrest.core.base_matcher import BaseMatcher
 import json
 
 
+class IsResponseWithHeader(BaseMatcher):
+    def __init__(self, expected_header, expected_value):
+        self.expected_header = expected_header
+        self.expected_value = expected_value
+
+    def _matches(self, response):
+        return response.get(self.expected_header) == self.expected_value
+
+    def describe_to(self, description):
+        description.append_text(
+            "response with header {} of {}".format(
+                self.expected_header, self.expected_value))
+
+
+def has_header(header, value):
+    return IsResponseWithHeader(header, value)
+
+
 class IsResponseWithStatus(BaseMatcher):
     def __init__(self, expected_status):
         self.expected_status = expected_status

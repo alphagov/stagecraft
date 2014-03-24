@@ -1,9 +1,12 @@
 import json
 import logging
+from functools import wraps
 
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseForbidden)
+from django.views.decorators.vary import vary_on_headers
+from django.utils.cache import patch_response_headers
 
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.validation.validation import extract_bearer_token
@@ -31,7 +34,18 @@ def token_required(correct_token):
     return decorator
 
 
+def long_cache(a_view):
+    @wraps(a_view)
+    def _wrapped_view(request, *args, **kwargs):
+        response = a_view(request, *args, **kwargs)
+        patch_response_headers(response, 86400 * 365)
+        return response
+    return _wrapped_view
+
+
 @token_required(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
+@long_cache
+@vary_on_headers('Authorization')
 def detail(request, name):
     try:
         data_set = DataSet.objects.get(name=name)
@@ -47,6 +61,8 @@ def detail(request, name):
 
 
 @token_required(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
+@long_cache
+@vary_on_headers('Authorization')
 def list(request, data_group=None, data_type=None):
     def get_filter_kwargs(key_map, query_params):
         """Return Django filter kwargs from query parameters"""
