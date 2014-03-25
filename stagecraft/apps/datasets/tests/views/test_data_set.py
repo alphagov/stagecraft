@@ -7,7 +7,7 @@ from hamcrest import assert_that
 from django.test import TestCase
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
-    is_unauthorized, is_error_response, has_header)
+    is_unauthorized, is_error_response, has_header, has_status)
 
 
 class LongCacheTestCase(TestCase):
@@ -260,3 +260,17 @@ class DataSetsViewsTestCase(TestCase):
             '/data-sets/nonexistant-dataset',
             HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
         assert_equal(resp.status_code, 404)
+
+
+class HealthCheckTestCase(TestCase):
+    fixtures = ['datasets_testdata.json']
+
+    def setUp(self):
+        self.response = self.client.get('/_status/data-sets')
+
+    def test_health_check_url_returns_http_200_with_json_message(self):
+        assert_that(self.response, has_status(200))
+        decoded = json.loads(self.response.content.decode('utf-8'))
+        assert_equal(
+            decoded,
+            {'message': 'Got 3 data sets.'})
