@@ -12,6 +12,7 @@ urlpatterns = patterns(
     # Note that the query string params get transparently passed to the view
     url(r'^data-sets$', datasets_views.list),
     url(r'^data-sets/(?P<name>[\w-]+)$', datasets_views.detail),
+    url(r'^_status/data-sets$', datasets_views.health_check),
 
     url(r'^_status$', status_views.status),
 )

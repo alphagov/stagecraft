@@ -93,5 +93,12 @@ def list(request, data_group=None, data_type=None):
     return HttpResponse(json_str, content_type='application/json')
 
 
+def health_check(request):
+    num_data_sets = DataSet.objects.count()
+    json_response = to_json(
+        {'message': 'Got {} data sets.'.format(num_data_sets)})
+    return HttpResponse(json_response, content_type='application/json')
+
+
 def to_json(what):
     return json.dumps(what, indent=1)
