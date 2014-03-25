@@ -36,8 +36,8 @@ if [ -d "venv" ]; then
 fi
 
 # clean up stray python bytecode
-find $basedir -iname '*.pyc' -exec rm {} \+
-find $basedir -iname '__pycache__' -exec rmdir {} \+
+find $basedir/stagecraft -iname '*.pyc' -exec rm {} \+
+find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 
 # run style check
 $basedir/pep-it.sh | tee "$outdir/pep8.out"
