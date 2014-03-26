@@ -13,6 +13,9 @@ from stagecraft.apps.datasets.models.data_type import DataType
 
 from stagecraft.libs.backdrop_client import create_dataset
 
+from stagecraft.libs.purge_varnish import purge
+from ..helpers.calculate_purge_urls import get_data_set_path_queries
+
 
 class DeleteNotImplementedError(NotImplementedError):
     pass
@@ -99,10 +102,13 @@ class DataSet(models.Model):
         is_insert = self.pk is None
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
+
         # Backdrop can't be rolled back dude.
         # Ensure this is the final action of the save method.
         if is_insert:
             create_dataset(self.name, size_bytes)
+        else:
+            purge(get_data_set_path_queries(self))
 
     @property
     def is_capped(self):
@@ -111,6 +117,7 @@ class DataSet(models.Model):
                 and self.capped_size > 0)
 
     def delete(self, *args, **kwargs):
+        # TODO: remember to purge the Varnish cache when we implement this
         raise DeleteNotImplementedError("Data Sets cannot be deleted")
 
     class Meta:
