@@ -1,5 +1,6 @@
-from hamcrest.core.base_matcher import BaseMatcher
 import json
+
+from hamcrest.core.base_matcher import BaseMatcher
 
 
 class IsResponseWithHeader(BaseMatcher):
