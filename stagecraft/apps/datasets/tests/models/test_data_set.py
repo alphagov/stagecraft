@@ -11,7 +11,6 @@ from nose.tools import assert_raises, assert_equal
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.deletion import ProtectedError
-from django.db.models.manager import Manager
 from django.test import TestCase, TransactionTestCase
 
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
@@ -275,12 +274,14 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             ObjectDoesNotExist,
             lambda: DataSet.objects.get(name='test_dataset'))
 
-    @mock.patch.object(Manager, 'get_or_create')
+    @mock.patch('django.db.models.Model.save')
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_backdrop_not_called_on_model_save_failure(
-            self, mock_get_or_create, mock_create_dataset):
+    def test_backdrop_not_called_if_theres_a_problem_saving_the_model(
+            self,
+            mock_create_dataset,
+            mock_save):
 
-        mock_get_or_create.side_effect = Exception("My first fake db error")
+        mock_save.side_effect = Exception("My first fake db error")
 
         assert_raises(
             Exception,
