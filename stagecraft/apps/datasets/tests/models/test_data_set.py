@@ -17,8 +17,9 @@ from django.test import TestCase, TransactionTestCase
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.apps.datasets.models.data_set import (
     DeleteNotImplementedError, ImmutableFieldError)
-from stagecraft.libs.backdrop_client import (BackdropError,
-                                             disable_backdrop_connection)
+
+from stagecraft.libs.backdrop_client import (
+    BackdropError, disable_backdrop_connection)
 
 
 class DataSetTestCase(TestCase):
@@ -77,7 +78,7 @@ class DataSetTestCase(TestCase):
 
     @disable_backdrop_connection
     def test_name_can_be_set_on_creation(self):
-        data_set = DataSet.objects.create(
+        DataSet.objects.create(
             name='Barney',
             data_group=self.data_group1,
             data_type=self.data_type1)
@@ -94,7 +95,7 @@ class DataSetTestCase(TestCase):
 
     @disable_backdrop_connection
     def test_capped_size_can_be_set_on_creation(self):
-        data_set = DataSet.objects.create(
+        DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
@@ -112,7 +113,7 @@ class DataSetTestCase(TestCase):
     @disable_backdrop_connection
     def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
-        data_set = DataSet.objects.create(
+        DataSet.objects.create(
             name='data_set',
             data_group=refed_data_group,
             data_type=self.data_type1)
@@ -122,7 +123,7 @@ class DataSetTestCase(TestCase):
     @disable_backdrop_connection
     def test_cant_delete_referenced_data_type(self):
         refed_data_type = DataType.objects.create(name='refed_data_type')
-        data_set = DataSet.objects.create(
+        DataSet.objects.create(
             name='data_set',
             data_group=self.data_group1,
             data_type=refed_data_type)
@@ -157,8 +158,9 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_clean_raise_immutablefield_cappedsize_change(self,
-                                                          mock_create_dataset):
+    def test_clean_raise_immutablefield_cappedsize_change(
+            self,
+            mock_create_dataset):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -167,8 +169,9 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_clean_not_raise_immutablefield_no_change(self,
-                                                      mock_create_dataset):
+    def test_clean_not_raise_immutablefield_no_change(
+            self,
+            mock_create_dataset):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -176,8 +179,9 @@ class DataSetTestCase(TestCase):
         data_set.clean()
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_clean_not_raise_immutablefield_normal_change(self,
-                                                          mock_create_dataset):
+    def test_clean_not_raise_immutablefield_normal_change(
+            self,
+            mock_create_dataset):
         new_data_type = DataType.objects.create(name='new_data_type')
         data_set = DataSet.objects.create(
             name='test_dataset',
@@ -246,7 +250,7 @@ class BackdropIntegrationTestCase(TransactionTestCase):
         cls.data_type.delete()
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_stagecraft_calls_backdrop_on_save(self, mock_create_dataset):
+    def test_backdrop_is_called_on_model_create(self, mock_create_dataset):
         DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group,
@@ -255,7 +259,7 @@ class BackdropIntegrationTestCase(TransactionTestCase):
         mock_create_dataset.assert_called_once_with('test_dataset', 0)
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_model_not_saved_on_backdrop_failure(self, mock_create_dataset):
+    def test_model_not_persisted_on_backdrop_error(self, mock_create_dataset):
         # Not saved because of being rolled back
         mock_create_dataset.side_effect = BackdropError('Failed')
 
