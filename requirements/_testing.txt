@@ -2,6 +2,7 @@
 
 #is this still needed?
 nose
+nose-exclude==0.2.0
 mock>=1.0
 
 django-nose==1.2
