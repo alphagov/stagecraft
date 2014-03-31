@@ -51,6 +51,11 @@ class DataSet(models.Model):
 
     def serialize(self):
         token_or_null = self.bearer_token if self.bearer_token != '' else None
+        if self.upload_filters_list:
+            upload_filters_list = [x.strip()
+                                   for x in self.upload_filters.split(',')]
+        else:
+            upload_filters_list = []
 
         return OrderedDict([
             ('name',                self.name),
@@ -59,7 +64,7 @@ class DataSet(models.Model):
             ('raw_queries_allowed', self.raw_queries_allowed),
             ('bearer_token',        token_or_null),
             ('upload_format',       self.upload_format),
-            ('upload_filters',      self.upload_filters),
+            ('upload_filters',      upload_filters_list),
             ('auto_ids',            self.auto_ids),
             ('queryable',           self.queryable),
             ('realtime',            self.realtime),
