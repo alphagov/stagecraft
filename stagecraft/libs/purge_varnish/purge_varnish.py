@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from functools import wraps
 from contextlib import contextmanager
 
 import requests
@@ -30,6 +31,7 @@ def disable_purge_varnish(func):
     Decorator to temporarily disable any PURGE requests being sent to Varnish.
     WARNING: This is not thread-safe.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         with purge_varnish_disabled():
             return func(*args, **kwargs)
