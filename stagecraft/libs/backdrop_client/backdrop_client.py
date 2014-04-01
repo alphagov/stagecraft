@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from functools import wraps
 import json
 import logging
 import requests
@@ -36,6 +37,7 @@ def disable_backdrop_connection(func):
     Decorator to temporarily disable any connection out to Backdrop.
     WARNING: This is not thread-safe.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         with backdrop_connection_disabled():
             return func(*args, **kwargs)
