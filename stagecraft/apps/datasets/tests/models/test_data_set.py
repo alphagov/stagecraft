@@ -53,10 +53,8 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type2)
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    # TODO: make this use disable_backdrop_connection decorator once it works
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_upload_filters_are_serialised_as_a_list(self,
-                                                     mock_create_dataset):
+    @disable_backdrop_connection
+    def test_upload_filters_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
             data_group=self.data_group1,
