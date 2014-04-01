@@ -87,7 +87,7 @@ def list(request, data_group=None, data_type=None):
         return HttpResponseBadRequest(to_json(error))
 
     filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
-    data_sets = DataSet.objects.filter(**filter_kwargs)
+    data_sets = DataSet.objects.filter(**filter_kwargs).order_by('pk')
     json_str = to_json([ds.serialize() for ds in data_sets])
 
     return HttpResponse(json_str, content_type='application/json')
