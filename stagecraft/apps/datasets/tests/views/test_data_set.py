@@ -162,6 +162,26 @@ class DataSetsViewsTestCase(TestCase):
                 HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
         )
 
+    def test_list_with_trailing_slash_redirects_correctly(self):
+        response = self.client.get('/data-sets/?data-type=aaa',
+                                   HTTP_AUTHORIZATION=('Bearer '
+                                   'dev-data-set-query-token'),
+                                   follow=True)
+        self.assertRedirects(response, '/data-sets?data-type=aaa',
+                             status_code=301, target_status_code=200,
+                             msg_prefix='')
+
+    def test_list_filtering_works_with_slash_before_query(self):
+        assert_equal(
+            self.client.get(
+                '/data-sets?data-type=type1',
+                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+            self.client.get(
+                '/data-sets/?data-type=type1',
+                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token',
+                follow=True).content
+        )
+
     def test_list_by_data_type(self):
         resp = self.client.get(
             '/data-sets?data-type=type1',
