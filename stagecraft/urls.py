@@ -13,7 +13,8 @@ urlpatterns = patterns(
     # Note that the query string params get transparently passed to the view
     url(r'^data-sets$', datasets_views.list, name='data-sets-list'),
     url(r'^data-sets/$', RedirectView.as_view(pattern_name='data-sets-list',
-                                              permanent=True)),
+                                              permanent=True,
+                                              query_string=True)),
     url(r'^data-sets/(?P<name>[\w-]+)$', datasets_views.detail),
     url(r'^_status/data-sets$', datasets_views.health_check),
 

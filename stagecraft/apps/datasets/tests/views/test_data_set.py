@@ -5,6 +5,7 @@ from nose.tools import assert_equal
 from hamcrest import assert_that
 
 from django.test import TestCase
+from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
@@ -160,6 +161,25 @@ class DataSetsViewsTestCase(TestCase):
             self.client.get(
                 '/data-sets?data_group=group1',
                 HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+        )
+
+    def test_list_with_trailing_slash_redirects_correctly(self):
+        response = self.client.get('/data-sets/?data-type=aaa',
+                                   HTTP_AUTHORIZATION=('Bearer '
+                                   'dev-data-set-query-token'),
+                                   follow=True)
+        assert_redirects(response, '/data-sets?data-type=aaa',
+                         status_code=301, target_status_code=200)
+
+    def test_list_filtering_works_with_slash_before_query(self):
+        assert_equal(
+            self.client.get(
+                '/data-sets?data-type=type1',
+                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+            self.client.get(
+                '/data-sets/?data-type=type1',
+                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token',
+                follow=True).content
         )
 
     def test_list_by_data_type(self):
