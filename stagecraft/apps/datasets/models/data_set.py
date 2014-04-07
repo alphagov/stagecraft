@@ -50,12 +50,13 @@ class DataSet(models.Model):
         return "DataSet({})".format(self.name)
 
     def serialize(self):
+        def make_list(string):
+            return [x.strip() for x in string.split(',')] if string else []
+
         token_or_null = self.bearer_token if self.bearer_token != '' else None
-        if self.upload_filters:
-            upload_filters_list = [x.strip()
-                                   for x in self.upload_filters.split(',')]
-        else:
-            upload_filters_list = []
+
+        upload_filters_list = make_list(self.upload_filters)
+        auto_ids_list = make_list(self.auto_ids)
 
         return OrderedDict([
             ('name',                self.name),
@@ -65,7 +66,7 @@ class DataSet(models.Model):
             ('bearer_token',        token_or_null),
             ('upload_format',       self.upload_format),
             ('upload_filters',      upload_filters_list),
-            ('auto_ids',            self.auto_ids),
+            ('auto_ids',            auto_ids_list),
             ('queryable',           self.queryable),
             ('realtime',            self.realtime),
             ('capped_size',         self.capped_size),
