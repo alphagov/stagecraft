@@ -65,6 +65,16 @@ class DataSetTestCase(TestCase):
                      ['aa.aa', 'bb.bb'])
 
     @disable_backdrop_connection
+    def test_auto_ids_are_serialised_as_a_list(self):
+        data_set1 = DataSet.objects.create(
+            name='data_set1',
+            data_group=self.data_group1,
+            data_type=self.data_type1,
+            auto_ids='aa,bb')
+
+        assert_equal(data_set1.serialize()['auto_ids'], ['aa', 'bb'])
+
+    @disable_backdrop_connection
     @disable_purge_varnish
     def test_data_group_data_type_combo_must_be_unique(self):
         data_set1 = DataSet.objects.create(
