@@ -59,13 +59,15 @@ class TestDataSetMassUpdate(TestCase):
         mock_get_path_queries.return_value = ['/some_url']
 
         query = {u'data_type': self.data_type1.name}
-        DataSetMassUpdate.update_bearer_token_for_data_type_or_group_name(
-            query, new_bearer_token)
+        number_updated = DataSetMassUpdate \
+            .update_bearer_token_for_data_type_or_group_name(
+                query, new_bearer_token)
 
         dataset_a = DataSet.objects.get(id=self.dataset_a.id)
         dataset_b = DataSet.objects.get(id=self.dataset_b.id)
         dataset_c = DataSet.objects.get(id=self.dataset_c.id)
 
+        assert_equal(number_updated, 2)
         assert_equal(dataset_a.bearer_token, new_bearer_token)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
@@ -84,13 +86,15 @@ class TestDataSetMassUpdate(TestCase):
         mock_get_path_queries.return_value = ['/some_url']
 
         query = {u'data_group': self.data_group2.name}
-        DataSetMassUpdate.update_bearer_token_for_data_type_or_group_name(
-            query, new_bearer_token)
+        number_updated = DataSetMassUpdate \
+            .update_bearer_token_for_data_type_or_group_name(
+                query, new_bearer_token)
 
         dataset_a = DataSet.objects.get(id=self.dataset_a.id)
         dataset_b = DataSet.objects.get(id=self.dataset_b.id)
         dataset_c = DataSet.objects.get(id=self.dataset_c.id)
 
+        assert_equal(number_updated, 2)
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token, new_bearer_token)
@@ -111,13 +115,15 @@ class TestDataSetMassUpdate(TestCase):
         query = {
             u'data_type': self.data_type1.name,
             u'data_group': self.data_group2.name}
-        DataSetMassUpdate.update_bearer_token_for_data_type_or_group_name(
-            query, new_bearer_token)
+        number_updated = DataSetMassUpdate \
+            .update_bearer_token_for_data_type_or_group_name(
+                query, new_bearer_token)
 
         dataset_a = DataSet.objects.get(id=self.dataset_a.id)
         dataset_b = DataSet.objects.get(id=self.dataset_b.id)
         dataset_c = DataSet.objects.get(id=self.dataset_c.id)
 
+        assert_equal(number_updated, 1)
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
