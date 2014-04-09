@@ -22,5 +22,26 @@ class Command(BaseCommand):
             "specified bearer_token")
 
     def handle(self, *args, **options):
-        self.stdout.write(str(args))
-        self.stdout.write(str(options))
+        if not len(args):
+            raise CommandError(
+                "No new bearer_token given, see --help")
+        elif not len(args) == 1:
+            raise CommandError(
+                "Please provide a single bearer_token only, see --help")
+
+        DataSetMassUpdate \
+            .update_bearer_token_for_data_type_or_group_name(
+                args[0], self._build_query(options))
+
+    def _build_query(self, options):
+        query = {}
+        for k, v in options.iteritems():
+            if k in ["data_type", "data_group"] and v:
+                query[k] = v
+
+        if not len(query):
+            raise CommandError(
+                "Please provide a data_type or data_group"
+                "name to match against, see --help")
+
+        return query
