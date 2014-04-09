@@ -29,9 +29,10 @@ class Command(BaseCommand):
             raise CommandError(
                 "Please provide a single bearer_token only, see --help")
 
-        DataSetMassUpdate \
+        updated = DataSetMassUpdate \
             .update_bearer_token_for_data_type_or_group_name(
                 args[0], self._build_query(options))
+        self.stdout.write("Updated {} records".format(updated))
 
     def _build_query(self, options):
         query = {}
