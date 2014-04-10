@@ -5,6 +5,6 @@ from stagecraft.apps.datasets.models.data_group import DataGroup
 
 
 class DataGroupAdmin(reversion.VersionAdmin):
-    pass
+    search_fields = ['name']
 
 admin.site.register(DataGroup, DataGroupAdmin)
