@@ -100,4 +100,6 @@ class DataSetAdmin(reversion.VersionAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    search_fields = ['name']
+
 admin.site.register(DataSet, DataSetAdmin)
