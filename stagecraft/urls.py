@@ -9,6 +9,9 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
+    # Redirect / to /admin/ using a view reference
+    # http://bit.ly/1qkuGZ0
+    url(r'^$', RedirectView.as_view(pattern_name='admin:index')),
     url(r'^admin/', include(admin.site.urls)),
     # Note that the query string params get transparently passed to the view
     url(r'^data-sets$', datasets_views.list, name='data-sets-list'),
