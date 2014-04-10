@@ -5,6 +5,6 @@ from stagecraft.apps.datasets.models.data_type import DataType
 
 
 class DataTypeAdmin(reversion.VersionAdmin):
-    pass
+	search_fields = ['name']
 
 admin.site.register(DataType, DataTypeAdmin)
