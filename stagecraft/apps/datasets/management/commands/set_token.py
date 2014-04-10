@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         updated = DataSetMassUpdate \
             .update_bearer_token_for_data_type_or_group_name(
-                args[0], self._build_query(options))
+                self._build_query(options), args[0])
         self.stdout.write("Updated {} records".format(updated))
 
     def _build_query(self, options):

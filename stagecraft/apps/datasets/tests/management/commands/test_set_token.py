@@ -16,7 +16,7 @@ class TestSetToken(TestCase):
         query = {'data_type': "789"}
         options = dict(query.items() + {'some_other_arghs': "123"}.items())
         call_command('set_token', *args, **options)
-        mock_update_bearer_token.assert_called_once_with(token, query)
+        mock_update_bearer_token.assert_called_once_with(query, token)
 
     @mock.patch("stagecraft.libs.mass_update.data_set_mass_update."
                 "DataSetMassUpdate."
@@ -28,7 +28,7 @@ class TestSetToken(TestCase):
         query = {'data_group': "789"}
         options = dict(query.items() + {'some_other_arghs': "123"}.items())
         call_command('set_token', *args, **options)
-        mock_update_bearer_token.assert_called_once_with(token, query)
+        mock_update_bearer_token.assert_called_once_with(query, token)
 
     @mock.patch("stagecraft.libs.mass_update.data_set_mass_update."
                 "DataSetMassUpdate."
@@ -40,7 +40,7 @@ class TestSetToken(TestCase):
         query = {'data_group': "789", 'data_type': "blarghmargh"}
         options = dict(query.items() + {'some_other_arghs': "123"}.items())
         call_command('set_token', *args, **options)
-        mock_update_bearer_token.assert_called_once_with(token, query)
+        mock_update_bearer_token.assert_called_once_with(query, token)
 
     @mock.patch("stagecraft.libs.mass_update.data_set_mass_update."
                 "DataSetMassUpdate."

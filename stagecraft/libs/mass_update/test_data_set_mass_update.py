@@ -34,18 +34,6 @@ class TestDataSetMassUpdate(TestCase):
             bearer_token="999999",
             data_type=cls.data_type2)
 
-    @classmethod
-    def tearDownClass(cls):
-        pass
-        #cannot delete yet - which is getting tricky
-        #cls.dataset_a.delete()
-        #cls.dataset_b.delete()
-        #cls.dataset_c.delete()
-        #cls.data_group1.delete()
-        #cls.data_group2.delete()
-        #cls.data_type1.delete()
-        #cls.data_type2.delete()
-
     @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
                 'get_data_set_path_queries')
