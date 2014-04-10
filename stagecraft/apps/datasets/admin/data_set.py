@@ -101,5 +101,6 @@ class DataSetAdmin(reversion.VersionAdmin):
         return False
 
     search_fields = ['name']
+    list_display = ('name', 'data_group', 'data_type')
 
 admin.site.register(DataSet, DataSetAdmin)
