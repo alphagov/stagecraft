@@ -129,3 +129,4 @@ class DataSet(models.Model):
     class Meta:
         app_label = 'datasets'
         unique_together = ['data_group', 'data_type']
+        ordering = ['name']

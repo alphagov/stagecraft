@@ -12,3 +12,4 @@ class DataType(models.Model):
 
     class Meta:
         app_label = 'datasets'
+        ordering = ['name']

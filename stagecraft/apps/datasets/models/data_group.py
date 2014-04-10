@@ -12,3 +12,4 @@ class DataGroup(models.Model):
 
     class Meta:
         app_label = 'datasets'
+        ordering = ['name']
