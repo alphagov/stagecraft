@@ -37,6 +37,11 @@ the local database (called ``db.sqlite3``) needs to be synced.
 python manage.py syncdb --migrate
 ```
 
+**Need to setup a new superadmin?**
+```
+python manage.py createsuperuser --username=<ADMIN_USER_NAME> --email=<YOUR_EMAIL_ADDRESS>
+```
+
 
 In order to generate migrations for a newly added model run:
 
