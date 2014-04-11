@@ -22,12 +22,12 @@ class DataTypeTestCase(TestCase):
 
 
 def test_character_allowed_in_name():
-    for character in 'a1_-':
+    for character in 'a1-':
         yield _assert_name_is_valid, character * 10
 
 
 def test_character_not_allowed_in_name():
-    for character in '!"£$%^&*()=+':
+    for character in 'A!"£$%^&*()=+_':
         yield _assert_name_not_valid, character * 10
 
 

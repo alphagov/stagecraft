@@ -229,12 +229,12 @@ class DataSetTestCase(TestCase):
 
 
 def test_character_allowed_in_name():
-    for character in 'a1_-':
+    for character in 'a1_':
         yield _assert_name_is_valid, character * 10
 
 
 def test_character_not_allowed_in_name():
-    for character in '!"£$%^&*()=+':
+    for character in 'A!"£$%^&*()=+-':
         yield _assert_name_not_valid, character * 10
 
 
