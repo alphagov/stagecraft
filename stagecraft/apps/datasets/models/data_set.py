@@ -15,6 +15,7 @@ from stagecraft.libs.backdrop_client import create_dataset
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
+from ..helpers.validators import data_set_name_validator
 
 
 class DeleteNotImplementedError(NotImplementedError):
@@ -30,7 +31,9 @@ class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
     READONLY_FIELDS = set(['name', 'capped_size'])
 
-    name = models.SlugField(max_length=200, unique=True)
+    name = models.SlugField(max_length=200, unique=True,
+                            validators=[data_set_name_validator])
+
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     raw_queries_allowed = models.BooleanField(default=True)
