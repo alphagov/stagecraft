@@ -11,7 +11,7 @@ class DataType(models.Model):
                             validators=[data_type_name_validator])
 
     def __str__(self):
-        return "DataType({})".format(self.name)
+        return "{}".format(self.name)
 
     class Meta:
         app_label = 'datasets'
