@@ -17,6 +17,8 @@ from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
+import reversion
+
 
 class DeleteNotImplementedError(NotImplementedError):
     pass
@@ -133,3 +135,5 @@ class DataSet(models.Model):
         app_label = 'datasets'
         unique_together = ['data_group', 'data_type']
         ordering = ['name']
+
+reversion.register(DataSet)
