@@ -20,7 +20,13 @@ class DataSetMassUpdate(object):
             self.model_filter = self.model_filter.filter(data_group=data_group)
 
     def update(self, **kwargs):
-        return self.model_filter.update(**kwargs)
+        count = 0
+        for instance in self.model_filter:
+            count += 1
+            for k, v in kwargs.iteritems():
+                setattr(instance, k, v)
+            instance.save()
+        return count
 
     def _get_model_instance_by_name(self, model, name):
         return model.objects.get(name=name)
