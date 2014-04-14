@@ -94,7 +94,7 @@ USE_TZ = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-NOSE_ARGS = ['--exclude-dir=stagecraft/settings']
+NOSE_ARGS = ['-s', '--exclude-dir=stagecraft/settings']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
