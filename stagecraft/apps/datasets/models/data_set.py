@@ -50,7 +50,7 @@ class DataSet(models.Model):
                                                    default=60 * 60 * 24)
 
     def __str__(self):
-        return "DataSet({})".format(self.name)
+        return "{}".format(self.name)
 
     def serialize(self):
         def make_list(string):

@@ -11,7 +11,7 @@ class DataGroup(models.Model):
                             validators=[data_group_name_validator])
 
     def __str__(self):
-        return "DataGroup({})".format(self.name)
+        return "{}".format(self.name)
 
     class Meta:
         app_label = 'datasets'
