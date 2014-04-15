@@ -1,4 +1,5 @@
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
+import reversion
 
 
 class DataSetMassUpdate(object):
@@ -19,8 +20,17 @@ class DataSetMassUpdate(object):
                 DataGroup, query_dict['data_group'])
             self.model_filter = self.model_filter.filter(data_group=data_group)
 
+    @reversion.create_revision()
     def update(self, **kwargs):
-        return self.model_filter.update(**kwargs)
+        count = 0
+        for instance in self.model_filter:
+            count += 1
+            for k, v in kwargs.iteritems():
+                setattr(instance, k, v)
+            instance.save()
+            reversion.set_comment("Bearer token change performed by set_token "
+                                  "mass update command")
+        return count
 
     def _get_model_instance_by_name(self, model, name):
         return model.objects.get(name=name)

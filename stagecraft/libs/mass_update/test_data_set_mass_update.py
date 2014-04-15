@@ -34,9 +34,10 @@ class TestDataSetMassUpdate(TestCase):
             bearer_token="999999",
             data_type=cls.data_type2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
+                spec_set=True)
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries')
+                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
     def test_update_bearer_token_by_date_type(
             self,
@@ -59,11 +60,14 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token, new_bearer_token)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
-        mock_purge.assert_called_twice_with(['/some_url'])
+        calls = [mock.call(['/some_url']), mock.call(['/some_url'])]
+        mock_purge.assert_has_calls(calls)
+        assert_equal(mock_purge.call_count, 2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
+                spec_set=True)
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries')
+                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
     def test_update_bearer_token_by_data_group(
             self,
@@ -86,11 +90,14 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token, new_bearer_token)
-        mock_purge.assert_called_twice_with(['/some_url'])
+        calls = [mock.call(['/some_url']), mock.call(['/some_url'])]
+        mock_purge.assert_has_calls(calls)
+        assert_equal(mock_purge.call_count, 2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
+                spec_set=True)
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries')
+                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
     def test_update_bearer_token_by_data_group_and_data_type(
             self,
@@ -115,4 +122,6 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
-        mock_purge.assert_called_three_times_with(['/some_url'])
+        calls = [mock.call(['/some_url'])]
+        mock_purge.assert_has_calls(calls)
+        assert_equal(mock_purge.call_count, 1)
