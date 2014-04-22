@@ -33,23 +33,105 @@ class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
     READONLY_FIELDS = set(['name', 'capped_size'])
 
-    name = models.SlugField(max_length=200, unique=True,
-                            validators=[data_set_name_validator])
-
-    data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
-    data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
+    name = models.SlugField(
+        max_length=200, unique=True,
+        validators=[data_set_name_validator],
+        help_text="""
+        This should use the format 'data_group_data_type'
+        e.g. `carers_allowance_customer_satisfaction`
+        Use underscores to separate words."""
+    )
+    data_group = models.ForeignKey(
+        DataGroup,
+        on_delete=models.PROTECT,
+        help_text="""
+        - Normally this will be the name of the service <br/>
+        - e.g. 'carers-allowance' <br/>
+        (This should match the slug on gov.uk when possible)
+        """
+    )
+    data_type = models.ForeignKey(
+        DataType,
+        on_delete=models.PROTECT,
+        help_text="""
+        The type of data this data-set will be collecting.
+        e.g. 'customer-satisfaction'
+        """
+    )
     raw_queries_allowed = models.BooleanField(default=True, editable=False)
-    bearer_token = models.CharField(max_length=255, blank=True, null=False,
-                                    default="")  # "" = invalid token
-    upload_format = models.CharField(max_length=255, blank=True)
-    upload_filters = models.TextField(blank=True)  # a comma delimited list
-    auto_ids = models.TextField(blank=True)  # a comma delimited list
-    queryable = models.BooleanField(default=True)
-    realtime = models.BooleanField(default=False)
-    capped_size = models.PositiveIntegerField(null=True, blank=True,
-                                              default=None)
-    max_age_expected = models.PositiveIntegerField(null=True, blank=True,
-                                                   default=60 * 60 * 24)
+    bearer_token = models.CharField(
+        max_length=255, blank=True, null=False,
+        default="",
+        help_text="""
+        - If data is only coming from csv/excel, leave this field blank. <br/>
+        - If it's a customer-satisfaction data-set,
+        copy the token from another customer-satisfaction data-set. <br/>
+        - Otherwise, generate in backdrop/ask for help.
+        """
+    )
+    upload_format = models.CharField(
+        max_length=255, blank=True,
+        help_text="""
+        [OPTIONAL FIELD] Only fill in this field if
+        data is being uploaded via the admin app.</br>
+        - Write 'excel' or 'csv'
+        """
+    )
+    upload_filters = models.TextField(
+        blank=True,
+        help_text="""
+        [OPTIONAL FIELD]
+        A comma separated list of filters.
+        Ignore this unless specifically tasked with adding filters
+        """
+    )  # a comma delimited list
+    auto_ids = models.TextField(
+        blank=True,
+        help_text="""
+        [OPTIONAL FIELD]
+        A comma separated list of fields to turn into a unique id.
+        Ignore this unless specifically tasked with adding ids
+        """
+    )  # a comma delimited list
+    queryable = models.BooleanField(
+        default=True,
+        help_text="""
+        Only untick this if you know this data-set should not be queryable.
+        <br/>
+        Otherwise ignore this field.
+        """
+    )
+    realtime = models.BooleanField(
+        default=False,
+        help_text="""
+        Tick this box if this data-set is collecting realtime data.
+        e.g. current visior counts
+        """
+    )
+    capped_size = models.PositiveIntegerField(
+        null=True, blank=True,
+        default=None,
+        help_text="""
+        [OPTIONAL FIELD] Only fill this in if the data-set is realtime.<br/>
+        Usually we set this to 4194304 (4mb),
+        which gives us just over two weeks of data.
+        """
+    )
+    max_age_expected = models.PositiveIntegerField(
+        null=True, blank=True,
+        default=60 * 60 * 24,
+        help_text="""
+        [OPTIONAL FIELD] How often do we expect this data to change,</br>
+        e.g. realtime, daily, weekly, monthly? </br>
+        <strong>Set the time in seconds</strong><br/>
+        The default is: 86400 (One day). <br/>
+        Some example timings we use:
+        <br/>
+        - Realtime: 300 (5mins) <br/>
+        - Monitoring: 7200 (2hrs) <br/>
+        - Journies and customer-satisfaction: 90000 (25hrs)
+        """
+    )
 
     def __str__(self):
         return "{}".format(self.name)
