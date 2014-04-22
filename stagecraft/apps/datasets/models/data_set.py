@@ -38,7 +38,7 @@ class DataSet(models.Model):
 
     data_group = models.ForeignKey(DataGroup, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
-    raw_queries_allowed = models.BooleanField(default=True)
+    raw_queries_allowed = models.BooleanField(default=True, editable=False)
     bearer_token = models.CharField(max_length=255, blank=True, null=False,
                                     default="")  # "" = invalid token
     upload_format = models.CharField(max_length=255, blank=True)
