@@ -47,7 +47,9 @@ class DataSet(models.Model):
         help_text="""
         - Normally this will be the name of the service <br/>
         - e.g. 'carers-allowance' <br/>
-        (This should match the slug on gov.uk when possible)
+        - Add a data group first if it doesn't already exist </br>
+        (This should match the slug on GOV.UK when possible) </br>
+        - Use hyphens to separate words.
         """
     )
     data_type = models.ForeignKey(
@@ -55,7 +57,8 @@ class DataSet(models.Model):
         on_delete=models.PROTECT,
         help_text="""
         The type of data this data-set will be collecting.
-        e.g. 'customer-satisfaction'
+        e.g. 'customer-satisfaction' </br>
+        - Use hyphens to separate words.
         """
     )
     raw_queries_allowed = models.BooleanField(default=True, editable=False)
@@ -96,16 +99,14 @@ class DataSet(models.Model):
     queryable = models.BooleanField(
         default=True,
         help_text="""
-        Only untick this if you know this data-set should not be queryable.
-        <br/>
-        Otherwise ignore this field.
+        Leave this ticked unless told otherwise.
         """
     )
     realtime = models.BooleanField(
         default=False,
         help_text="""
         Tick this box if this data-set is collecting realtime data.
-        e.g. current visior counts
+        e.g. current visitor counts
         """
     )
     capped_size = models.PositiveIntegerField(
@@ -113,7 +114,7 @@ class DataSet(models.Model):
         default=None,
         help_text="""
         [OPTIONAL FIELD] Only fill this in if the data-set is realtime.<br/>
-        Usually we set this to 4194304 (4mb),
+        Set this to 4194304 (4mb),
         which gives us just over two weeks of data.
         """
     )
@@ -129,7 +130,7 @@ class DataSet(models.Model):
         <br/>
         - Realtime: 300 (5mins) <br/>
         - Monitoring: 7200 (2hrs) <br/>
-        - Journies and customer-satisfaction: 90000 (25hrs)
+        - Journeys and customer-satisfaction: 90000 (25hrs)
         """
     )
 
