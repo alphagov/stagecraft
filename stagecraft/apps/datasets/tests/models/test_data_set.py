@@ -131,16 +131,6 @@ class DataSetTestCase(TestCase):
 
     @disable_backdrop_connection
     @disable_purge_varnish
-    def test_cant_delete_data_set(self):
-        data_set = DataSet.objects.create(
-            name='data_set',
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-
-        assert_raises(DeleteNotImplementedError, lambda: data_set.delete())
-
-    @disable_backdrop_connection
-    @disable_purge_varnish
     def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         DataSet.objects.create(
@@ -226,6 +216,18 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         data_set.data_type = new_data_type
         data_set.clean()
+
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    def test_delete_does_not_raise_delete_not_implemented_error(
+	self,
+	mock_create_dataset
+    ):
+	data_set = DataSet.objects.create(
+	    name='test_dataset',
+	    data_group=self.data_group1,
+	    data_type=self.data_type1)
+	data_set.delete()
 
 
 def test_character_allowed_in_name():
