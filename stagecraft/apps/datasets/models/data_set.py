@@ -45,10 +45,10 @@ class DataSet(models.Model):
         DataGroup,
         on_delete=models.PROTECT,
         help_text="""
-        - Normally this will be the name of the service <br/>
+        - Normally this will be the name of the service<br/>
         - e.g. 'carers-allowance' <br/>
-        - Add a data group first if it doesn't already exist </br>
-        (This should match the slug on GOV.UK when possible) </br>
+        - Add a data group first if it doesn't already exist</br>
+        (This should match the slug on GOV.UK when possible)</br>
         - Use hyphens to separate words.
         """
     )
@@ -66,9 +66,9 @@ class DataSet(models.Model):
         max_length=255, blank=True, null=False,
         default="",
         help_text="""
-        - If data is only coming from csv/excel, leave this field blank. <br/>
+        - If data is only coming from csv/excel, leave this field blank.<br/>
         - If it's a customer-satisfaction data-set,
-        copy the token from another customer-satisfaction data-set. <br/>
+        copy the token from another customer-satisfaction data-set.<br/>
         - Otherwise, generate in backdrop/ask for help.
         """
     )
@@ -114,8 +114,7 @@ class DataSet(models.Model):
         default=None,
         help_text="""
         [OPTIONAL FIELD] Only fill this in if the data-set is realtime.<br/>
-        Set this to 4194304 (4mb),
-        which gives us just over two weeks of data.
+        Set this to 4194304 (4mb), which gives us just over two weeks of data.
         """
     )
     max_age_expected = models.PositiveIntegerField(
@@ -123,13 +122,13 @@ class DataSet(models.Model):
         default=60 * 60 * 24,
         help_text="""
         [OPTIONAL FIELD] How often do we expect this data to change,</br>
-        e.g. realtime, daily, weekly, monthly? </br>
+        e.g. realtime, daily, weekly, monthly?</br>
         <strong>Set the time in seconds</strong><br/>
-        The default is: 86400 (One day). <br/>
+        The default is: 86400 (One day).<br/>
         Some example timings we use:
         <br/>
-        - Realtime: 300 (5mins) <br/>
-        - Monitoring: 7200 (2hrs) <br/>
+        - Realtime: 300 (5mins)<br/>
+        - Monitoring: 7200 (2hrs)<br/>
         - Journeys and customer-satisfaction: 90000 (25hrs)
         """
     )
