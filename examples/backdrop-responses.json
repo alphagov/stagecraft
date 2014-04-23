@@ -1,8 +1,8 @@
-Retrieve a bucket (for read api)
-GET /backdrop/bucket?data_group=<data_group>&data_type=<data_type>
+Retrieve a data_set (for read api)
+GET /backdrop/data_set?data_group=<data_group>&data_type=<data_type>
 
-Retrieve a bucket (for write api)
-GET /backdrop/bucket/<name>
+Retrieve a data_set (for write api)
+GET /backdrop/data_set/<name>
 
 {
   "name": "licensing_application",
@@ -25,5 +25,5 @@ GET /backdrop/user/<email>
 
 {
   "email": "foo@bar.com",
-  "buckets": ["foo", "bar"]
+  "data_sets": ["foo", "bar"]
 }
