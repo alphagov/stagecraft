@@ -83,9 +83,18 @@ class DataSet(models.Model):
     upload_filters = models.TextField(
         blank=True,
         help_text="""
-        [OPTIONAL FIELD]
         A comma separated list of filters.
-        Ignore this unless specifically tasked with adding filters
+        If users manually upload CSV files you can leave this blank.<br/>
+        If users manually upload Excel files with the data in the first
+        sheet (a common scenario) this should be
+        "backdrop.core.upload.filters.first_sheet_filter".<br/>
+        Other possible values are:
+        "backdrop.contrib.evl_upload_filters.ceg_volumes",
+        "backdrop.contrib.evl_upload_filters.channel_volumetrics",
+        "backdrop.contrib.evl_upload_filters.customer_satisfaction",
+        "backdrop.contrib.evl_upload_filters.service_failures",
+        "backdrop.contrib.evl_upload_filters.service_volumetrics" and
+        "backdrop.contrib.evl_upload_filters.volumetrics"
         """
     )  # a comma delimited list
     auto_ids = models.TextField(
