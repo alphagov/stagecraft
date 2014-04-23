@@ -222,8 +222,8 @@ class DataSet(models.Model):
                 and self.capped_size > 0)
 
     def delete(self, *args, **kwargs):
-        # TODO: remember to purge the Varnish cache when we implement this
-        raise DeleteNotImplementedError("Data Sets cannot be deleted")
+	# Purge the Varnish cache
+	purge(get_data_set_path_queries(self))
 
     class Meta:
         app_label = 'datasets'
