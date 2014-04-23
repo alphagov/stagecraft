@@ -64,7 +64,35 @@ def create_dataset(name, capped_size):
 
     auth_header = (
         'Authorization',
-        'Bearer {}'.format(settings.CREATE_COLLECTION_ENDPOINT_TOKEN))
+        'Bearer {}'.format(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN))
+    type_header = ('content-type', 'application/json')
+
+    response = requests.post(
+        backdrop_url,
+        headers=dict([type_header, auth_header]),
+        data=json_request)
+
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as e:
+        logger.exception(e)
+        logger.error(response.content)
+        raise BackdropError("{}\n{}".format(repr(e), response.content))
+
+
+def delete_dataset(name, capped_size):
+    """
+    Connect to Backdrop and delete a collection called ``name``.
+    """
+    if _DISABLED:
+        return
+
+    backdrop_url = '{url}/data-sets/{name}'.format(
+        url=settings.BACKDROP_URL, name=name)
+
+    auth_header = (
+        'Authorization',
+        'Bearer {}'.format(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN))
     type_header = ('content-type', 'application/json')
 
     response = requests.post(
