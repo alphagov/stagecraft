@@ -39,7 +39,10 @@ class DataSet(models.Model):
         help_text="""
         This should use the format 'data_group_data_type'
         e.g. `carers_allowance_customer_satisfaction`
-        Use underscores to separate words."""
+        Use underscores to separate words. </br>
+        Note: The name must be composed of lower case letters,
+        numbers and underscores, but cannot start with a number.
+        Not following these rules may break things."""
     )
     data_group = models.ForeignKey(
         DataGroup,
