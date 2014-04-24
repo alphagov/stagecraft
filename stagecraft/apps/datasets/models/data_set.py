@@ -45,10 +45,10 @@ class DataSet(models.Model):
         DataGroup,
         on_delete=models.PROTECT,
         help_text="""
-        - Normally this will be the name of the service <br/>
+        - Normally this will be the name of the service<br/>
         - e.g. 'carers-allowance' <br/>
-        - Add a data group first if it doesn't already exist </br>
-        (This should match the slug on GOV.UK when possible) </br>
+        - Add a data group first if it doesn't already exist</br>
+        (This should match the slug on GOV.UK when possible)</br>
         - Use hyphens to separate words.
         """
     )
@@ -66,9 +66,9 @@ class DataSet(models.Model):
         max_length=255, blank=True, null=False,
         default="",
         help_text="""
-        - If data is only coming from csv/excel, leave this field blank. <br/>
+        - If data is only coming from csv/excel, leave this field blank.<br/>
         - If it's a customer-satisfaction data-set,
-        copy the token from another customer-satisfaction data-set. <br/>
+        copy the token from another customer-satisfaction data-set.<br/>
         - Otherwise, generate in backdrop/ask for help.
         """
     )
@@ -83,9 +83,18 @@ class DataSet(models.Model):
     upload_filters = models.TextField(
         blank=True,
         help_text="""
-        [OPTIONAL FIELD]
         A comma separated list of filters.
-        Ignore this unless specifically tasked with adding filters
+        If users manually upload CSV files you can leave this blank.<br/>
+        If users manually upload Excel files with the data in the first
+        sheet (a common scenario) this should be
+        "backdrop.core.upload.filters.first_sheet_filter".<br/>
+        Other possible values are:
+        "backdrop.contrib.evl_upload_filters.ceg_volumes",
+        "backdrop.contrib.evl_upload_filters.channel_volumetrics",
+        "backdrop.contrib.evl_upload_filters.customer_satisfaction",
+        "backdrop.contrib.evl_upload_filters.service_failures",
+        "backdrop.contrib.evl_upload_filters.service_volumetrics" and
+        "backdrop.contrib.evl_upload_filters.volumetrics"
         """
     )  # a comma delimited list
     auto_ids = models.TextField(
@@ -114,8 +123,7 @@ class DataSet(models.Model):
         default=None,
         help_text="""
         [OPTIONAL FIELD] Only fill this in if the data-set is realtime.<br/>
-        Set this to 4194304 (4mb),
-        which gives us just over two weeks of data.
+        Set this to 4194304 (4mb), which gives us just over two weeks of data.
         """
     )
     max_age_expected = models.PositiveIntegerField(
@@ -123,13 +131,13 @@ class DataSet(models.Model):
         default=60 * 60 * 24,
         help_text="""
         [OPTIONAL FIELD] How often do we expect this data to change,</br>
-        e.g. realtime, daily, weekly, monthly? </br>
+        e.g. realtime, daily, weekly, monthly?</br>
         <strong>Set the time in seconds</strong><br/>
-        The default is: 86400 (One day). <br/>
+        The default is: 86400 (One day).<br/>
         Some example timings we use:
         <br/>
-        - Realtime: 300 (5mins) <br/>
-        - Monitoring: 7200 (2hrs) <br/>
+        - Realtime: 300 (5mins)<br/>
+        - Monitoring: 7200 (2hrs)<br/>
         - Journeys and customer-satisfaction: 90000 (25hrs)
         """
     )
