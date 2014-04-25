@@ -371,7 +371,7 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
                 'get_data_set_path_queries')
     @disable_backdrop_connection
-    def test_dataset_purges_relevant_caches_on_save(
+    def test_dataset_purges_cache_on_save(
             self,
             mock_get_path_queries,
             mock_purge):
@@ -383,6 +383,30 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             data_group=self.data_group,
             data_type=self.data_type)
         data_set.save()
+
+        mock_purge.assert_called_once_with(['/some_url'])
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.'
+                'get_data_set_path_queries')
+    @disable_backdrop_connection
+    def test_dataset_purges_cache_on_delete(
+            self,
+            mock_get_path_queries,
+            mock_purge):
+
+        data_set = DataSet.objects.create(
+            name='test-data-set',
+            data_group=self.data_group,
+            data_type=self.data_type)
+        data_set.save()
+
+        mock_get_path_queries.reset_mock()
+        mock_purge.reset_mock()
+
+        mock_get_path_queries.return_value = ['/some_url']
+
+        data_set.delete()
 
         mock_purge.assert_called_once_with(['/some_url'])
 
