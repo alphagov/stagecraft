@@ -216,18 +216,6 @@ class DataSetTestCase(TestCase):
         data_set.data_type = new_data_type
         data_set.clean()
 
-    @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_delete_does_not_raise_delete_not_implemented_error(
-        self,
-        mock_create_dataset
-    ):
-        data_set = DataSet.objects.create(
-            name='test_dataset',
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-        data_set.delete()
-
 
 def test_character_allowed_in_name():
     for character in 'a1_':
