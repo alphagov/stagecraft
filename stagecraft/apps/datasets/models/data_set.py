@@ -20,10 +20,6 @@ from ..helpers.validators import data_set_name_validator
 import reversion
 
 
-class DeleteNotImplementedError(NotImplementedError):
-    pass
-
-
 class ImmutableFieldError(ValidationError):
     pass
 

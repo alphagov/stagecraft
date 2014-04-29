@@ -14,8 +14,7 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase, TransactionTestCase
 
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
-from stagecraft.apps.datasets.models.data_set import (
-    DeleteNotImplementedError, ImmutableFieldError)
+from stagecraft.apps.datasets.models.data_set import ImmutableFieldError
 
 from stagecraft.libs.backdrop_client import (
     BackdropError, disable_backdrop_connection)
