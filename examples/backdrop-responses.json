@@ -1,8 +1,10 @@
 Retrieve a data_set (for read api)
-GET /backdrop/data_set?data_group=<data_group>&data_type=<data_type>
+GET /data-sets?data_group=book-practical-driving-test&data_type=customer_satisfaction
+OR
+GET /data-sets?data-group=book-practical-driving-test&data-type=customer_satisfaction
 
 Retrieve a data_set (for write api)
-GET /backdrop/data_set/<name>
+GET /data-sets/<name>
 
 {
   "name": "licensing_application",
@@ -21,7 +23,7 @@ GET /backdrop/data_set/<name>
 
 
 Retrieve a user
-GET /backdrop/user/<email>
+DOES NOT YET EXIST
 
 {
   "email": "foo@bar.com",
