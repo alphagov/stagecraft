@@ -67,7 +67,7 @@ else:
 
 
 BACKDROP_URL = 'http://localhost:3039'
-CREATE_COLLECTION_ENDPOINT_TOKEN = 'dev-create-endpoint-token'
+STAGECRAFT_COLLECTION_ENDPOINT_TOKEN = 'dev-create-endpoint-token'
 STAGECRAFT_DATA_SET_QUERY_TOKEN = 'dev-data-set-query-token'
 
 LOGGING = {

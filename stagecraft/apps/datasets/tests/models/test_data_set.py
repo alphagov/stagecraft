@@ -14,8 +14,7 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase, TransactionTestCase
 
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
-from stagecraft.apps.datasets.models.data_set import (
-    DeleteNotImplementedError, ImmutableFieldError)
+from stagecraft.apps.datasets.models.data_set import ImmutableFieldError
 
 from stagecraft.libs.backdrop_client import (
     BackdropError, disable_backdrop_connection)
@@ -131,16 +130,6 @@ class DataSetTestCase(TestCase):
 
     @disable_backdrop_connection
     @disable_purge_varnish
-    def test_cant_delete_data_set(self):
-        data_set = DataSet.objects.create(
-            name='data_set',
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-
-        assert_raises(DeleteNotImplementedError, lambda: data_set.delete())
-
-    @disable_backdrop_connection
-    @disable_purge_varnish
     def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         DataSet.objects.create(
@@ -181,9 +170,9 @@ class DataSetTestCase(TestCase):
         assert_equal(None, data_set.serialize()['bearer_token'])
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_raise_immutablefield_name_change(self,
-                                                    mock_create_dataset):
+                                                    mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -192,10 +181,10 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_raise_immutablefield_cappedsize_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -204,10 +193,10 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_not_raise_immutablefield_no_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -215,10 +204,10 @@ class DataSetTestCase(TestCase):
         data_set.clean()
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_not_raise_immutablefield_normal_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         new_data_type = DataType.objects.create(name='new_data_type')
         data_set = DataSet.objects.create(
             name='test_dataset',
@@ -271,9 +260,9 @@ def _assert_name_not_valid(name):
 class BackdropIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_dataset(...)
-    is called appropriately on model creation, and that stagecraft responds
-    appropriately to the result of that.
+    Test that create_data_set() and delete_data_set() from
+    stagecraft.libs.backdrop_client are called appropriately on model
+    creation/deletion, and that Stagecraft responds appropriately.
     """
 
     @classmethod
@@ -287,20 +276,20 @@ class BackdropIntegrationTestCase(TransactionTestCase):
         cls.data_type.delete()
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_backdrop_is_called_on_model_create(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_backdrop_is_called_on_model_create(self, mock_create_data_set):
         DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group,
             data_type=self.data_type)
 
-        mock_create_dataset.assert_called_once_with('test_dataset', 0)
+        mock_create_data_set.assert_called_once_with('test_dataset', 0)
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_model_not_persisted_on_backdrop_error(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_model_not_persisted_on_backdrop_error(self, mock_create_data_set):
         # Not saved because of being rolled back
-        mock_create_dataset.side_effect = BackdropError('Failed')
+        mock_create_data_set.side_effect = BackdropError('Failed')
 
         assert_raises(
             BackdropError,
@@ -316,10 +305,10 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 
     @disable_purge_varnish
     @mock.patch('django.db.models.Model.save')
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_backdrop_not_called_if_theres_a_problem_saving_the_model(
             self,
-            mock_create_dataset,
+            mock_create_data_set,
             mock_save):
 
         mock_save.side_effect = Exception("My first fake db error")
@@ -332,11 +321,11 @@ class BackdropIntegrationTestCase(TransactionTestCase):
                 data_type=self.data_type)
         )
 
-        assert_equal(mock_create_dataset.called, False)
+        assert_equal(mock_create_data_set.called, False)
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_backdrop_not_called_on_model_update(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_backdrop_not_called_on_model_update(self, mock_create_data_set):
 
         data_set = DataSet.objects.create(
             name='test_dataset',
@@ -344,15 +333,27 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             data_type=self.data_type)
         data_set.save()
 
-        mock_create_dataset.assert_called_once_with('test_dataset', 0)
+        mock_create_data_set.assert_called_once_with('test_dataset', 0)
+
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
+    def test_backdrop_is_called_on_model_delete(self, mock_delete_data_set,
+                                                mock_create_data_set):
+        data_set = DataSet.objects.create(
+            name='test-data-set',
+            data_group=self.data_group,
+            data_type=self.data_type)
+
+        data_set.delete()
+
+        mock_delete_data_set.assert_called_once_with('test-data-set')
 
 
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_dataset(...)
-    is called appropriately on model creation, and that stagecraft responds
-    appropriately to the result of that.
+    Test that Varnish's caches are being purged at the appropriate times.
     """
 
     @classmethod
@@ -369,7 +370,7 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
                 'get_data_set_path_queries')
     @disable_backdrop_connection
-    def test_dataset_purges_relevant_caches_on_save(
+    def test_dataset_purges_cache_on_save(
             self,
             mock_get_path_queries,
             mock_purge):
@@ -381,6 +382,30 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             data_group=self.data_group,
             data_type=self.data_type)
         data_set.save()
+
+        mock_purge.assert_called_once_with(['/some_url'])
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.'
+                'get_data_set_path_queries')
+    @disable_backdrop_connection
+    def test_dataset_purges_cache_on_delete(
+            self,
+            mock_get_path_queries,
+            mock_purge):
+
+        data_set = DataSet.objects.create(
+            name='test-data-set',
+            data_group=self.data_group,
+            data_type=self.data_type)
+        data_set.save()
+
+        mock_get_path_queries.reset_mock()
+        mock_purge.reset_mock()
+
+        mock_get_path_queries.return_value = ['/some_url']
+
+        data_set.delete()
 
         mock_purge.assert_called_once_with(['/some_url'])
 

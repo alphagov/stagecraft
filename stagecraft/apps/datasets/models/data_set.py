@@ -11,17 +11,13 @@ from django.utils.encoding import python_2_unicode_compatible
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
-from stagecraft.libs.backdrop_client import create_dataset
+from stagecraft.libs.backdrop_client import create_data_set, delete_data_set
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
 import reversion
-
-
-class DeleteNotImplementedError(NotImplementedError):
-    pass
 
 
 class ImmutableFieldError(ValidationError):
@@ -49,7 +45,7 @@ class DataSet(models.Model):
         on_delete=models.PROTECT,
         help_text="""
         - Normally this will be the name of the service<br/>
-        - e.g. 'carers-allowance' <br/>
+        - e.g. 'carers-allowance'<br/>
         - Add a data group first if it doesn't already exist</br>
         (This should match the slug on GOV.UK when possible)</br>
         - Use hyphens to separate words.
@@ -137,8 +133,7 @@ class DataSet(models.Model):
         e.g. realtime, daily, weekly, monthly?</br>
         <strong>Set the time in seconds</strong><br/>
         The default is: 86400 (One day).<br/>
-        Some example timings we use:
-        <br/>
+        Some example timings we use:<br/>
         - Realtime: 300 (5mins)<br/>
         - Monitoring: 7200 (2hrs)<br/>
         - Journeys and customer-satisfaction: 90000 (25hrs)
@@ -211,7 +206,7 @@ class DataSet(models.Model):
         # Backdrop can't be rolled back dude.
         # Ensure this is the final action of the save method.
         if is_insert:
-            create_dataset(self.name, size_bytes)
+            create_data_set(self.name, size_bytes)
         else:
             purge(get_data_set_path_queries(self))
 
@@ -222,8 +217,9 @@ class DataSet(models.Model):
                 and self.capped_size > 0)
 
     def delete(self, *args, **kwargs):
-        # TODO: remember to purge the Varnish cache when we implement this
-        raise DeleteNotImplementedError("Data Sets cannot be deleted")
+        delete_data_set(self.name)
+        super(DataSet, self).delete(*args, **kwargs)
+        purge(get_data_set_path_queries(self))
 
     class Meta:
         app_label = 'datasets'
