@@ -21,14 +21,14 @@ class Command(BaseCommand):
             default=False,
             help="Don't attempt to create collections in Backdrop"),)
 
-    args = '<backdrop_buckets.json>'
+    args = '<backdrop_data_sets.json>'
     help = ("Imports a backdrop JSON dump of the ``buckets`` collection. See "
             "the related ``dump_bucket_metadata.py`` tool in Backdrop.")
 
     def handle(self, *args, **options):
         if not len(args):
             raise CommandError(
-                "No buckets.json file specified, see --help")
+                "No data_sets.json file specified, see --help")
 
         for filename in args:
             self.stdout.write("Opening {}".format(filename))
@@ -36,40 +36,41 @@ class Command(BaseCommand):
             if options['without_backdrop']:
                 self.stdout.write("Disabling Backdrop")
                 with backdrop_connection_disabled():
-                    self.load_data_sets_from_buckets_json(filename)
+                    self.load_data_sets_from_data_sets_json(filename)
             else:
                 self.stdout.write("Not disabling Backdrop")
-                self.load_data_sets_from_buckets_json(filename)
+                self.load_data_sets_from_data_sets_json(filename)
 
             self.stdout.write('Finished')
 
-    def load_data_sets_from_buckets_json(self, filename):
+    def load_data_sets_from_data_sets_json(self, filename):
         with open(filename, 'r') as f:
-            buckets = json.loads(f.read())
-            for bucket in buckets:
-                self.save_data_set(bucket)
+            data_sets = json.loads(f.read())
+            for data_set in data_sets:
+                self.save_data_set(data_set)
 
-    def save_data_set(self, bucket):
-        name = bucket['name']
+    def save_data_set(self, data_set):
+        name = data_set['name']
         if DataSet.objects.filter(name=name).exists():
             self.stdout.write("SKIPPING {} - already exists".format(name))
             return
 
         with transaction.atomic(), reversion.create_revision():
-            #self.stdout.write("Creating DataSet from:\n{}".format(bucket))
+            #self.stdout.write("Creating DataSet from:\n{}".format(data_set))
             DataSet.objects.create(
                 name=name,
-                data_group=self.get_or_create(DataGroup, bucket['data_group']),
-                data_type=self.get_or_create(DataType, bucket['data_type']),
-                raw_queries_allowed=bucket['raw_queries_allowed'],
-                bearer_token=bucket['bearer_token'],
-                upload_format=bucket['upload_format'] or '',
-                upload_filters=self.comma_separate(bucket['upload_filters']),
-                auto_ids=self.comma_separate(bucket['auto_ids']),
-                queryable=bucket['queryable'],
-                realtime=bucket['realtime'],
-                capped_size=self.convert_capped_size(bucket['capped_size']),
-                max_age_expected=bucket['max_age_expected'])
+                data_group=self.get_or_create(
+                    DataGroup, data_set['data_group']),
+                data_type=self.get_or_create(DataType, data_set['data_type']),
+                raw_queries_allowed=data_set['raw_queries_allowed'],
+                bearer_token=data_set['bearer_token'],
+                upload_format=data_set['upload_format'] or '',
+                upload_filters=self.comma_separate(data_set['upload_filters']),
+                auto_ids=self.comma_separate(data_set['auto_ids']),
+                queryable=data_set['queryable'],
+                realtime=data_set['realtime'],
+                capped_size=self.convert_capped_size(data_set['capped_size']),
+                max_age_expected=data_set['max_age_expected'])
 
             self.stdout.write("Created {}".format(name))
 
