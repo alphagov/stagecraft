@@ -260,9 +260,9 @@ def _assert_name_not_valid(name):
 class BackdropIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_data_set(...)
-    is called appropriately on model creation, and that stagecraft responds
-    appropriately to the result of that.
+    Test that create_data_set() and delete_data_set() from
+    stagecraft.libs.backdrop_client are called appropriately on model
+    creation/deletion, and that Stagecraft responds appropriately.
     """
 
     @classmethod
@@ -339,9 +339,7 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_data_set(...)
-    is called appropriately on model creation, and that stagecraft responds
-    appropriately to the result of that.
+    Test that Varnish's caches are being purged at the appropriate times.
     """
 
     @classmethod
