@@ -38,6 +38,25 @@ class DataSetTestCase(TestCase):
 
     @disable_backdrop_connection
     @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
+    def test_create_and_delete(self,
+                               mock_delete_data_set,
+                               mock_create_data_set):
+        data_set1 = DataSet.objects.create(
+            name='data_set1',
+            data_group=self.data_group1,
+            data_type=self.data_type1,
+            auto_ids='aa,bb')
+
+        assert(len(DataSet.objects.filter(name='data_set1')) == 1)
+
+        data_set1.delete()
+
+        assert(len(DataSet.objects.filter(name='data_set1')) == 0)
+
+    @disable_backdrop_connection
+    @disable_purge_varnish
     def test_data_set_name_must_be_unique(self):
         a = DataSet.objects.create(
             name='foo',
