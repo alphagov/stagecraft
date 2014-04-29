@@ -11,7 +11,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
-from stagecraft.libs.backdrop_client import create_data_set
+from stagecraft.libs.backdrop_client import create_data_set, delete_data_set
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
@@ -217,7 +217,8 @@ class DataSet(models.Model):
                 and self.capped_size > 0)
 
     def delete(self, *args, **kwargs):
-        # Purge the Varnish cache
+        delete_data_set(self.name)
+        super(DataSet, self).delete(*args, **kwargs)
         purge(get_data_set_path_queries(self))
 
     class Meta:
