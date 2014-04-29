@@ -44,6 +44,14 @@ def disable_backdrop_connection(func):
     return wrapper
 
 
+def _get_headers():
+    auth_value = 'Bearer ' + settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN
+    return {
+        'Authorization': auth_value,
+        'content-type': 'application/json'
+    }
+
+
 def create_data_set(name, capped_size):
     """
     Connect to Backdrop and create a new collection called ``name``.
@@ -59,18 +67,12 @@ def create_data_set(name, capped_size):
 
     json_request = json.dumps({'capped_size': capped_size})
 
-    backdrop_url = '{url}/data-sets/{name}'.format(
-        url=settings.BACKDROP_URL, name=name)
+    endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
+                                                   name=name)
 
-    auth_header = (
-        'Authorization',
-        'Bearer {}'.format(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN))
-    type_header = ('content-type', 'application/json')
-
-    response = requests.post(
-        backdrop_url,
-        headers=dict([type_header, auth_header]),
-        data=json_request)
+    response = requests.post(endpoint_url,
+                             headers=_get_headers(),
+                             data=json_request)
 
     try:
         response.raise_for_status()
@@ -87,18 +89,10 @@ def delete_data_set(name):
     if _DISABLED:
         return
 
-    backdrop_url = '{url}/data-sets/{name}'.format(
-        url=settings.BACKDROP_URL, name=name)
+    endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
+                                                   name=name)
 
-    auth_header = (
-        'Authorization',
-        'Bearer {}'.format(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN))
-    type_header = ('content-type', 'application/json')
-
-    response = requests.post(
-        backdrop_url,
-        headers=dict([type_header, auth_header]),
-        data=json_request)
+    response = requests.delete(endpoint_url, headers=_get_headers())
 
     try:
         response.raise_for_status()
