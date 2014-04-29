@@ -11,7 +11,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
-from stagecraft.libs.backdrop_client import create_dataset
+from stagecraft.libs.backdrop_client import create_data_set
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
@@ -206,7 +206,7 @@ class DataSet(models.Model):
         # Backdrop can't be rolled back dude.
         # Ensure this is the final action of the save method.
         if is_insert:
-            create_dataset(self.name, size_bytes)
+            create_data_set(self.name, size_bytes)
         else:
             purge(get_data_set_path_queries(self))
 

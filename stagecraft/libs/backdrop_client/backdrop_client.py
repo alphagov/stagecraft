@@ -44,7 +44,7 @@ def disable_backdrop_connection(func):
     return wrapper
 
 
-def create_dataset(name, capped_size):
+def create_data_set(name, capped_size):
     """
     Connect to Backdrop and create a new collection called ``name``.
     Specify ``capped_size`` in bytes to create a capped collection, or 0 to
@@ -80,7 +80,7 @@ def create_dataset(name, capped_size):
         raise BackdropError("{}\n{}".format(repr(e), response.content))
 
 
-def delete_dataset(name, capped_size):
+def delete_data_set(name):
     """
     Connect to Backdrop and delete a collection called ``name``.
     """

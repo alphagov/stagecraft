@@ -170,9 +170,9 @@ class DataSetTestCase(TestCase):
         assert_equal(None, data_set.serialize()['bearer_token'])
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_raise_immutablefield_name_change(self,
-                                                    mock_create_dataset):
+                                                    mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -181,10 +181,10 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_raise_immutablefield_cappedsize_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -193,10 +193,10 @@ class DataSetTestCase(TestCase):
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_not_raise_immutablefield_no_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         data_set = DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group1,
@@ -204,10 +204,10 @@ class DataSetTestCase(TestCase):
         data_set.clean()
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_clean_not_raise_immutablefield_normal_change(
             self,
-            mock_create_dataset):
+            mock_create_data_set):
         new_data_type = DataType.objects.create(name='new_data_type')
         data_set = DataSet.objects.create(
             name='test_dataset',
@@ -260,7 +260,7 @@ def _assert_name_not_valid(name):
 class BackdropIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_dataset(...)
+    Test that stagecraft.libs.backdrop_client.create_data_set(...)
     is called appropriately on model creation, and that stagecraft responds
     appropriately to the result of that.
     """
@@ -276,20 +276,20 @@ class BackdropIntegrationTestCase(TransactionTestCase):
         cls.data_type.delete()
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_backdrop_is_called_on_model_create(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_backdrop_is_called_on_model_create(self, mock_create_data_set):
         DataSet.objects.create(
             name='test_dataset',
             data_group=self.data_group,
             data_type=self.data_type)
 
-        mock_create_dataset.assert_called_once_with('test_dataset', 0)
+        mock_create_data_set.assert_called_once_with('test_dataset', 0)
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_model_not_persisted_on_backdrop_error(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_model_not_persisted_on_backdrop_error(self, mock_create_data_set):
         # Not saved because of being rolled back
-        mock_create_dataset.side_effect = BackdropError('Failed')
+        mock_create_data_set.side_effect = BackdropError('Failed')
 
         assert_raises(
             BackdropError,
@@ -305,10 +305,10 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 
     @disable_purge_varnish
     @mock.patch('django.db.models.Model.save')
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_backdrop_not_called_if_theres_a_problem_saving_the_model(
             self,
-            mock_create_dataset,
+            mock_create_data_set,
             mock_save):
 
         mock_save.side_effect = Exception("My first fake db error")
@@ -321,11 +321,11 @@ class BackdropIntegrationTestCase(TransactionTestCase):
                 data_type=self.data_type)
         )
 
-        assert_equal(mock_create_dataset.called, False)
+        assert_equal(mock_create_data_set.called, False)
 
     @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_dataset')
-    def test_backdrop_not_called_on_model_update(self, mock_create_dataset):
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_backdrop_not_called_on_model_update(self, mock_create_data_set):
 
         data_set = DataSet.objects.create(
             name='test_dataset',
@@ -333,13 +333,13 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             data_type=self.data_type)
         data_set.save()
 
-        mock_create_dataset.assert_called_once_with('test_dataset', 0)
+        mock_create_data_set.assert_called_once_with('test_dataset', 0)
 
 
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
     """
-    Test that stagecraft.libs.backdrop_client.create_dataset(...)
+    Test that stagecraft.libs.backdrop_client.create_data_set(...)
     is called appropriately on model creation, and that stagecraft responds
     appropriately to the result of that.
     """
