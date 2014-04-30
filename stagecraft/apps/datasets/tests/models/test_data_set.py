@@ -3,6 +3,9 @@
 
 from __future__ import unicode_literals
 
+import random
+import string
+
 import mock
 
 from contextlib import contextmanager
@@ -246,16 +249,16 @@ def test_character_not_allowed_in_name():
         yield _assert_name_not_valid, character * 10
 
 
+def _random_name():
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(50))
+
+
 @contextmanager
 def _make_temp_data_group_and_type():
-    data_group = DataGroup.objects.create(name='tmp_data_group')
-    data_type = DataType.objects.create(name='tmp_data_type')
+    data_group = DataGroup.objects.create(name=_random_name())
+    data_type = DataType.objects.create(name=_random_name())
 
-    try:
-        yield data_group, data_type
-    finally:
-        data_group.delete()
-        data_type.delete()
+    yield data_group, data_type
 
 
 def _assert_name_is_valid(name):
@@ -284,25 +287,16 @@ class BackdropIntegrationTestCase(TransactionTestCase):
     creation/deletion, and that Stagecraft responds appropriately.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.data_group = DataGroup.objects.create(name='data_group1')
-        cls.data_type = DataType.objects.create(name='data_type1')
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.data_group.delete()
-        cls.data_type.delete()
-
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_backdrop_is_called_on_model_create(self, mock_create_data_set):
-        DataSet.objects.create(
-            name='test_dataset',
-            data_group=self.data_group,
-            data_type=self.data_type)
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            DataSet.objects.create(
+                name='test_data_set_001',
+                data_group=data_group,
+                data_type=data_type)
 
-        mock_create_data_set.assert_called_once_with('test_dataset', 0)
+        mock_create_data_set.assert_called_once_with('test_data_set_001', 0)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
@@ -310,17 +304,18 @@ class BackdropIntegrationTestCase(TransactionTestCase):
         # Not saved because of being rolled back
         mock_create_data_set.side_effect = BackdropError('Failed')
 
-        assert_raises(
-            BackdropError,
-            lambda: DataSet.objects.create(
-                name='test_dataset',
-                data_group=self.data_group,
-                data_type=self.data_type)
-        )
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            assert_raises(
+                BackdropError,
+                lambda: DataSet.objects.create(
+                    name='test_data_set_002',
+                    data_group=data_group,
+                    data_type=data_type)
+            )
 
-        assert_raises(
-            ObjectDoesNotExist,
-            lambda: DataSet.objects.get(name='test_dataset'))
+            assert_raises(
+                ObjectDoesNotExist,
+                lambda: DataSet.objects.get(name='test_data_set_002'))
 
     @disable_purge_varnish
     @mock.patch('django.db.models.Model.save')
@@ -330,43 +325,44 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             mock_create_data_set,
             mock_save):
 
-        mock_save.side_effect = Exception("My first fake db error")
-
-        assert_raises(
-            Exception,
-            lambda: DataSet.objects.create(
-                name='test_dataset',
-                data_group=self.data_group,
-                data_type=self.data_type)
-        )
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            mock_save.side_effect = Exception("My first fake db error")
+            assert_raises(
+                Exception,
+                lambda: DataSet.objects.create(
+                    name='test_data_set_003',
+                    data_group=data_group,
+                    data_type=data_type)
+            )
 
         assert_equal(mock_create_data_set.called, False)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_backdrop_not_called_on_model_update(self, mock_create_data_set):
-
-        data_set = DataSet.objects.create(
-            name='test_dataset',
-            data_group=self.data_group,
-            data_type=self.data_type)
-        data_set.save()
-
-        mock_create_data_set.assert_called_once_with('test_dataset', 0)
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test_data_set_004',
+                data_group=data_group,
+                data_type=data_type)
+            data_set.save()
+            mock_create_data_set.assert_called_once_with(
+                'test_data_set_004', 0)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
     def test_backdrop_is_called_on_model_delete(self, mock_delete_data_set,
                                                 mock_create_data_set):
-        data_set = DataSet.objects.create(
-            name='test-data-set',
-            data_group=self.data_group,
-            data_type=self.data_type)
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test_data_set_005',
+                data_group=data_group,
+                data_type=data_type)
 
-        data_set.delete()
+            data_set.delete()
 
-        mock_delete_data_set.assert_called_once_with('test-data-set')
+        mock_delete_data_set.assert_called_once_with('test_data_set_005')
 
 
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
@@ -374,16 +370,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     """
     Test that Varnish's caches are being purged at the appropriate times.
     """
-
-    @classmethod
-    def setUpClass(cls):
-        cls.data_group = DataGroup.objects.create(name='data_group1')
-        cls.data_type = DataType.objects.create(name='data_type1')
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.data_group.delete()
-        cls.data_type.delete()
 
     @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
@@ -396,11 +382,12 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
         mock_get_path_queries.return_value = ['/some_url']
 
-        data_set = DataSet.objects.create(
-            name='test_dataset',
-            data_group=self.data_group,
-            data_type=self.data_type)
-        data_set.save()
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test_dataset',
+                data_group=data_group,
+                data_type=data_type)
+            data_set.save()
 
         mock_purge.assert_called_once_with(['/some_url'])
 
@@ -413,10 +400,11 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             mock_get_path_queries,
             mock_purge):
 
-        data_set = DataSet.objects.create(
-            name='test-data-set',
-            data_group=self.data_group,
-            data_type=self.data_type)
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test-data-set',
+                data_group=data_group,
+                data_type=data_type)
         data_set.save()
 
         mock_get_path_queries.reset_mock()
@@ -437,10 +425,11 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             mock_get_path_queries,
             mock_purge):
 
-        DataSet.objects.create(
-            name='test_dataset',
-            data_group=self.data_group,
-            data_type=self.data_type)
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            DataSet.objects.create(
+                name='test_dataset',
+                data_group=data_group,
+                data_type=data_type)
 
         assert_equal(mock_get_path_queries.called, False)
         assert_equal(mock_purge.called, False)
@@ -453,14 +442,15 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             mock_purge,
             mock_save):
 
-        mock_save.side_effect = Exception("My first fake db error")
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            mock_save.side_effect = Exception("My first fake db error")
 
-        assert_raises(
-            Exception,
-            lambda: DataSet.objects.create(
-                name='test_dataset',
-                data_group=self.data_group,
-                data_type=self.data_type)
-        )
+            assert_raises(
+                Exception,
+                lambda: DataSet.objects.create(
+                    name='test_dataset',
+                    data_group=data_group,
+                    data_type=data_type)
+            )
 
         assert_equal(mock_purge.called, False)
