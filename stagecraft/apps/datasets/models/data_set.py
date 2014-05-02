@@ -5,6 +5,7 @@ from collections import OrderedDict
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
+from django.db.models.query import QuerySet
 
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -24,10 +25,23 @@ class ImmutableFieldError(ValidationError):
     pass
 
 
+class DataSetQuerySet(QuerySet):
+    def delete(self):
+        for record in self.all():
+            record.delete()
+
+
+class DataSetManager(models.Manager):
+    def get_query_set(self):
+        return DataSetQuerySet(self.model, using=self._db)
+
+
 @python_2_unicode_compatible
 class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
     READONLY_FIELDS = set(['name', 'capped_size'])
+
+    objects = DataSetManager()
 
     name = models.SlugField(
         max_length=200, unique=True,
