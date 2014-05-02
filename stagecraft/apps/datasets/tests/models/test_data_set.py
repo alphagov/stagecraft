@@ -364,6 +364,21 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 
         mock_delete_data_set.assert_called_once_with('test_data_set_005')
 
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
+    def test_backdrop_is_called_on_query_set_delete(self, mock_delete_data_set,
+                                                    mock_create_data_set):
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test_data_set_006',
+                data_group=data_group,
+                data_type=data_type)
+
+            DataSet.objects.all().delete()
+
+        mock_delete_data_set.assert_called_once_with('test_data_set_006')
+
 
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
