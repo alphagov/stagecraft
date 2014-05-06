@@ -75,6 +75,7 @@ class DataSetTestCase(TestCase):
         assert_raises(ValidationError, lambda: b.validate_unique())
 
     @disable_backdrop_connection
+    @disable_purge_varnish
     def test_upload_filters_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
@@ -86,6 +87,7 @@ class DataSetTestCase(TestCase):
                      ['aa.aa', 'bb.bb'])
 
     @disable_backdrop_connection
+    @disable_purge_varnish
     def test_auto_ids_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
