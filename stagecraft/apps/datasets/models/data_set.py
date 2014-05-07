@@ -221,8 +221,8 @@ class DataSet(models.Model):
         # Ensure this is the final action of the save method.
         if is_insert:
             create_data_set(self.name, size_bytes)
-        else:
-            purge(get_data_set_path_queries(self))
+
+        purge(get_data_set_path_queries(self))
 
     @property
     def is_capped(self):

@@ -75,6 +75,7 @@ class DataSetTestCase(TestCase):
         assert_raises(ValidationError, lambda: b.validate_unique())
 
     @disable_backdrop_connection
+    @disable_purge_varnish
     def test_upload_filters_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
@@ -86,6 +87,7 @@ class DataSetTestCase(TestCase):
                      ['aa.aa', 'bb.bb'])
 
     @disable_backdrop_connection
+    @disable_purge_varnish
     def test_auto_ids_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
             name='data_set1',
@@ -390,7 +392,7 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.data_set.'
                 'get_data_set_path_queries')
     @disable_backdrop_connection
-    def test_dataset_purges_cache_on_save(
+    def test_dataset_purges_cache_on_create(
             self,
             mock_get_path_queries,
             mock_purge):
@@ -402,7 +404,30 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
                 name='test_dataset',
                 data_group=data_group,
                 data_type=data_type)
-            data_set.save()
+
+        mock_purge.assert_called_once_with(['/some_url'])
+
+    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.'
+                'get_data_set_path_queries')
+    @disable_backdrop_connection
+    def test_dataset_purges_cache_on_save(
+            self,
+            mock_get_path_queries,
+            mock_purge):
+
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                name='test_dataset',
+                data_group=data_group,
+                data_type=data_type)
+
+        mock_get_path_queries.reset_mock()
+        mock_purge.reset_mock()
+
+        mock_get_path_queries.return_value = ['/some_url']
+
+        data_set.save()
 
         mock_purge.assert_called_once_with(['/some_url'])
 
@@ -430,24 +455,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
         data_set.delete()
 
         mock_purge.assert_called_once_with(['/some_url'])
-
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
-    @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries')
-    @disable_backdrop_connection
-    def test_dataset_does_not_purge_cache_on_create(
-            self,
-            mock_get_path_queries,
-            mock_purge):
-
-        with _make_temp_data_group_and_type() as (data_group, data_type):
-            DataSet.objects.create(
-                name='test_dataset',
-                data_group=data_group,
-                data_type=data_type)
-
-        assert_equal(mock_get_path_queries.called, False)
-        assert_equal(mock_purge.called, False)
 
     @mock.patch('django.db.models.Model.save')
     @mock.patch('stagecraft.apps.datasets.models.data_set.purge')
