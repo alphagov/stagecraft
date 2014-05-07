@@ -82,7 +82,7 @@ class DataSet(models.Model):
         - If data is only coming from csv/excel, leave this field blank.<br/>
         - If it's a customer-satisfaction data-set,
         copy the token from another customer-satisfaction data-set.<br/>
-        - Otherwise, generate in backdrop/ask for help.
+        - Otherwise, generate a new token with the link provided.
         """
     )
     upload_format = models.CharField(
