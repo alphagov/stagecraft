@@ -1,11 +1,9 @@
 (function( $ ) {
 
-(function( jQuery ) {
-
-  var CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 
   function generateRandomString(length) {
-    var output = "";
+    var CHARS = "abcdefghjkmnpqrstuvwxyz23456789",
+	output = "";
     while (output.length < length) {
       output += CHARS[Math.floor(Math.random() * CHARS.length)];
     }
