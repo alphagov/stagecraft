@@ -67,8 +67,8 @@ def get_varnish_purge_urls_for_path_queries(
     """
     in: ['/data-sets']
     out:
-    - frontend-1-blah.localdomain/data-sets
-    - frontend-2-blah.localdomain/data-sets
+    - frontend-1-blah/data-sets
+    - frontend-2-blah/data-sets
 
     """
     if not varnish_caches:
