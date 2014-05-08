@@ -29,6 +29,12 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     """
 
+    class Media:
+        css = {
+            "all": ("admin/css/datasets.css",),
+        }
+        js = ("admin/js/datasets.js",)
+
     def __init__(self, *args, **kwargs):
         super(DataSetAdmin, self).__init__(*args, **kwargs)
         self.successful_save = False
