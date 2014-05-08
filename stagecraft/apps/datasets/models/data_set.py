@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
@@ -156,6 +157,14 @@ class DataSet(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+
+    def data_location(self):
+        path = '{backdrop_url}/data/{data_group}/{data_type}'.format(
+            backdrop_url=settings.BACKDROP_URL,
+            data_group=self.data_group,
+            data_type=self.data_type)
+        return '<a href="{0}">{0}</a>'.format(path)
+    data_location.allow_tags = True
 
     def serialize(self):
         def make_list(string):
