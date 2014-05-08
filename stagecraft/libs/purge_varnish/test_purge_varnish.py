@@ -32,17 +32,17 @@ def test_purge():
 def test_send_purge():
 
     with mock.patch('requests.request') as mock_request:
-        send_purge('http://v1.fake.localdomain', 'stagecraft.perfplat.dev')
+        send_purge('http://v1.fake', 'stagecraft.perfplat.dev')
         mock_request.assert_called_once_with(
             'PURGE',
-            'http://v1.fake.localdomain',
+            'http://v1.fake',
             headers={u'Host': 'stagecraft.perfplat.dev'})
 
 
 def test_get_varnish_caches():
     # Note that these come from settings
     assert_equal(
-	set([('http://development-1.localdomain', 7999)]),
+        set([('http://development-1', 7999)]),
         set(get_varnish_caches()))
 
 
