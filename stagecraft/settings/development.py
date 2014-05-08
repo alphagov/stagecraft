@@ -24,7 +24,7 @@ TEMPLATE_DEBUG = True
 APP_HOSTNAME = 'stagecraft.perfplat.dev'
 
 VARNISH_CACHES = [
-    ('http://pp-development-1.localdomain', 7999)
+    ('http://development-1', 7999)
 ]
 
 ALLOWED_HOSTS = [  # required if DEBUG is False

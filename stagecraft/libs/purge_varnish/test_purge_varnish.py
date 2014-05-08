@@ -42,7 +42,7 @@ def test_send_purge():
 def test_get_varnish_caches():
     # Note that these come from settings
     assert_equal(
-        set([('http://pp-development-1.localdomain', 7999)]),
+	set([('http://development-1.localdomain', 7999)]),
         set(get_varnish_caches()))
 
 
