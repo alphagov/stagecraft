@@ -11,22 +11,26 @@
   }
 
   function addGenerateTokenLink() {
-    var token_field = jQuery("#id_bearer_token"),
-        anchor = jQuery('<a href="#">generate token</a>');
+    var $token_field = $("#id_bearer_token"),
+	$anchor = $('<a href="#">generate token</a>');
 
-    anchor.click(function(event) {
+    $token_field.after($anchor);
+
+    $anchor.on("click", function(event){
       event.preventDefault();
+
       var answer = true;
-      if (token_field.val().length > 0) {
+      if ($token_field.val().length > 0) {
         answer = confirm("The bearer token field is not empty, are you sure you want to regenerate it?");
       }
       if (answer) {
-        token_field.val(generateRandomString(64));
+	$token_field.val(generateRandomString(64));
       }
+
     });
-    token_field.after(anchor);
+
   }
 
-  jQuery(addGenerateTokenLink);
+  $(addGenerateTokenLink);
 
 })( django.jQuery );
