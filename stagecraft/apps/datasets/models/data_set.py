@@ -81,8 +81,11 @@ class DataSet(models.Model):
         default="",
         help_text="""
         - If data is only coming from csv/excel, leave this field blank.<br/>
-        - If it's a customer-satisfaction data-set,
-        copy the token from another customer-satisfaction data-set.<br/>
+        - If it's for an internal collector or customer-satisfaction,
+        copy the token from another data-set of the same data type.<br/>
+        - If it's for a new type then copy from a data-set of the same
+        collector, or from a content data-set in the case of new content
+        data-sets. (If you're not sure what this means ask a developer)<br/>.
         - Otherwise, generate a new token with the link provided.
         """
     )
