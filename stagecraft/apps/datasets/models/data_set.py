@@ -85,7 +85,7 @@ class DataSet(models.Model):
         copy the token from another data-set of the same data type.<br/>
         - If it's for a new type then copy from a data-set of the same
         collector, or from a content data-set in the case of new content
-        data-sets. (If you're not sure what this means ask a developer)<br/>.
+        data-sets. (If you're not sure what this means ask a developer).<br/>
         - Otherwise, generate a new token with the link provided.
         """
     )
