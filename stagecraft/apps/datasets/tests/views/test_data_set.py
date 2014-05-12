@@ -29,6 +29,7 @@ class LongCacheTestCase(TestCase):
 
 
 class DataSetsViewsTestCase(TestCase):
+    fixtures = ['datasets_testdata.json']
 
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
@@ -281,6 +282,7 @@ class DataSetsViewsTestCase(TestCase):
 
 
 class HealthCheckTestCase(TestCase):
+    fixtures = ['datasets_testdata.json']
 
     def setUp(self):
         self.response = self.client.get('/_status/data-sets')
