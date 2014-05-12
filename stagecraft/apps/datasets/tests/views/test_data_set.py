@@ -12,7 +12,7 @@ from stagecraft.apps.datasets.tests.support.test_helpers import (
 
 
 class LongCacheTestCase(TestCase):
-    fixtures = ['datasets_testdata.json']
+    # fixtures = ['datasets_testdata.json']
 
     def test_list_sets_long_cache_headers(self):
         resp = self.client.get(

@@ -20,7 +20,7 @@ class BackdropUser(models.Model):
     data_sets = models.ManyToManyField(DataSet)
 
     def __str__(self):
-        return "{}".format(self.name)
+        return "{}".format(self.email)
 
     class Meta:
         app_label = 'datasets'

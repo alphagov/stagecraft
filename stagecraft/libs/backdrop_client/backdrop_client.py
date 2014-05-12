@@ -63,8 +63,8 @@ def check_disabled(func):
     """
     @wraps(func)
     def _check(*args, **kwargs):
-	if _DISABLED:
-	    return
+        if _DISABLED:
+            return
     return _check
 
 
