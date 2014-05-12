@@ -56,6 +56,18 @@ def backdrop_connection_disabled():
         _DISABLED = False
 
 
+def check_disabled(func):
+    """
+    Decorator to wrap up checking if the Backdrop
+    connection is set to disabled or not
+    """
+    @wraps(func)
+    def _check(*args, **kwargs):
+	if _DISABLED:
+	    return
+    return _check
+
+
 def disable_backdrop_connection(func):
     """
     Decorator to temporarily disable any connection out to Backdrop.
@@ -76,14 +88,13 @@ def _get_headers():
     }
 
 
+@check_disabled
 def create_data_set(name, capped_size):
     """
     Connect to Backdrop and create a new collection called ``name``.
     Specify ``capped_size`` in bytes to create a capped collection, or 0 to
     create an uncapped collection.
     """
-    if _DISABLED:
-        return
 
     if not isinstance(capped_size, int) or capped_size < 0:
         raise BackdropError(
@@ -102,12 +113,11 @@ def create_data_set(name, capped_size):
     _send_backdrop_request(backdrop_request)
 
 
+@check_disabled
 def delete_data_set(name):
     """
     Connect to Backdrop and delete a collection called ``name``.
     """
-    if _DISABLED:
-        return
 
     endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
                                                    name=name)
