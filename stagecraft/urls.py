@@ -20,7 +20,8 @@ urlpatterns = patterns(
                                               permanent=True,
                                               query_string=True)),
     url(r'^data-sets/(?P<name>[\w-]+)$', datasets_views.detail),
-    url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$', backdrop_user_views.detail),
+    url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
+        backdrop_user_views.detail),
     url(r'^_status/data-sets$', datasets_views.health_check),
 
     url(r'^_status$', status_views.status),
