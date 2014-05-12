@@ -118,8 +118,9 @@ class DataSet(models.Model):
         blank=True,
         help_text="""
         [OPTIONAL FIELD]
-        A comma separated list of fields to turn into a unique id.
-        Ignore this unless specifically tasked with adding ids
+        A comma separated list of fields to turn into a unique id.</br>
+        You probably want this to be the names of all the main fields in your
+        spreadsheet.
         """
     )  # a comma delimited list
     queryable = models.BooleanField(
