@@ -23,24 +23,24 @@ class LongCacheTestCase(TestCase):
 class BackdropUserViewsTestCase(TestCase):
     fixtures = ['backdrop_users_testdata.json']
 
-    # def test_authorization_header_needed_for_detail(self):
-    #     resp = self.client.get('/users/tea%40yourmumshouse.com')
-    #     assert_that(resp, is_unauthorized())
-    #     assert_that(resp, is_error_response())
+    def test_authorization_header_needed_for_detail(self):
+        resp = self.client.get('/users/tea%40yourmumshouse.com')
+        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_error_response())
 
-    # def test_correct_format_authorization_header_needed_for_detail(self):
-    #     resp = self.client.get(
-    #         '/data-sets/set1',
-    #         HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
-    #     assert_that(resp, is_unauthorized())
-    #     assert_that(resp, is_error_response())
+    def test_correct_format_authorization_header_needed_for_detail(self):
+        resp = self.client.get(
+            '/data-sets/set1',
+            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_error_response())
 
-    # def test_correct_authorization_header_needed_for_detail(self):
-    #     resp = self.client.get(
-    #         '/data-sets/set1',
-    #         HTTP_AUTHORIZATION='Bearer I AM WRONG')
-    #     assert_that(resp, is_unauthorized())
-    #     assert_that(resp, is_error_response())
+    def test_correct_authorization_header_needed_for_detail(self):
+        resp = self.client.get(
+            '/data-sets/set1',
+            HTTP_AUTHORIZATION='Bearer I AM WRONG')
+        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_error_response())
 
     def test_detail(self):
         resp = self.client.get(
