@@ -21,13 +21,8 @@ class BackdropUser(models.Model):
     data_sets = models.ManyToManyField(DataSet)
 
     def serialize(self):
-        import pprint as pp
-
         def get_name(item):
             return item.name
-
-        pp.pprint("HI MOM")
-        pp.pprint(map(get_name, self.data_sets.all()))
 
         return OrderedDict([
             ('email',     self.email),

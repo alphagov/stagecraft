@@ -47,10 +47,6 @@ def long_cache(a_view):
 @long_cache
 @vary_on_headers('Authorization')
 def detail(request, email):
-    import pprint as pp
-    pp.pprint(request)
-    pp.pprint(email)
-    pp.pprint("YOLO")
     try:
         backdrop_user = BackdropUser.objects.get(email=email)
     except BackdropUser.DoesNotExist:
