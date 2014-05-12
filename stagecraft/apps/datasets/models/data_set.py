@@ -143,14 +143,19 @@ class DataSet(models.Model):
         null=True, blank=True,
         default=60 * 60 * 24,
         help_text="""
-        [OPTIONAL FIELD] How often do we expect this data to change,</br>
-        e.g. realtime, daily, weekly, monthly?</br>
-        <strong>Set the time in seconds</strong><br/>
-        The default is: 86400 (One day).<br/>
-        Some example timings we use:<br/>
-        - Realtime: 300 (5mins)<br/>
-        - Monitoring: 7200 (2hrs)<br/>
-        - Journeys and customer-satisfaction: 90000 (25hrs)
+        [OPTIONAL FIELD] How often do you expect the data to be updated?
+        (<strong>in seconds</strong>)<br/>
+        This is used for monitoring so we can tell when data hasn't been
+        updated.<br/>
+        Commonly used values you could write here are:<br/>
+        - <strong>300</strong> (5 minutes)<br/>
+        - <strong>3600</strong> (an hour)<br/>
+        - <strong>86400</strong> (a day)<br/>
+        - <strong>604800</strong> (a week)<br/>
+        - <strong>2592000</strong> (30 days)<br/>
+        - <strong>7776000</strong> (90 days)<br/>
+        You can choose your own value if the ones above don't work for your
+        case.<br/>
         """
     )
 
