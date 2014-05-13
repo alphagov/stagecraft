@@ -21,3 +21,6 @@
 
 # IntelliJ IDE
 /.idea
+
+# apple mac lol
+.DS_Store
