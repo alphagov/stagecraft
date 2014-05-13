@@ -2,11 +2,7 @@
     "_id" : "someemail@mailtime.com",
     "data_sets" : [
         "evl_ceg_data",
-        "evl_services_volumetrics",
-        "evl_services_failures",
-        "evl_channel_volumetrics",
-        "evl_customer_satisfaction",
-        "evl_volumetrics"
+        "evl_customer_satisfaction"
     ],
     "email" : "someemail@mailtime.com"
 },
@@ -20,7 +16,7 @@
 {
     "_id" : "mike.bracken@gov.uk",
     "data_sets" : [
-        "govuk_big_stats"
+        "govuk_nonexistant_big_stats"
     ],
     "email" : "mike.bracken@gov.uk"
 }]
