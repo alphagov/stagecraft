@@ -5,6 +5,20 @@ from itertools import chain, product
 from django.core import urlresolvers
 
 
+def get_backdrop_user_path_queries(user):
+    """
+    Return all the possible URL paths for a given user, eg:
+
+    - /users/user%40email.com
+    ...etc
+    """
+    # we import here to avoid a circular import
+    from stagecraft.apps.datasets.views.backdrop_user import \
+        detail as backdrop_user_detail_view
+    return (_get_url_path_queries_for_detail_view(
+            user, 'email', backdrop_user_detail_view))
+
+
 def get_data_set_path_queries(data_set):
     """
     Return all the possible URL paths for a given data set, eg:
@@ -13,8 +27,12 @@ def get_data_set_path_queries(data_set):
     - /data-sets/data_group=govuk&data-type=visitors"
     ...etc
     """
+    # we import here to avoid a circular import
+    from stagecraft.apps.datasets.views.data_set import \
+        detail as data_set_detail_view
     return (_get_url_path_queries_for_list_view(data_set)
-            | _get_url_path_queries_for_detail_view(data_set))
+            | _get_url_path_queries_for_detail_view(
+                data_set, 'name', data_set_detail_view))
 
 
 def _get_url_path_queries_for_list_view(data_set):
@@ -36,7 +54,8 @@ def _get_url_path_queries_for_list_view(data_set):
     query_strings = set(_join_query_strings(parameter_pairs))
 
     # we import here to avoid a circular import
-    from stagecraft.apps.datasets.views import list as data_set_list_view
+    from stagecraft.apps.datasets.views.data_set import \
+        list as data_set_list_view
     path = urlresolvers.reverse(data_set_list_view)
     path_queries = ['{}?{}'.format(path, qs)
                     if qs else path for qs in query_strings]
@@ -44,11 +63,9 @@ def _get_url_path_queries_for_list_view(data_set):
     return set(path_queries)
 
 
-def _get_url_path_queries_for_detail_view(data_set):
-    # we import here to avoid a circular import
-    from stagecraft.apps.datasets.views import detail as data_set_detail_view
+def _get_url_path_queries_for_detail_view(item, identifier, view):
     path = urlresolvers.reverse(
-        data_set_detail_view, kwargs={'name': data_set.name})
+        view, kwargs={identifier: getattr(item, identifier)})
     return set([path])
 
 
