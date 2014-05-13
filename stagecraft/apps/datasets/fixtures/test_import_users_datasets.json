@@ -1,0 +1,85 @@
+[
+{
+    "pk": 1000,
+    "model": "datasets.datagroup",
+    "fields": {
+        "name": "evl"
+    }
+},
+{
+    "pk": 4000,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "ceg_data"
+    }
+},
+{
+    "pk": 5000,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "customer_satisfaction"
+    }
+},
+{
+    "pk": 6000,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "volumes"
+    }
+},
+{
+    "pk": 7000,
+    "model": "datasets.dataset",
+    "fields": {
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "evl_ceg_data",
+        "data_type": 4000,
+        "realtime": false,
+        "auto_ids": "aa",
+        "max_age_expected": 86400,
+        "data_group": 1000,
+        "upload_filters": "backdrop.filter.1",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
+},
+{
+    "pk": 8000,
+    "model": "datasets.dataset",
+    "fields": {
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "evl_customer_satisfaction",
+        "data_type": 5000,
+        "realtime": false,
+        "auto_ids": "aa,bb",
+        "max_age_expected": 86400,
+        "data_group": 1000,
+        "upload_filters": "backdrop.filter.1,backdrop.filter.2",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
+},
+{
+    "pk": 9000,
+    "model": "datasets.dataset",
+    "fields": {
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "lpa_volumes",
+        "data_type": 6000,
+        "realtime": false,
+        "auto_ids": "",
+        "max_age_expected": 86400,
+        "data_group": 1000,
+        "upload_filters": "",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
+}
+
+]

@@ -27,6 +27,7 @@ class BackdropUser(models.Model):
         def get_name(item):
             return item.name
 
+        #TODO is this fully tested?
         return OrderedDict([
             ('email',     self.email),
             ('data_sets', map(get_name, self.data_sets.all()))

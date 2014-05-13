@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def save_backdrop_user(self, user):
         email = user['email']
-        data_sets = self.get_data_sets_by_names(user['data_sets'])
+        #data_sets = self.get_data_sets_by_names(user['data_sets'])
         if BackdropUser.objects.filter(email=email).exists():
             self.stdout.write("SKIPPING {} - already exists".format(email))
             return
@@ -39,7 +39,6 @@ class Command(BaseCommand):
         with reversion.create_revision():
             BackdropUser.objects.create(
                 email=email,
-                data_sets=data_sets
             )
 
             self.stdout.write("Created {}".format(email))

@@ -13,8 +13,6 @@ from stagecraft.apps.datasets.models import BackdropUser
 
 import mock
 
-from stagecraft.libs.backdrop_client import (disable_backdrop_connection)
-
 
 class BackdropUserTestCase(TestCase):
     def test_user_email_must_be_unique(self):
@@ -43,7 +41,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.'
                 'get_backdrop_user_path_queries')
-    @disable_backdrop_connection
     def test_user_purges_cache_on_create(
             self,
             mock_get_path_queries,
@@ -58,7 +55,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.'
                 'get_backdrop_user_path_queries')
-    @disable_backdrop_connection
     def test_user_purges_cache_on_save(
             self,
             mock_get_path_queries,
@@ -78,7 +74,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.'
                 'get_backdrop_user_path_queries')
-    @disable_backdrop_connection
     def test_user_purges_cache_on_delete(
             self,
             mock_get_path_queries,
@@ -97,7 +92,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
     @mock.patch('django.db.models.Model.save')
     @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
-    @disable_backdrop_connection
     def test_purge_not_called_on_model_save_failure(
             self,
             mock_purge,
