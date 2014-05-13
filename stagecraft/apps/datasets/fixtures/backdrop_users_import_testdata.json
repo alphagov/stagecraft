@@ -1,0 +1,26 @@
+[{
+    "_id" : "someemail@mailtime.com",
+    "data_sets" : [
+        "evl_ceg_data",
+        "evl_services_volumetrics",
+        "evl_services_failures",
+        "evl_channel_volumetrics",
+        "evl_customer_satisfaction",
+        "evl_volumetrics"
+    ],
+    "email" : "someemail@mailtime.com"
+},
+{
+    "_id" : "angela.merkel@deutschland.de",
+    "data_sets" : [
+        "lpa_volumes"
+    ],
+    "email" : "angela.merkel@deutschland.de"
+},
+{
+    "_id" : "mike.bracken@gov.uk",
+    "data_sets" : [
+        "govuk_big_stats"
+    ],
+    "email" : "mike.bracken@gov.uk"
+}]
