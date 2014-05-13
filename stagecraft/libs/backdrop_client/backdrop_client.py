@@ -18,6 +18,30 @@ class BackdropError(Exception):
     pass
 
 
+class BackdropUnknownError(BackdropError):
+    def __str__(self):
+        return 'Unknown Backdrop error: {}'.format(
+            super(BackdropUnknownError, self).__str__())
+
+
+class BackdropConnectionError(BackdropError):
+    def __str__(self):
+        return 'Error connecting to Backdrop: {}'.format(
+            super(BackdropConnectionError, self).__str__())
+
+
+class BackdropAuthenticationError(BackdropError):
+    def __str__(self):
+        return 'Error authenticating with Backdrop: {}'.format(
+            super(BackdropAuthenticationError, self).__str__())
+
+
+class BackdropBadRequestError(BackdropError):
+    def __str__(self):
+        return 'Bad request to Backdrop: {}'.format(
+            super(BackdropBadRequestError, self).__str__())
+
+
 @contextmanager
 def backdrop_connection_disabled():
     """
@@ -70,16 +94,12 @@ def create_data_set(name, capped_size):
     endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
                                                    name=name)
 
-    response = requests.post(endpoint_url,
-                             headers=_get_headers(),
-                             data=json_request)
+    backdrop_request = lambda: requests.post(
+        endpoint_url,
+        headers=_get_headers(),
+        data=json_request)
 
-    try:
-        response.raise_for_status()
-    except requests.HTTPError as e:
-        logger.exception(e)
-        logger.error(response.content)
-        raise BackdropError("{}\n{}".format(repr(e), response.content))
+    _send_backdrop_request(backdrop_request)
 
 
 def delete_data_set(name):
@@ -92,11 +112,45 @@ def delete_data_set(name):
     endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
                                                    name=name)
 
-    response = requests.delete(endpoint_url, headers=_get_headers())
+    backdrop_request = lambda: requests.delete(
+        endpoint_url,
+        headers=_get_headers())
+
+    _send_backdrop_request(backdrop_request)
+
+
+def _send_backdrop_request(backdrop_request):
+    try:
+        response = backdrop_request()
+    except requests.exceptions.ConnectionError as e:
+        raise BackdropConnectionError(e)
 
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
         logger.exception(e)
         logger.error(response.content)
-        raise BackdropError("{}\n{}".format(repr(e), response.content))
+
+        error_message = _get_backdrop_error_message(response)
+
+        if response.status_code == 400:
+            raise BackdropBadRequestError(error_message)
+
+        elif response.status_code in (401, 403):
+            raise BackdropAuthenticationError(error_message)
+
+        else:
+            raise BackdropUnknownError("{}\n{}".format(repr(e), error_message))
+
+
+def _get_backdrop_error_message(response):
+    """
+    Backdrop should return an error as response with a JSON body like
+    {'status': 'error', 'message': 'Some error message'}
+    This attempts to extract the 'Some error message' string. If that fails,
+    return the raw JSON string.
+    """
+    try:
+        return response.json()['message']
+    except Exception:
+        return response.content
