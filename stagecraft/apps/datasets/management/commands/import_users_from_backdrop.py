@@ -54,7 +54,7 @@ class Command(BaseCommand):
             self.stdout.write("SKIPPING {} - already exists".format(email))
             return
 
-        with transaction.atomic(), reversion.create_revision():
+        with reversion.create_revision():
             BackdropUser.objects.create(
                 email=email,
                 data_sets=user['data_sets']
