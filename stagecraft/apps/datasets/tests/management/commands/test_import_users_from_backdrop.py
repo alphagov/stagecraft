@@ -65,9 +65,9 @@ datasets/tests/fixtures/backdrop_users_import_testdata.json"]
         backdrop_user_two = _get_user('angela.merkel@deutschland.de')
         backdrop_user_three = _get_user('mike.bracken@gov.uk')
 
-        expected_user_one_data_set_names = set(["lpa_volumes"])
-        expected_user_two_data_set_names = set(["evl_ceg_data",
+        expected_user_one_data_set_names = set(["evl_ceg_data",
                                                 "evl_customer_satisfaction"])
+        expected_user_two_data_set_names = set(["lpa_volumes"])
 
         assert_equal(
             _get_data_set_names(backdrop_user_one),
@@ -78,4 +78,4 @@ datasets/tests/fixtures/backdrop_users_import_testdata.json"]
             expected_user_two_data_set_names)
         assert('govuk_nonexistant_big_stats' not in
                _get_data_set_names(backdrop_user_three))
-        assert_equal([], _get_data_set_names(backdrop_user_three))
+        assert_equal(set([]), _get_data_set_names(backdrop_user_three))
