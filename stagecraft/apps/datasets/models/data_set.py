@@ -117,10 +117,14 @@ class DataSet(models.Model):
     auto_ids = models.TextField(
         blank=True,
         help_text="""
-        [OPTIONAL FIELD]
-        A comma separated list of fields to turn into a unique id.</br>
-        You probably want this to be the names of all the main fields in your
-        spreadsheet.
+        [OPTIONAL FIELD] If you're doing a CSV or Excel upload, and the data
+        may be cumulative, you should complete this field to avoid the risk of
+        duplicate records.</br>
+        Write a comma separated list of fields to turn into a unique id, eg:
+        <code>_timestamp,service,channel</code></br>
+        This should list every field name that, when combined, could identify a
+        unique record. If this is left blank Backdrop won't be able to identify
+        duplicate records which will result in double counting.
         """
     )  # a comma delimited list
     queryable = models.BooleanField(
@@ -151,16 +155,16 @@ class DataSet(models.Model):
         [OPTIONAL FIELD] How often do you expect the data to be updated?
         (<strong>in seconds</strong>)<br/>
         This is used for monitoring so we can tell when data hasn't been
-        updated.<br/>
-        Commonly used values you could write here are:<br/>
-        - <strong>300</strong> (5 minutes)<br/>
-        - <strong>3600</strong> (an hour)<br/>
-        - <strong>86400</strong> (a day)<br/>
-        - <strong>604800</strong> (a week)<br/>
-        - <strong>2592000</strong> (30 days)<br/>
-        - <strong>7776000</strong> (90 days)<br/>
+        updated. If this is left blank the data-set will not be monitored.<br/>
+        Commonly used values are:<br/>
+        - <strong>360</strong> (every 5 minutes)<br/>
+        - <strong>4500</strong> (hourly)<br/>
+        - <strong>90000</strong> (daily)<br/>
+        - <strong>648000</strong> (weekly)<br/>
+        - <strong>2764800</strong> (monthly)<br/>
+        - <strong>8467200</strong> (quarterly)<br/>
         You can choose your own value if the ones above don't work for your
-        case.<br/>
+        case.
         """
     )
 
