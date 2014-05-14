@@ -78,8 +78,7 @@ class DataSetAdmin(reversion.VersionAdmin):
             return super(DataSetAdmin, self).response_add(
                 request, obj, *args, **kwargs)
 
-        messages.error(request, "Failed to create: {}".format(
-            repr(self.exception)))
+        messages.error(request, str(self.exception))
         return self.response_post_save_add(request, obj)
 
     def response_change(self, request, obj, *args, **kwargs):
@@ -91,8 +90,7 @@ class DataSetAdmin(reversion.VersionAdmin):
             return super(DataSetAdmin, self).response_change(
                 request, obj, *args, **kwargs)
 
-        messages.error(request, "Failed to modify: {}".format(
-            repr(self.exception)))
+        messages.error(request, str(self.exception))
         return self.response_post_save_change(request, obj)
 
     search_fields = ['name']
