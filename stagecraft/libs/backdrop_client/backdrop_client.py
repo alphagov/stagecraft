@@ -65,6 +65,8 @@ def check_disabled(func):
     def _check(*args, **kwargs):
         if _DISABLED:
             return
+        else:
+            return func(*args, **kwargs)
     return _check
 
 
