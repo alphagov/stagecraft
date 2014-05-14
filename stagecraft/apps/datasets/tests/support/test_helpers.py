@@ -42,6 +42,9 @@ def is_unauthorized():
 
 
 class IsErrorResponse(BaseMatcher):
+    def __init__(self, message):
+        self.message = message
+
     def _matches(self, response):
         try:
             data = json.loads(response.content.decode("utf-8"))
@@ -50,15 +53,22 @@ class IsErrorResponse(BaseMatcher):
             # it should not fail with out a message
             if not data.get('message'):
                 return False
+            if self.message and not data.get('message') == self.message:
+                return False
             return True
         except ValueError:
             return False
 
     def describe_to(self, description):
+        if not self.message:
+            description_message = 'error response with any error message'
+        else:
+            description_message = 'error response with message: "{}"'.format(
+                self.message)
         description.append_text(
-            'error response'
+            description_message
         )
 
 
-def is_error_response():
-    return IsErrorResponse()
+def is_error_response(message=None):
+    return IsErrorResponse(message)

@@ -3,7 +3,7 @@
 /venv
 /log/*.log
 /log/*.log.json
-
+/log/*
 # Python
 *.pyc
 *.pyo
@@ -21,3 +21,6 @@
 
 # IntelliJ IDE
 /.idea
+
+# apple mac lol
+.DS_Store

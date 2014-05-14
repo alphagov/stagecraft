@@ -1,8 +1,14 @@
 from nose.tools import assert_equal
 
-from stagecraft.apps.datasets.models import DataSet, DataType, DataGroup
+from stagecraft.apps.datasets.models import(
+    BackdropUser,
+    DataSet,
+    DataType,
+    DataGroup)
 from stagecraft.apps.datasets.helpers.calculate_purge_urls import (
-    get_data_set_path_queries, _join_query_strings)
+    get_data_set_path_queries,
+    get_backdrop_user_path_queries,
+    _join_query_strings)
 
 
 def test_get_data_set_path_queries():
@@ -30,6 +36,18 @@ def test_get_data_set_path_queries():
     assert_equal(
         expected_path_queries,
         set(get_data_set_path_queries(data_set)))
+
+
+def test_get_backdrop_user_path_queries():
+    user = BackdropUser(email='wibble@email.net')
+
+    expected_path_queries = set([
+        '/users/wibble%40email.net'
+    ])
+
+    assert_equal(
+        expected_path_queries,
+        set(get_backdrop_user_path_queries(user)))
 
 
 def test_join_query_strings():
