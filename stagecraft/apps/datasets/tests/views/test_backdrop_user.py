@@ -5,10 +5,9 @@ from nose.tools import assert_equal
 from hamcrest import assert_that
 
 from django.test import TestCase
-from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
-    is_unauthorized, is_error_response, has_header, has_status)
+    is_unauthorized, is_error_response, has_header)
 
 
 class LongCacheTestCase(TestCase):
@@ -52,6 +51,8 @@ class BackdropUserViewsTestCase(TestCase):
 
     def test_detail_nonexistant_user(self):
         resp = self.client.get(
-            '/users/nonexistant-user',
+            '/users/nonexistant@user.com',
             HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
         assert_equal(resp.status_code, 404)
+        assert_that(resp, is_error_response(
+            "No user with email address 'nonexistant@user.com' exists"))

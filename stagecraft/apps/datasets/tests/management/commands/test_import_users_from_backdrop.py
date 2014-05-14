@@ -75,7 +75,10 @@ datasets/tests/fixtures/backdrop_users_import_testdata.json"]
         )
         assert_equal(
             _get_data_set_names(backdrop_user_two),
-            expected_user_two_data_set_names)
+            expected_user_two_data_set_names
+        )
+
         assert('govuk_nonexistant_big_stats' not in
                _get_data_set_names(backdrop_user_three))
+
         assert_equal(set([]), _get_data_set_names(backdrop_user_three))

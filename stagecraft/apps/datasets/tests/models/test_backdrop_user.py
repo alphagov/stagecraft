@@ -9,12 +9,15 @@ from django.core.exceptions import ValidationError
 
 from nose.tools import assert_raises, assert_equal
 
-from stagecraft.apps.datasets.models import BackdropUser
+from stagecraft.apps.datasets.models import(
+    BackdropUser, DataSet)
 
 import mock
 
 
 class BackdropUserTestCase(TestCase):
+    fixtures = ['test_import_users_datasets.json']
+
     def test_user_email_must_be_unique(self):
         a = BackdropUser.objects.create(email='email@email.com')
         a.validate_unique()
@@ -24,9 +27,11 @@ class BackdropUserTestCase(TestCase):
 
     def test_serialize_returns_serialized_user(self):
         a = BackdropUser.objects.create(email='email@blah.net')
+        a.data_sets.add(DataSet.objects.get(name="evl_customer_satisfaction"))
+        a.data_sets.add(DataSet.objects.get(name="lpa_volumes"))
         expected_response = {
             'email': 'email@blah.net',
-            'data_sets': []
+            'data_sets': ['evl_customer_satisfaction', 'lpa_volumes']
         }
 
         assert_equal(a.serialize(), expected_response)
