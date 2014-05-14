@@ -117,10 +117,14 @@ class DataSet(models.Model):
     auto_ids = models.TextField(
         blank=True,
         help_text="""
-        [OPTIONAL FIELD]
-        A comma separated list of fields to turn into a unique id.</br>
-        You probably want this to be the names of all the main fields in your
-        spreadsheet.
+        [OPTIONAL FIELD] If you're doing a CSV or Excel upload, and the data
+        may be cumulative, you should complete this field to avoid the risk of
+        duplicate records.</br>
+        Write a comma separated list of fields to turn into a unique id, eg:
+        <code>_timestamp,service,channel</code></br>
+        This should list every field name that, when combined, could identify a
+        unique record. If this is left blank Backdrop won't be able to identify
+        duplicate records which will result in double counting.
         """
     )  # a comma delimited list
     queryable = models.BooleanField(
@@ -160,7 +164,7 @@ class DataSet(models.Model):
         - <strong>2764800</strong> (monthly)<br/>
         - <strong>8467200</strong> (quarterly)<br/>
         You can choose your own value if the ones above don't work for your
-        case.<br/>
+        case.
         """
     )
 
