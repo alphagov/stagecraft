@@ -24,12 +24,12 @@ class BackdropUser(models.Model):
     data_sets = models.ManyToManyField(DataSet)
 
     def serialize(self):
-        def get_name(item):
-            return item.name
+        def get_names(data_sets):
+            return [data_set.name for data_set in data_sets]
 
         return OrderedDict([
             ('email',     self.email),
-            ('data_sets', map(get_name, self.data_sets.all()))
+            ('data_sets', get_names(self.data_sets.all()))
         ])
 
     @transaction.atomic
