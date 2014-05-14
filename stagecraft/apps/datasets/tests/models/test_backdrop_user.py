@@ -18,14 +18,16 @@ import mock
 class BackdropUserTestCase(TestCase):
     fixtures = ['test_import_users_datasets.json']
 
-    def test_user_email_must_be_unique(self):
+    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
+    def test_user_email_must_be_unique(self, mock_purge):
         a = BackdropUser.objects.create(email='email@email.com')
         a.validate_unique()
 
         b = BackdropUser(email='email@email.com')
         assert_raises(ValidationError, lambda: b.validate_unique())
 
-    def test_serialize_returns_serialized_user(self):
+    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
+    def test_serialize_returns_serialized_user(self, mock_purge):
         a = BackdropUser.objects.create(email='email@blah.net')
         a.data_sets.add(DataSet.objects.get(name="evl_customer_satisfaction"))
         a.data_sets.add(DataSet.objects.get(name="lpa_volumes"))

@@ -15,7 +15,8 @@ class TestImportBackdropUser(TestCase):
             user.data_sets.clear()
             user.delete()
 
-    def tearDown(self):
+    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
+    def tearDown(self, mock_purge):
         for user in BackdropUser.objects.all():
             user.data_sets.clear()
             user.delete()

@@ -43,11 +43,20 @@ class Command(BaseCommand):
             )
             for data_set in data_sets:
                 user.data_sets.add(data_set)
+                self.stdout.write(
+                    "Added access to {0} for user {1}".format(data_set, email)
+                )
 
             self.stdout.write("Created {}".format(email))
 
     def get_data_sets_by_names(self, data_set_names):
-        return filter(None, [
-            DataSet.objects.filter(name=name).first()
-            for name in data_set_names
-        ])
+        found_data_sets = []
+        for name in data_set_names:
+            data_set = DataSet.objects.filter(name=name).first()
+            if data_set:
+                found_data_sets.append(data_set)
+            else:
+                self.stdout.write(
+                    "Couldn't find data-set with the name {}".format(name)
+                )
+        return found_data_sets
