@@ -16,6 +16,7 @@ class BackdropUserAdmin(reversion.VersionAdmin):
     search_fields = ['email', 'data_sets']
     list_display = ('email', 'numer_of_datasets_user_has_access_to',)
     list_per_page = 30
+    filter_horizontal = ('data_sets',)
 
     def queryset(self, request):
         return BackdropUser.objects.annotate(
