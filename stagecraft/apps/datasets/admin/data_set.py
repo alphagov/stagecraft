@@ -97,9 +97,9 @@ class DataSetAdmin(reversion.VersionAdmin):
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location')
     fields = (
-        'name',
         'data_group',
         'data_type',
+        'name',
         'bearer_token',
         'upload_format',
         'upload_filters',

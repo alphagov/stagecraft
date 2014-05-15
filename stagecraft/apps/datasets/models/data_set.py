@@ -50,12 +50,10 @@ class DataSet(models.Model):
         max_length=200, unique=True,
         validators=[data_set_name_validator],
         help_text="""
-        This should use the format 'data_group_data_type'
+        This will be automatically generated to use the
+        format 'data_group_data_type'
         e.g. `carers_allowance_customer_satisfaction`
-        Use underscores to separate words. </br>
-        Note: The name must be composed of lower case letters,
-        numbers and underscores, but cannot start with a number.
-        Not following these rules may break things."""
+        """
     )
     data_group = models.ForeignKey(
         DataGroup,
