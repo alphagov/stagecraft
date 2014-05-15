@@ -43,6 +43,22 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
+    def test_create_produces_a_name(self,
+                                    mock_delete_data_set,
+                                    mock_create_data_set):
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set1 = DataSet.objects.create(
+                data_group=data_group,
+                data_type=data_type)
+
+            assert_equal(
+                "{}_{}".format(data_group.name, data_type.name),
+                data_set1.name)
+
+    @disable_backdrop_connection
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
     def test_create_and_delete(self,
                                mock_delete_data_set,
                                mock_create_data_set):
