@@ -188,13 +188,8 @@ class DataSet(models.Model):
         upload_filters_list = make_list(self.upload_filters)
         auto_ids_list = make_list(self.auto_ids)
 
-        auto_name = str.join('_',
-                             (self.data_group.name,
-                              self.data_type.name,)
-                             ).replace("-", "_")
-
         return OrderedDict([
-            ('name',                auto_name),
+            ('name',                self.name),
             ('data_group',          self.data_group.name),
             ('data_type',           self.data_type.name),
             ('raw_queries_allowed', self.raw_queries_allowed),
@@ -241,6 +236,8 @@ class DataSet(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         is_insert = self.pk is None
+        self.name = '_'.join((self.data_group.name, self.data_type.name)
+                            ).replace('-', '_')
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
 
