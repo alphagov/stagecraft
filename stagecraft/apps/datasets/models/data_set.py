@@ -42,7 +42,10 @@ class DataSetManager(models.Manager):
 @python_2_unicode_compatible
 class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
-    READONLY_AFTER_CREATED = set(['name', 'capped_size'])
+    READONLY_AFTER_CREATED = set(['name',
+                                  'data_group',
+                                  'data_type',
+                                  'capped_size'])
 
     objects = DataSetManager()
 
