@@ -29,9 +29,9 @@ class DataSetTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data_group1 = DataGroup.objects.create(name='data-group1')
-        cls.data_type1 = DataType.objects.create(name='data-type1')
-        cls.data_type2 = DataType.objects.create(name='data-type2')
+        cls.data_group1 = DataGroup.objects.create(name='data_group1')
+        cls.data_type1 = DataType.objects.create(name='data_type1')
+        cls.data_type2 = DataType.objects.create(name='data_type2')
 
     @classmethod
     def tearDownClass(cls):
@@ -62,34 +62,30 @@ class DataSetTestCase(TestCase):
     def test_create_and_delete(self,
                                mock_delete_data_set,
                                mock_create_data_set):
+        with _make_temp_data_group_and_type() as (data_group, data_type):
 
-        data_set1 = DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1,
-            auto_ids='aa,bb')
+            data_set1 = DataSet.objects.create(
+                data_group=data_group,
+                data_type=data_type)
 
-        assert(len(DataSet.objects.filter(data_group=self.data_group1,
-                                          data_type=self.data_type1)) == 1)
+            assert_equal(1, len(DataSet.objects.filter(name=data_set1.name)))
 
-        data_set1.delete()
+            data_set1.delete()
 
-        assert(len(DataSet.objects.filter(data_group=self.data_group1,
-                                          data_type=self.data_type1)) == 0)
+            assert_equal(0, len(DataSet.objects.filter(name=data_set1.name)))
 
     @disable_backdrop_connection
     @disable_purge_varnish
     def test_data_set_name_must_be_unique(self):
         a = DataSet.objects.create(
-            name='foo',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
         a.validate_unique()
 
         b = DataSet(
-            name='foo',
             data_group=self.data_group1,
-            data_type=self.data_type2)
+            data_type=self.data_type1)
         assert_raises(ValidationError, lambda: b.validate_unique())
 
     @disable_backdrop_connection
@@ -205,7 +201,6 @@ class DataSetTestCase(TestCase):
     def test_clean_raise_immutablefield_name_change(self,
                                                     mock_create_data_set):
         data_set = DataSet.objects.create(
-            name='test_dataset',
             data_group=self.data_group1,
             data_type=self.data_type1)
         data_set.name = "abc"
@@ -217,7 +212,6 @@ class DataSetTestCase(TestCase):
             self,
             mock_create_data_set):
         data_set = DataSet.objects.create(
-            name='test_dataset',
             data_group=self.data_group1,
             data_type=self.data_type1)
         data_set.capped_size = 1000
@@ -229,7 +223,6 @@ class DataSetTestCase(TestCase):
             self,
             mock_create_data_set):
         data_set = DataSet.objects.create(
-            name='test_dataset',
             data_group=self.data_group1,
             data_type=self.data_type1)
         data_set.clean()
@@ -241,26 +234,10 @@ class DataSetTestCase(TestCase):
             mock_create_data_set):
         new_data_type = DataType.objects.create(name='new_data_type')
         data_set = DataSet.objects.create(
-            name='test_dataset',
             data_group=self.data_group1,
             data_type=self.data_type1)
         data_set.data_type = new_data_type
         data_set.clean()
-
-    @disable_backdrop_connection
-    @disable_purge_varnish
-    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
-    def test_name_generated_correctly(self,
-                                      mock_create_data_set):
-
-        data_set = DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-
-        expected_name = 'data_group1_data_type1'
-        got_name = data_set.name
-
-        assert_equal(expected_name, got_name)
 
 
 def test_character_allowed_in_name():
@@ -315,12 +292,11 @@ class BackdropIntegrationTestCase(TransactionTestCase):
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
     def test_backdrop_is_called_on_model_create(self, mock_create_data_set):
         with _make_temp_data_group_and_type() as (data_group, data_type):
-            DataSet.objects.create(
-                name='test_data_set_001',
+            dset = DataSet.objects.create(
                 data_group=data_group,
                 data_type=data_type)
 
-        mock_create_data_set.assert_called_once_with('test_data_set_001', 0)
+        mock_create_data_set.assert_called_once_with(dset.name, 0)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
@@ -332,14 +308,15 @@ class BackdropIntegrationTestCase(TransactionTestCase):
             assert_raises(
                 BackdropError,
                 lambda: DataSet.objects.create(
-                    name='test_data_set_002',
                     data_group=data_group,
                     data_type=data_type)
             )
 
             assert_raises(
                 ObjectDoesNotExist,
-                lambda: DataSet.objects.get(name='test_data_set_002'))
+                lambda: DataSet.objects.get(name="{}_{}".format(
+                    data_group, data_type
+                )))
 
     @disable_purge_varnish
     @mock.patch('django.db.models.Model.save')
@@ -366,12 +343,11 @@ class BackdropIntegrationTestCase(TransactionTestCase):
     def test_backdrop_not_called_on_model_update(self, mock_create_data_set):
         with _make_temp_data_group_and_type() as (data_group, data_type):
             data_set = DataSet.objects.create(
-                name='test_data_set_004',
                 data_group=data_group,
                 data_type=data_type)
             data_set.save()
             mock_create_data_set.assert_called_once_with(
-                'test_data_set_004', 0)
+                data_set.name, 0)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
@@ -380,13 +356,11 @@ class BackdropIntegrationTestCase(TransactionTestCase):
                                                 mock_create_data_set):
         with _make_temp_data_group_and_type() as (data_group, data_type):
             data_set = DataSet.objects.create(
-                name='test_data_set_005',
                 data_group=data_group,
                 data_type=data_type)
 
             data_set.delete()
-
-        mock_delete_data_set.assert_called_once_with('test_data_set_005')
+        mock_delete_data_set.assert_called_once_with(data_set.name)
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
@@ -401,7 +375,7 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 
             DataSet.objects.all().delete()
 
-        mock_delete_data_set.assert_called_once_with('test_data_set_006')
+        mock_delete_data_set.assert_called_once_with(data_set.name)
 
 
 class VarnishCacheIntegrationTestCase(TransactionTestCase):
@@ -423,7 +397,6 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
         with _make_temp_data_group_and_type() as (data_group, data_type):
             data_set = DataSet.objects.create(
-                name='test_dataset',
                 data_group=data_group,
                 data_type=data_type)
 
@@ -440,7 +413,7 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
 
         with _make_temp_data_group_and_type() as (data_group, data_type):
             data_set = DataSet.objects.create(
-                name='test_dataset',
+
                 data_group=data_group,
                 data_type=data_type)
 
@@ -492,7 +465,7 @@ class VarnishCacheIntegrationTestCase(TransactionTestCase):
             assert_raises(
                 Exception,
                 lambda: DataSet.objects.create(
-                    name='test_dataset',
+
                     data_group=data_group,
                     data_type=data_type)
             )
