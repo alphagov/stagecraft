@@ -42,6 +42,12 @@ class BackdropBadRequestError(BackdropError):
             super(BackdropBadRequestError, self).__str__())
 
 
+class BackdropNotFoundError(BackdropError):
+    def __str__(self):
+        return 'Not found in Backdrop: {}'.format(
+            super(BackdropNotFoundError, self).__str__())
+
+
 @contextmanager
 def backdrop_connection_disabled():
     """
@@ -147,6 +153,9 @@ def _send_backdrop_request(backdrop_request):
 
         if response.status_code == 400:
             raise BackdropBadRequestError(error_message)
+
+        elif response.status_code == 404:
+            raise BackdropNotFoundError(error_message)
 
         elif response.status_code in (401, 403):
             raise BackdropAuthenticationError(error_message)
