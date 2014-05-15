@@ -40,7 +40,7 @@ class DataSetManager(models.Manager):
 @python_2_unicode_compatible
 class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
-    READONLY_FIELDS = set(['name', 'capped_size'])
+    READONLY_AFTER_CREATED = set(['name', 'capped_size'])
 
     objects = DataSetManager()
 
@@ -224,8 +224,8 @@ class DataSet(models.Model):
 
         if existing is not None:
             previous_values = {k: existing.__dict__[k]
-                               for k in self.READONLY_FIELDS}
-            bad_fields = [v for v in self.READONLY_FIELDS
+                               for k in self.READONLY_AFTER_CREATED}
+            bad_fields = [v for v in self.READONLY_AFTER_CREATED
                           if previous_values[v] != getattr(self, v)]
 
             if len(bad_fields) > 0:
