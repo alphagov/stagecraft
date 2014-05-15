@@ -46,17 +46,20 @@ class DataSetTestCase(TestCase):
     def test_create_and_delete(self,
                                mock_delete_data_set,
                                mock_create_data_set):
+
         data_set1 = DataSet.objects.create(
-            name='data_set1',
+            name=data_set_name,
             data_group=self.data_group1,
             data_type=self.data_type1,
             auto_ids='aa,bb')
 
-        assert(len(DataSet.objects.filter(name='data_set1')) == 1)
+        data_set_name = data_set1.generate_data_set_name()
+
+        assert(len(DataSet.objects.filter(data_set_name) == 1))
 
         data_set1.delete()
 
-        assert(len(DataSet.objects.filter(name='data_set1')) == 0)
+        assert(len(DataSet.objects.filter(data_set_name) == 0))
 
     @disable_backdrop_connection
     @disable_purge_varnish

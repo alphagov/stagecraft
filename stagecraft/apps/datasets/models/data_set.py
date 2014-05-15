@@ -42,10 +42,8 @@ class DataSetManager(models.Manager):
 @python_2_unicode_compatible
 class DataSet(models.Model):
     # used in clean() below and by DataSetAdmin
-    READONLY_AFTER_CREATED = set(['name',
-                                  'data_group',
-                                  'data_type',
-                                  'capped_size'])
+    READONLY_AFTER_CREATED = set(
+        ['name', 'data_group', 'data_type', 'capped_size'])
 
     objects = DataSetManager()
 
@@ -239,8 +237,7 @@ class DataSet(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         is_insert = self.pk is None
-        self.name = '_'.join((self.data_group.name, self.data_type.name)
-                            ).replace('-', '_')
+        self.name = self.generate_data_set_name()
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
 
@@ -250,6 +247,10 @@ class DataSet(models.Model):
             create_data_set(self.name, size_bytes)
 
         purge(get_data_set_path_queries(self))
+
+    def generate_data_set_name(self):
+        return '_'.join((self.data_group.name,
+                         self.data_type.name)).replace('-', '_')
 
     @property
     def is_capped(self):
