@@ -13,7 +13,7 @@ class DataSetInline(admin.StackedInline):
 
 
 class BackdropUserAdmin(reversion.VersionAdmin):
-    search_fields = ['email', 'data_sets']
+    search_fields = ['email']
     list_display = ('email', 'numer_of_datasets_user_has_access_to',)
     list_per_page = 30
     filter_horizontal = ('data_sets',)
