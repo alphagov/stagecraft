@@ -188,8 +188,13 @@ class DataSet(models.Model):
         upload_filters_list = make_list(self.upload_filters)
         auto_ids_list = make_list(self.auto_ids)
 
+        auto_name = str.join('_',
+                             (self.data_group.name,
+                              self.data_type.name,)
+                             ).replace("-", "_")
+
         return OrderedDict([
-            ('name',                self.name),
+            ('name',                auto_name),
             ('data_group',          self.data_group.name),
             ('data_type',           self.data_type.name),
             ('raw_queries_allowed', self.raw_queries_allowed),
