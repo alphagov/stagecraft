@@ -22,10 +22,11 @@ class DataSetAdmin(reversion.VersionAdmin):
       - are used by VersionAdmin to create revision
       - we are overriding here to stop a revision if the model fails to save
 
-    `changelist_view` method:
-      - is the view where you see a list of datasets, which you are
-      redirected to after deletion and add and change, so is a good place for
-      showing error messages
+    `response_add` and `response_change` methods:
+      - by default in the base class they generate a success message
+      - we are overriding here to generate a different message
+        if the model fails to save
+
     """
 
     class Media:
@@ -36,7 +37,7 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     def __init__(self, *args, **kwargs):
         super(DataSetAdmin, self).__init__(*args, **kwargs)
-        self.successful_save = None
+        self.successful_save = False
         self.exception = None
 
     # Get fields that are only editable on creation
@@ -47,23 +48,8 @@ class DataSetAdmin(reversion.VersionAdmin):
             return set()
 
     def save_model(self, request, *args, **kwargs):
-        self._try_change_model(
-            lambda: super(DataSetAdmin, self).save_model(
-                request, *args, **kwargs))
-
-    def delete_model(self, request, obj, *args, **kwargs):
-        self._try_change_model(
-            lambda: super(DataSetAdmin, self).delete_model(
-                request, obj, *args, **kwargs))
-
-    def _try_change_model(self, model_func):
-        """
-        If an external Backdrop exception happens when changing the model,
-        store the exception for later use by the log_ methods and the
-        changelist_view.
-        """
         try:
-            model_func()
+            super(DataSetAdmin, self).save_model(request, *args, **kwargs)
         except BackdropError as e:
             self.successful_save = False
             logger.exception(e)
@@ -83,35 +69,31 @@ class DataSetAdmin(reversion.VersionAdmin):
         else:
             logger.warning("save(..) failed, blocking log_change(..)")
 
-    def log_deletion(self, *args, **kwargs):
+    def response_add(self, request, obj, *args, **kwargs):
+        """
+        Generate the HTTP response for an add action.
+        """
         if self.successful_save is True:
-            super(DataSetAdmin, self).log_deletion(*args, **kwargs)
-        else:
-            logger.warning("save(..) failed, blocking log_deletion(..)")
+            # The base response_add() emits an appropriate success message
+            return super(DataSetAdmin, self).response_add(
+                request, obj, *args, **kwargs)
 
-    def changelist_view(self, request, *args, **kwargs):
+        messages.error(request, str(self.exception))
+        return self.response_post_save_add(request, obj)
+
+    def response_change(self, request, obj, *args, **kwargs):
         """
-        Base admin class method override. Despite the name, this is the main
-        list view
+        Generate the HTTP response for a save action.
         """
-        if self.successful_save is False:
-            _clear_most_recent_message(request)
-            messages.error(request, str(self.exception))
-        return super(DataSetAdmin, self).changelist_view(
-            request, *args, **kwargs)
+        if self.successful_save is True:
+            # The base response_change() emits an appropriate success message
+            return super(DataSetAdmin, self).response_change(
+                request, obj, *args, **kwargs)
+
+        messages.error(request, str(self.exception))
+        return self.response_post_save_change(request, obj)
 
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location')
-
-
-def _clear_most_recent_message(request):
-    storage = messages.get_messages(request)
-    # Calling __iter__() causes messages to be transferred from
-    # storage._queued_messages to storage._loaded_messages. See
-    # django.contrib.messages.storage.base:BaseStorage
-
-    storage.__iter__()
-    if len(storage) > 0:
-        storage._loaded_messages.pop(-1)
 
 admin.site.register(DataSet, DataSetAdmin)
