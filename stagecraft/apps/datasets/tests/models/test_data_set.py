@@ -29,9 +29,9 @@ class DataSetTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data_group1 = DataGroup.objects.create(name='data_group1')
-        cls.data_type1 = DataType.objects.create(name='data_type1')
-        cls.data_type2 = DataType.objects.create(name='data_type2')
+        cls.data_group1 = DataGroup.objects.create(name='data-group1')
+        cls.data_type1 = DataType.objects.create(name='data-type1')
+        cls.data_type2 = DataType.objects.create(name='data-type2')
 
     @classmethod
     def tearDownClass(cls):
@@ -48,18 +48,17 @@ class DataSetTestCase(TestCase):
                                mock_create_data_set):
 
         data_set1 = DataSet.objects.create(
-            name=data_set_name,
             data_group=self.data_group1,
             data_type=self.data_type1,
             auto_ids='aa,bb')
 
-        data_set_name = data_set1.generate_data_set_name()
-
-        assert(len(DataSet.objects.filter(data_set_name) == 1))
+        assert(len(DataSet.objects.filter(data_group=self.data_group1,
+                                          data_type=self.data_type1)) == 1)
 
         data_set1.delete()
 
-        assert(len(DataSet.objects.filter(data_set_name) == 0))
+        assert(len(DataSet.objects.filter(data_group=self.data_group1,
+                                          data_type=self.data_type1)) == 0)
 
     @disable_backdrop_connection
     @disable_purge_varnish
@@ -81,7 +80,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_upload_filters_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
-            name='data_set1',
             data_group=self.data_group1,
             data_type=self.data_type1,
             upload_filters='aa.aa,bb.bb')
@@ -93,7 +91,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_auto_ids_are_serialised_as_a_list(self):
         data_set1 = DataSet.objects.create(
-            name='data_set1',
             data_group=self.data_group1,
             data_type=self.data_type1,
             auto_ids='aa,bb')
@@ -104,14 +101,12 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_data_group_data_type_combo_must_be_unique(self):
         data_set1 = DataSet.objects.create(
-            name='data_set1',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
         data_set1.validate_unique()
 
         data_set2 = DataSet(
-            name='data_set2',
             data_group=self.data_group1,
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
@@ -120,7 +115,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_name_cannot_be_changed(self):
         data_set = DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
@@ -139,7 +133,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_capped_size_cannot_be_changed(self):
         data_set = DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
 
@@ -150,7 +143,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_capped_size_can_be_set_on_creation(self):
         DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
             capped_size=42)
@@ -160,7 +152,6 @@ class DataSetTestCase(TestCase):
     def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         DataSet.objects.create(
-            name='data_set',
             data_group=refed_data_group,
             data_type=self.data_type1)
 
@@ -171,7 +162,6 @@ class DataSetTestCase(TestCase):
     def test_cant_delete_referenced_data_type(self):
         refed_data_type = DataType.objects.create(name='refed_data_type')
         DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=refed_data_type)
 
@@ -181,7 +171,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_bearer_token_defaults_to_blank(self):
         data_set = DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1)
         assert_equal('', data_set.bearer_token)
@@ -190,7 +179,6 @@ class DataSetTestCase(TestCase):
     @disable_purge_varnish
     def test_that_empty_bearer_token_serializes_to_null(self):
         data_set = DataSet.objects.create(
-            name='data_set',
             data_group=self.data_group1,
             data_type=self.data_type1,
             bearer_token='')
@@ -242,6 +230,21 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         data_set.data_type = new_data_type
         data_set.clean()
+
+    @disable_backdrop_connection
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    def test_name_generated_correctly(self,
+                                      mock_create_data_set):
+
+        data_set = DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        expected_name = 'data_group1_data_type1'
+        got_name = data_set.name
+
+        assert_equal(expected_name, got_name)
 
 
 def test_character_allowed_in_name():
