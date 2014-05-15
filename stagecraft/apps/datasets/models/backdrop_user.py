@@ -21,7 +21,7 @@ class BackdropUser(models.Model):
         help_text=""""""
     )
 
-    data_sets = models.ManyToManyField(DataSet)
+    data_sets = models.ManyToManyField(DataSet, blank=True)
 
     def serialize(self):
         def get_names(data_sets):
