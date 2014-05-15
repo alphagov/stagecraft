@@ -1,9 +1,8 @@
 (function( $ ) {
 
-
   function generateRandomString(length) {
     var CHARS = "abcdefghjkmnpqrstuvwxyz23456789",
-	output = "";
+        output = "";
     while (output.length < length) {
       output += CHARS[Math.floor(Math.random() * CHARS.length)];
     }
@@ -12,7 +11,7 @@
 
   function addGenerateTokenLink() {
     var $token_field = $("#id_bearer_token"),
-	$anchor = $('<a href="#">generate token</a>');
+  $anchor = $('<a href="#">generate token</a>');
 
     $token_field.after($anchor);
 
@@ -24,7 +23,7 @@
         answer = confirm("The bearer token field is not empty, are you sure you want to regenerate it?");
       }
       if (answer) {
-	$token_field.val(generateRandomString(64));
+  $token_field.val(generateRandomString(64));
       }
 
     });
