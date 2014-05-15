@@ -41,9 +41,10 @@ class DataSetManager(models.Manager):
 
 @python_2_unicode_compatible
 class DataSet(models.Model):
-    # used in clean() below and by DataSetAdmin
+    # used in clean() below to prevent ORM model changes like
+    # e.g. modifying a name after the data_set has been created
     READONLY_AFTER_CREATED = set(
-        ['name', 'data_group', 'data_type', 'capped_size'])
+        ['name', 'capped_size'])
 
     objects = DataSetManager()
 

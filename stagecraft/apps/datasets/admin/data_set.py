@@ -43,7 +43,7 @@ class DataSetAdmin(reversion.VersionAdmin):
     # Get fields that are only editable on creation
     def get_readonly_fields(self, request, obj=None):
         if obj:  # record already exists
-            return DataSet.READONLY_AFTER_CREATED
+            return self.readonly_after_created
         else:
             return self.readonly_fields
 
@@ -93,6 +93,8 @@ class DataSetAdmin(reversion.VersionAdmin):
         messages.error(request, str(self.exception))
         return self.response_post_save_change(request, obj)
 
+    readonly_after_created = set(
+        ['name', 'data_group', 'data_type', 'capped_size'])
     readonly_fields = ('name',)
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location')
