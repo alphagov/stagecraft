@@ -96,5 +96,18 @@ class DataSetAdmin(reversion.VersionAdmin):
     readonly_fields = ('name',)
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location')
+    fields = (
+        'name',
+        'data_group',
+        'data_type',
+        'bearer_token',
+        'upload_format',
+        'upload_filters',
+        'auto_ids',
+        'queryable',
+        'realtime',
+        'capped_size',
+        'max_age_expected',
+    )
 
 admin.site.register(DataSet, DataSetAdmin)

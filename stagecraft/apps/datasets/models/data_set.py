@@ -27,12 +27,14 @@ class ImmutableFieldError(ValidationError):
 
 
 class DataSetQuerySet(QuerySet):
+
     def delete(self):
         for record in self.all():
             record.delete()
 
 
 class DataSetManager(models.Manager):
+
     def get_query_set(self):
         return DataSetQuerySet(self.model, using=self._db)
 
