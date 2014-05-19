@@ -27,20 +27,24 @@ class ImmutableFieldError(ValidationError):
 
 
 class DataSetQuerySet(QuerySet):
+
     def delete(self):
         for record in self.all():
             record.delete()
 
 
 class DataSetManager(models.Manager):
+
     def get_query_set(self):
         return DataSetQuerySet(self.model, using=self._db)
 
 
 @python_2_unicode_compatible
 class DataSet(models.Model):
-    # used in clean() below and by DataSetAdmin
-    READONLY_FIELDS = set(['name', 'capped_size'])
+    # used in clean() below to prevent ORM model changes like
+    # e.g. modifying a name after the data_set has been created
+    READONLY_AFTER_CREATED = set(
+        ['name', 'capped_size'])
 
     objects = DataSetManager()
 
@@ -48,12 +52,10 @@ class DataSet(models.Model):
         max_length=200, unique=True,
         validators=[data_set_name_validator],
         help_text="""
-        This should use the format 'data_group_data_type'
+        This will be automatically generated to use the
+        format 'data_group_data_type'
         e.g. `carers_allowance_customer_satisfaction`
-        Use underscores to separate words. </br>
-        Note: The name must be composed of lower case letters,
-        numbers and underscores, but cannot start with a number.
-        Not following these rules may break things."""
+        """
     )
     data_group = models.ForeignKey(
         DataGroup,
@@ -219,8 +221,8 @@ class DataSet(models.Model):
 
         if existing is not None:
             previous_values = {k: existing.__dict__[k]
-                               for k in self.READONLY_FIELDS}
-            bad_fields = [v for v in self.READONLY_FIELDS
+                               for k in self.READONLY_AFTER_CREATED}
+            bad_fields = [v for v in self.READONLY_AFTER_CREATED
                           if previous_values[v] != getattr(self, v)]
 
             if len(bad_fields) > 0:
@@ -236,6 +238,7 @@ class DataSet(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         is_insert = self.pk is None
+        self.name = self.generate_data_set_name()
         super(DataSet, self).save(*args, **kwargs)
         size_bytes = self.capped_size if self.is_capped else 0
 
@@ -245,6 +248,10 @@ class DataSet(models.Model):
             create_data_set(self.name, size_bytes)
 
         purge(get_data_set_path_queries(self))
+
+    def generate_data_set_name(self):
+        return '_'.join((self.data_group.name,
+                         self.data_type.name)).replace('-', '_')
 
     @property
     def is_capped(self):
