@@ -1,12 +1,12 @@
 (function( $ ) {
 
-    function generate_data_set_name(data_group_name, data_type_name, $data_set_name_selector) {
-      var data_set_name = [data_group_name, data_type_name].join('_').replace('-','_','g');
+    function generateDataSetName(dataGroupName, dataTypeName, $dataSetNameSelector) {
+      var dataSetName = [dataGroupName, dataTypeName].join('_').replace(/-/g,'_');
 
-      if(!$data_set_name_selector.length){
-        $('<p id=id_data_set>'+data_set_name+'</p>').insertAfter('.field-name label');
+      if(!$dataSetNameSelector.length){
+        $('<p id=id_data_set>'+dataSetName+'</p>').insertAfter('.field-name label');
       }
-      $data_set_name_selector.html(data_set_name);
+      $dataSetNameSelector.html(dataSetName);
     }
 
     function generateRandomString(length) {
@@ -44,7 +44,7 @@
   $(function() {
 
     $("#id_data_group, #id_data_type").on('change', function(){
-        generate_data_set_name(
+        generateDataSetName(
           $("#id_data_group").find("option:selected").text(),
           $("#id_data_type").find("option:selected").text(),
           $("#id_data_set")
