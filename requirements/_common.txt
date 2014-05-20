@@ -1,6 +1,6 @@
 # requirements/common.txt: Used on *all* environments.
 
-django==1.6.2
+django==1.6.5
 django-reversion==1.8.0
 South==0.8.4
 requests==2.2.1
