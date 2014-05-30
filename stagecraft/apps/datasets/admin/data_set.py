@@ -29,6 +29,8 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     """
 
+    actions = None
+
     class Media:
         css = {
             "all": ("admin/css/datasets.css",),
