@@ -104,6 +104,7 @@ class DataSetAdmin(reversion.VersionAdmin):
         'data_group',
         'data_type',
         'name',
+        'published',
         'bearer_token',
         'upload_format',
         'upload_filters',
