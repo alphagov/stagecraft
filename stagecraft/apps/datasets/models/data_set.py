@@ -169,6 +169,12 @@ class DataSet(models.Model):
         case.
         """
     )
+    published = models.BooleanField(
+        default=True,
+        help_text="""
+        Set to published if this data-set should be publicly available
+        """
+    )
 
     def __str__(self):
         return "{}".format(self.name)
@@ -203,6 +209,7 @@ class DataSet(models.Model):
             ('realtime',            self.realtime),
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
+            ('published',           self.published),
         ])
 
     def clean(self, *args, **kwargs):
