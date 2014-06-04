@@ -103,7 +103,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True,
+                'published': False,
             },
             {
                 'name': 'abc_-0123456789',
@@ -219,7 +219,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True
+                'published': False
             },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
