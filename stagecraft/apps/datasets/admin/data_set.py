@@ -99,7 +99,8 @@ class DataSetAdmin(reversion.VersionAdmin):
         ['name', 'data_group', 'data_type', 'capped_size'])
     readonly_fields = ('name', )
     search_fields = ['name']
-    list_display = ('name', 'data_group', 'data_type', 'data_location')
+    list_display = ('name', 'data_group', 'data_type', 'data_location',
+                    'created', 'modified')
     fields = (
         'data_group',
         'data_type',

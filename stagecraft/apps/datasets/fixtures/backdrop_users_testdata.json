@@ -19,6 +19,8 @@
     "pk": 3,
     "model": "datasets.dataset",
     "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
         "name": "set1",
@@ -37,6 +39,8 @@
     "pk": 4,
     "model": "datasets.dataset",
     "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
         "name": "set2",

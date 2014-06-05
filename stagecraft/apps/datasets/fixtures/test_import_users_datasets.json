@@ -31,6 +31,8 @@
     "pk": 7000,
     "model": "datasets.dataset",
     "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
         "name": "evl_ceg_data",
@@ -49,6 +51,8 @@
     "pk": 8000,
     "model": "datasets.dataset",
     "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
         "name": "evl_customer_satisfaction",
@@ -67,6 +71,8 @@
     "pk": 9000,
     "model": "datasets.dataset",
     "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
         "name": "lpa_volumes",
