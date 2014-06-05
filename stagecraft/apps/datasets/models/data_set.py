@@ -57,6 +57,8 @@ class DataSet(models.Model):
         e.g. `carers_allowance_customer_satisfaction`
         """
     )
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
     data_group = models.ForeignKey(
         DataGroup,
         on_delete=models.PROTECT,
