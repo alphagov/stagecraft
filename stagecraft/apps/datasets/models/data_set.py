@@ -57,8 +57,10 @@ class DataSet(models.Model):
         e.g. `carers_allowance_customer_satisfaction`
         """
     )
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True,
+                                   verbose_name='created (UTC)')
+    modified = models.DateTimeField(auto_now=True,
+                                    verbose_name='modified (UTC)')
     data_group = models.ForeignKey(
         DataGroup,
         on_delete=models.PROTECT,
