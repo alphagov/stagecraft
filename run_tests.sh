@@ -39,6 +39,9 @@ fi
 find $basedir/stagecraft -iname '*.pyc' -exec rm {} \+
 find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 
+# probably going to need to install dependencies
+pip install -r requirements/ci.txt --use-mirrors
+
 # run style check
 $basedir/pep-it.sh | tee "$outdir/pep8.out"
 display_result $? 3 "Code style check"
