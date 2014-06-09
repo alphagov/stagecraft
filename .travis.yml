@@ -4,8 +4,6 @@ python:
   - "3.4"
 addons:
   postgresql: "9.3"
-install: 
-  - pip install -r requirements/ci.txt --use-mirrors
 env:
   matrix:
     - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://postgres:@localhost:5432/stagecraft
