@@ -174,7 +174,7 @@ class DataSet(models.Model):
         """
     )
     published = models.BooleanField(
-        default=True,
+        default=False,
         help_text="""
         Set to published if this data-set should be publicly available
         """
