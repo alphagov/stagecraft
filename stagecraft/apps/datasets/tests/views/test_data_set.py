@@ -88,7 +88,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True,
+                'published': False,
             },
             {
                 'bearer_token': None,
@@ -118,7 +118,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True,
+                'published': False,
             },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -142,7 +142,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True,
+                'published': False,
             },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -204,7 +204,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': True
+                'published': False
             },
             {
                 'bearer_token': None,
@@ -256,7 +256,7 @@ class DataSetsViewsTestCase(TestCase):
             'queryable': True,
             'upload_format': '',
             'raw_queries_allowed': True,
-            'published': True,
+            'published': False,
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
@@ -278,7 +278,7 @@ class DataSetsViewsTestCase(TestCase):
             'queryable': True,
             'upload_format': '',
             'raw_queries_allowed': True,
-            'published': True,
+            'published': False,
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
