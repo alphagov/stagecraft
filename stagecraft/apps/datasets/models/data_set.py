@@ -14,14 +14,13 @@ from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
 from stagecraft.libs.backdrop_client import create_data_set, delete_data_set
+from stagecraft.libs.schemas import get_schema
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
 import reversion
-from json import loads as json_loads
-from os import path
 
 
 class ImmutableFieldError(ValidationError):
@@ -182,16 +181,6 @@ class DataSet(models.Model):
         """
     )
 
-    def get_schema(self):
-        import pprint as pp
-        schema_root = path.join(
-            settings.BASE_DIR,
-            'stagecraft/apps/datasets/schemas/timestamp.json'
-        )
-        with open(schema_root) as f:
-            json_f = json_loads(f.read())
-        return json_f
-
     def __str__(self):
         return "{}".format(self.name)
 
@@ -226,7 +215,7 @@ class DataSet(models.Model):
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
             ('published',           self.published),
-            ('schema',              self.get_schema()),
+            ('schema',              get_schema()),
         ])
 
     def clean(self, *args, **kwargs):
