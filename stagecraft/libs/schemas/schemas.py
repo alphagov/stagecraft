@@ -9,6 +9,6 @@ def get_schema():
         'stagecraft/apps/datasets/schemas/timestamp.json'
     )
     with open(schema_root) as f:
-        json_f = json_loads(f.read())
+        schema = json_loads(f.read())
 
-    return json_f
+    return schema
