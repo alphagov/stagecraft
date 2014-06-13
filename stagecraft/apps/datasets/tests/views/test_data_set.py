@@ -30,6 +30,19 @@ class LongCacheTestCase(TestCase):
 
 class DataSetsViewsTestCase(TestCase):
     fixtures = ['datasets_testdata.json']
+    default_schema = {
+        '$schema': 'http://json-schema.org/schema#',
+        'title': 'Timestamps',
+        'type': 'object',
+        'properties': {
+            '_timestamp': {
+                'description': 'An ISO8601 formatted date time',
+                'type': 'string',
+                'format': 'date-time'
+            }
+        },
+        'required': ['_timestamp']
+    }
 
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
@@ -89,19 +102,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             },
             {
                 'bearer_token': None,
@@ -117,19 +118,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             },
             {
                 'name': 'abc_-0123456789',
@@ -145,19 +134,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             }
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -182,19 +159,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -257,19 +222,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             },
             {
                 'bearer_token': None,
@@ -285,19 +238,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': {
-                    '$schema': 'http://json-schema.org/schema#',
-                    'title': 'Timestamps',
-                    'type': 'object',
-                    'properties': {
-                        '_timestamp': {
-                            'description': 'An ISO8601 formatted date time',
-                            'type': 'string',
-                            'format': 'date-time'
-                        }
-                    },
-                    'required': ['_timestamp']
-                }
+                'schema': self.default_schema
             },
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -335,19 +276,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': {
-                '$schema': 'http://json-schema.org/schema#',
-                'title': 'Timestamps',
-                'type': 'object',
-                'properties': {
-                    '_timestamp': {
-                        'description': 'An ISO8601 formatted date time',
-                        'type': 'string',
-                        'format': 'date-time'
-                    }
-                },
-                'required': ['_timestamp']
-            }
+            'schema': self.default_schema
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
@@ -370,19 +299,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': {
-                '$schema': 'http://json-schema.org/schema#',
-                'title': 'Timestamps',
-                'type': 'object',
-                'properties': {
-                    '_timestamp': {
-                        'description': 'An ISO8601 formatted date time',
-                        'type': 'string',
-                        'format': 'date-time'
-                    }
-                },
-                'required': ['_timestamp']
-            }
+            'schema': self.default_schema
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
