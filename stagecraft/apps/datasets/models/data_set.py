@@ -180,6 +180,20 @@ class DataSet(models.Model):
         """
     )
 
+    schema = {
+        '$schema': 'http://json-schema.org/schema#',
+        'title': 'Timestamps',
+        'type': 'object',
+        'properties': {
+            '_timestamp': {
+                'description': 'An ISO8601 formatted date time',
+                'type': 'string',
+                'format': 'date-time'
+            }
+        },
+        'required': ['_timestamp']
+    }
+
     def __str__(self):
         return "{}".format(self.name)
 
@@ -214,6 +228,7 @@ class DataSet(models.Model):
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
             ('published',           self.published),
+            ('schema',              self.schema),
         ])
 
     def clean(self, *args, **kwargs):
