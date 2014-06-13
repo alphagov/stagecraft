@@ -20,6 +20,8 @@ from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
 import reversion
+from json import loads as json_loads
+from os import path
 
 
 class ImmutableFieldError(ValidationError):
@@ -180,19 +182,15 @@ class DataSet(models.Model):
         """
     )
 
-    schema = {
-        '$schema': 'http://json-schema.org/schema#',
-        'title': 'Timestamps',
-        'type': 'object',
-        'properties': {
-            '_timestamp': {
-                'description': 'An ISO8601 formatted date time',
-                'type': 'string',
-                'format': 'date-time'
-            }
-        },
-        'required': ['_timestamp']
-    }
+    def get_schema(self):
+        import pprint as pp
+        schema_root = path.join(
+            settings.BASE_DIR,
+            'stagecraft/apps/datasets/schemas/timestamp.json'
+        )
+        with open(schema_root) as f:
+            json_f = json_loads(f.read())
+        return json_f
 
     def __str__(self):
         return "{}".format(self.name)
@@ -228,7 +226,7 @@ class DataSet(models.Model):
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
             ('published',           self.published),
-            ('schema',              self.schema),
+            ('schema',              self.get_schema()),
         ])
 
     def clean(self, *args, **kwargs):
