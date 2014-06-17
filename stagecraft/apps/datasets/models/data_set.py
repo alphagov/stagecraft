@@ -14,6 +14,7 @@ from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
 from stagecraft.libs.backdrop_client import create_data_set, delete_data_set
+from stagecraft.libs.schemas import get_schema
 
 from stagecraft.libs.purge_varnish import purge
 from ..helpers.calculate_purge_urls import get_data_set_path_queries
@@ -214,6 +215,7 @@ class DataSet(models.Model):
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
             ('published',           self.published),
+            ('schema',              get_schema()),
         ])
 
     def clean(self, *args, **kwargs):
