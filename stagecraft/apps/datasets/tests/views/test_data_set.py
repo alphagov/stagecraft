@@ -44,6 +44,13 @@ class DataSetsViewsTestCase(TestCase):
         'required': ['_timestamp']
     }
 
+    def _get_monitoring_schema():
+        schema_path = 'stagecraft/apps/datasets/schemas/monitoring.json'
+        with open(schema_path) as s_file:
+            return json.loads(s_file.read())
+
+    monitoring_schema = _get_monitoring_schema()
+
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
         assert_that(resp, is_unauthorized())
@@ -135,6 +142,22 @@ class DataSetsViewsTestCase(TestCase):
                 'raw_queries_allowed': True,
                 'published': False,
                 'schema': self.default_schema
+            },
+            {
+                'name': 'monitoring-data-set',
+                'data_group': 'group3',
+                'data_type': 'monitoring',
+                'bearer_token': None,
+                'capped_size': None,
+                'realtime': False,
+                'auto_ids': [],
+                'max_age_expected': 86400,
+                'upload_filters': [],
+                'queryable': True,
+                'upload_format': '',
+                'raw_queries_allowed': True,
+                'published': False,
+                'schema': self.monitoring_schema
             }
         ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -184,10 +207,10 @@ class DataSetsViewsTestCase(TestCase):
         )
 
     def test_list_with_trailing_slash_redirects_correctly(self):
-        response = self.client.get('/data-sets/?data-type=aaa',
-                                   HTTP_AUTHORIZATION=('Bearer '
-                                   'dev-data-set-query-token'),
-                                   follow=True)
+        response = self.client.get(
+            '/data-sets/?data-type=aaa',
+            HTTP_AUTHORIZATION=('Bearer dev-data-set-query-token'),
+            follow=True)
         assert_redirects(response, '/data-sets?data-type=aaa',
                          status_code=301, target_status_code=200)
 
@@ -321,4 +344,4 @@ class HealthCheckTestCase(TestCase):
         decoded = json.loads(self.response.content.decode('utf-8'))
         assert_equal(
             decoded,
-            {'message': 'Got 3 data sets.'})
+            {'message': 'Got 4 data sets.'})
