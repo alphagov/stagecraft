@@ -32,7 +32,7 @@ def get_schema(self):
         "definitions": {
             "_timestamp": load_json_schema('timestamp.json'),
         },
-        "allOf": [{"$ref": "#/definitions/timestamp"}]
+        "allOf": [{"$ref": "#/definitions/_timestamp"}]
     }
 
     data_type = self.data_type.name
