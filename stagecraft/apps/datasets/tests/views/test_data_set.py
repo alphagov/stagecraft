@@ -57,9 +57,53 @@ class DataSetsViewsTestCase(TestCase):
         return schema
 
     def _get_monitoring_schema():
-        schema_path = 'stagecraft/apps/datasets/schemas/monitoring.json'
-        with open(schema_path) as s_file:
-            return json.loads(s_file.read())
+        return {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/_timestamp"
+                },
+                {
+                    "$ref": "#/definitions/monitoring"
+                }
+            ],
+            "description": "Schema for monitoring-data-set",
+            "definitions": {
+                "_timestamp": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "_timestamp": {
+                            "description": "An ISO8601 formatted date time",
+                            "format": "date-time",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "_timestamp"
+                    ],
+                    "title": "Timestamps",
+                    "type": "object"
+                },
+                "monitoring": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "downtime": {
+                            "description": "Integer",
+                            "type": "integer"
+                        },
+                        "required": [
+                            "uptime",
+                            "downtime"
+                        ],
+                        "uptime": {
+                            "description": "Integer",
+                            "type": "integer"
+                        }
+                    },
+                    "title": "Monitoring",
+                    "type": "object"
+                }
+            }
+        }
 
     monitoring_schema = _get_monitoring_schema()
 
@@ -165,11 +209,20 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.monitoring_schema
+                'published': False
             }
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+        response_object = json.loads(resp.content.decode('utf-8'))
+        for i, record in enumerate(expected):
+            if record['data_group'] != 'monitoring':
+                record['schema'] = self._get_default_schema(record['name'])
+            else:
+                record['schema'] = self.monitoring_schema
+
+                assert_equal(
+                    record, response_object[i]
+                )
 
     def test_list_by_data_group(self):
         resp = self.client.get(
@@ -315,9 +368,22 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self.default_schema
+            'schema': self._get_default_schema('set1')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_monitoring_schema(self):
+
+        resp = self.client.get(
+            '/data-sets/monitoring-data-set',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+        assert_equal(resp.status_code, 200)
+
+        expected_schema = self.monitoring_schema
+
+        resp_json = json.loads(resp.content.decode('utf-8'))
+
+        assert_equal(resp_json['schema'], expected_schema)
 
     def test_detail_works_with_all_slugfield_characters(self):
         resp = self.client.get(
