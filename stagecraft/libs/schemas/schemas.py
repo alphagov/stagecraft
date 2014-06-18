@@ -1,21 +1,52 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from django.conf import settings
 from json import loads as json_loads
 from os import path
 
+SCHEMA_PATH = 'stagecraft/apps/datasets/schemas/'
+schema_root = path.join(
+    settings.BASE_DIR,
+    SCHEMA_PATH
+)
+DEFINED_SCHEMAS = {
+    'data_types': ['monitoring']
+}
+
+
+def load_json_schema(schema_name):
+
+    if not ".json" in schema_name:
+        schema_name = schema_name + ".json"
+
+    schema_path = path.join(schema_root, schema_name)
+
+    with open(schema_path) as schema_file:
+        return json_loads(schema_file.read())
+
 
 def get_schema(self):
 
-    schema_path = 'stagecraft/apps/datasets/schemas/timestamp.json'
+    schema = {
+        "description": "Combined schema for {}".format(self.name),
+        "definitions": {
+            "_timestamp": load_json_schema('timestamp.json'),
+        },
+        "required": ["_timestamp"],
+        "allOf": [{"$ref": "#/definitions/timestamp"}]
+    }
 
-    if(self.data_type == "monitoring"):
-        schema_path = 'stagecraft/apps/datasets/schemas/monitoring.json'
+    data_type = self.data_type.name
+    if data_type in DEFINED_SCHEMAS['data_types']:
+        try:
+            schema['definitions'][self.data_type.name] = load_json_schema(
+                self.data_type.name)
 
-    schema_root = path.join(
-        settings.BASE_DIR,
-        schema_path
-    )
-
-    with open(schema_root) as f:
-        schema = json_loads(f.read())
+            schema['allOf'].append(
+                {"$ref": "#/definitions/{}".format(self.data_type.name)}
+            )
+        except IOError as e:
+            logger.exception(e)
 
     return schema

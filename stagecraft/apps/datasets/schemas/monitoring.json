@@ -3,7 +3,6 @@
   "title": "Monitoring",
   "type": "object",
   "properties": {
-    "_timestamp": { "$ref": "#/schemas/timestamp"},
     "uptime": {
       "description": "Integer",
       "type": "integer"
