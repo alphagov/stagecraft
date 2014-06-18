@@ -27,9 +27,8 @@ def load_json_schema(schema_name):
 
 
 def get_schema(self):
-
     schema = {
-        "description": "Combined schema for {}".format(self.name),
+        "description": "Schema for {}".format(self.name),
         "definitions": {
             "_timestamp": load_json_schema('timestamp.json'),
         },
@@ -39,11 +38,11 @@ def get_schema(self):
     data_type = self.data_type.name
     if data_type in DEFINED_SCHEMAS['data_types']:
         try:
-            schema['definitions'][self.data_type.name] = load_json_schema(
+            schema['definitions'][data_type] = load_json_schema(
                 self.data_type.name)
 
-            schema['allOf'].append(
-                {"$ref": "#/definitions/{}".format(self.data_type.name)}
+            schema["allOf"].append(
+                {"$ref": "#/definitions/{}".format(data_type)}
             )
         except IOError as e:
             logger.exception(e)
