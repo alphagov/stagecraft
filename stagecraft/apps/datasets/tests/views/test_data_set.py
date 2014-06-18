@@ -31,19 +31,30 @@ class LongCacheTestCase(TestCase):
 class DataSetsViewsTestCase(TestCase):
     assert_equal.__self__.maxDiff = None
     fixtures = ['datasets_testdata.json']
-    default_schema = {
-        '$schema': 'http://json-schema.org/schema#',
-        'title': 'Timestamps',
-        'type': 'object',
-        'properties': {
-            '_timestamp': {
-                'description': 'An ISO8601 formatted date time',
-                'type': 'string',
-                'format': 'date-time'
+
+    base_schema = {
+        "definitions": {
+            "_timestamp": {
+                "$schema": "http://json-schema.org/schema#",
+                "title": "Timestamps",
+                "type": "object",
+                "properties": {
+                    "_timestamp": {
+                        "description": "An ISO8601 formatted date time",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+            "required": ["_timestamp"]
             }
         },
-        'required': ['_timestamp']
+        "allOf": [{"$ref": "#/definitions/_timestamp"}]
     }
+
+    def _get_default_schema(self, name=None):
+        schema = self.base_schema
+        schema["description"] = "Schema for {}".format(name)
+        return schema
 
     def _get_monitoring_schema():
         schema_path = 'stagecraft/apps/datasets/schemas/monitoring.json'
@@ -109,8 +120,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
             },
             {
                 'bearer_token': None,
@@ -125,8 +135,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
             },
             {
                 'name': 'abc_-0123456789',
@@ -141,8 +150,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
             },
             {
                 'name': 'monitoring-data-set',
@@ -183,10 +191,13 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
+                'schema': self._get_default_schema('set1')
             },
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+        assert_equal(
+            json.loads(resp.content.decode('utf-8')),
+            expected
+        )
 
     def test_list_filtering_works_with_hyphens_or_underscores(self):
         assert_equal(
@@ -246,7 +257,6 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
             },
             {
                 'bearer_token': None,
@@ -262,10 +272,15 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
             },
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+        response_object = json.loads(resp.content.decode('utf-8'))
+        for i, record in enumerate(expected):
+            record['schema'] = self._get_default_schema(record['name'])
+            assert_equal(
+                record, response_object[i]
+            )
 
     def test_list_nonexistant_key(self):
         resp = self.client.get(
@@ -323,7 +338,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self.default_schema
+            'schema': self._get_default_schema('abc_-0123456789')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
