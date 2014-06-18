@@ -29,6 +29,7 @@ class LongCacheTestCase(TestCase):
 
 
 class DataSetsViewsTestCase(TestCase):
+    assert_equal.__self__.maxDiff = None
     fixtures = ['datasets_testdata.json']
     default_schema = {
         '$schema': 'http://json-schema.org/schema#',
