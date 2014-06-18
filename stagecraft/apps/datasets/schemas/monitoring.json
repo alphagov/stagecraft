@@ -12,7 +12,7 @@
       "type": "integer"
     },
     "required": [
-      "uptime", "downtime", "_timestamp"
+      "uptime", "downtime"
     ]
   }
 }

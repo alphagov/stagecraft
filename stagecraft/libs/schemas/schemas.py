@@ -33,7 +33,6 @@ def get_schema(self):
         "definitions": {
             "_timestamp": load_json_schema('timestamp.json'),
         },
-        "required": ["_timestamp"],
         "allOf": [{"$ref": "#/definitions/timestamp"}]
     }
 
