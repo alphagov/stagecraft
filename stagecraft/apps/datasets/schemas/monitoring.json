@@ -1,18 +1,19 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "title": "Monitoring",
-  "type": "object",
-  "properties": {
-    "uptime": {
-      "description": "Integer",
-      "type": "integer"
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+        "downtime": {
+            "description": "Integer",
+            "type": "integer"
+        },
+        "required": [
+            "uptime",
+            "downtime"
+        ],
+        "uptime": {
+            "description": "Integer",
+            "type": "integer"
+        }
     },
-    "downtime": {
-      "description": "Integer",
-      "type": "integer"
-    },
-    "required": [
-      "uptime", "downtime"
-    ]
-  }
+    "title": "Monitoring",
+    "type": "object"
 }
