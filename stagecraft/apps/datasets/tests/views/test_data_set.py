@@ -467,18 +467,6 @@ class DataSetsSchemasTestCase(TestCase):
         )
 
         assert_that(
-            schema['allOf'],
-            contains(
-                has_entries({
-                    "$ref": equal_to("#/definitions/_timestamp")
-                }),
-                has_entries({
-                    "$ref": equal_to("#/definitions/customer-satisfaction")
-                })
-            )
-        )
-
-        assert_that(
             schema,
             has_entry(
                 'definitions', contains(
