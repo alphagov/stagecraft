@@ -66,7 +66,7 @@ class DataSetsViewsTestCase(TestCase):
                     "$ref": "#/definitions/monitoring"
                 }
             ],
-            "description": "Schema for monitoring-data-set",
+            "description": "Schema for group3/monitoring",
             "definitions": {
                 "_timestamp": {
                     "$schema": "http://json-schema.org/schema#",
@@ -90,17 +90,17 @@ class DataSetsViewsTestCase(TestCase):
                             "description": "Integer",
                             "type": "integer"
                         },
-                        "required": [
-                            "uptime",
-                            "downtime"
-                        ],
                         "uptime": {
                             "description": "Integer",
                             "type": "integer"
                         }
                     },
                     "title": "Monitoring",
-                    "type": "object"
+                    "type": "object",
+                    "required": [
+                        "uptime",
+                        "downtime"
+                    ],
                 }
             }
         }
@@ -216,7 +216,10 @@ class DataSetsViewsTestCase(TestCase):
         response_object = json.loads(resp.content.decode('utf-8'))
         for i, record in enumerate(expected):
             if record['data_group'] != 'monitoring':
-                record['schema'] = self._get_default_schema(record['name'])
+                record['schema'] = self._get_default_schema(
+                    record['data_group'] + "/" +
+                    record['data_type']
+                )
             else:
                 record['schema'] = self.monitoring_schema
 
@@ -244,7 +247,7 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self._get_default_schema('set1')
+                'schema': self._get_default_schema('group1/type1')
             },
         ]
         assert_equal(
@@ -330,7 +333,10 @@ class DataSetsViewsTestCase(TestCase):
 
         response_object = json.loads(resp.content.decode('utf-8'))
         for i, record in enumerate(expected):
-            record['schema'] = self._get_default_schema(record['name'])
+            record['schema'] = self._get_default_schema(
+                record['data_group'] + "/" +
+                record['data_type']
+            )
             assert_equal(
                 record, response_object[i]
             )
@@ -368,7 +374,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self._get_default_schema('set1')
+            'schema': self._get_default_schema('group1/type1')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
@@ -404,7 +410,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self._get_default_schema('abc_-0123456789')
+            'schema': self._get_default_schema('group3/type3')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
