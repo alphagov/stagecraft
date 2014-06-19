@@ -90,17 +90,17 @@ class DataSetsViewsTestCase(TestCase):
                             "description": "Integer",
                             "type": "integer"
                         },
-                        "required": [
-                            "uptime",
-                            "downtime"
-                        ],
                         "uptime": {
                             "description": "Integer",
                             "type": "integer"
                         }
                     },
                     "title": "Monitoring",
-                    "type": "object"
+                    "type": "object",
+                    "required": [
+                        "uptime",
+                        "downtime"
+                    ],
                 }
             }
         }
