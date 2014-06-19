@@ -491,3 +491,49 @@ class DataSetsSchemasTestCase(TestCase):
                 )
             )
         )
+
+    def test_realtime_dataset(self):
+
+        resp = self.client.get(
+            '/data-sets/realtime-mowers',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+        )
+        assert_equal(resp.status_code, 200)
+
+        resp_json = json.loads(resp.content.decode('utf-8'))
+        schema = resp_json['schema']
+
+        assert_that(
+            schema,
+            has_entries(
+                'allOf',
+                contains(
+                    has_entries({
+                        "$ref": equal_to("#/definitions/_timestamp")
+                    }),
+                    has_entries({
+                        "$ref": equal_to("#/definitions/realtime")
+                    })
+                )
+            )
+        )
+
+        assert_that(
+            schema,
+            has_entry(
+                'definitions', contains(
+                    '_timestamp', 'realtime'
+                )
+            )
+        )
+
+        assert_that(
+            schema['definitions']['realtime'],
+            has_entry(
+                'required',
+                contains(
+                    "for_url",
+                    "unique_visitors"
+                )
+            )
+        )
