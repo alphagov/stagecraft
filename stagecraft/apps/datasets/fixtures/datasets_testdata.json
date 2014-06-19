@@ -42,6 +42,13 @@
     }
 },
 {
+    "pk": 4,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "monitoring"
+    }
+},
+{
     "pk": 1,
     "model": "datasets.dataset",
     "fields": {
@@ -92,6 +99,26 @@
         "capped_size": null,
         "name": "abc_-0123456789",
         "data_type": 3,
+        "realtime": false,
+        "auto_ids": "",
+        "max_age_expected": 86400,
+        "data_group": 3,
+        "upload_filters": "",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
+},
+{
+    "pk": 4,
+    "model": "datasets.dataset",
+    "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "monitoring-data-set",
+        "data_type": 4,
         "realtime": false,
         "auto_ids": "",
         "max_age_expected": 86400,

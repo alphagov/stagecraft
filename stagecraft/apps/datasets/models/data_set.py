@@ -215,7 +215,7 @@ class DataSet(models.Model):
             ('capped_size',         self.capped_size),
             ('max_age_expected',    self.max_age_expected),
             ('published',           self.published),
-            ('schema',              get_schema()),
+            ('schema',              get_schema(self)),
         ])
 
     def clean(self, *args, **kwargs):

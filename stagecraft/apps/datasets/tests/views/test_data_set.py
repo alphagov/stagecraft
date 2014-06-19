@@ -29,20 +29,83 @@ class LongCacheTestCase(TestCase):
 
 
 class DataSetsViewsTestCase(TestCase):
+    assert_equal.__self__.maxDiff = None
     fixtures = ['datasets_testdata.json']
-    default_schema = {
-        '$schema': 'http://json-schema.org/schema#',
-        'title': 'Timestamps',
-        'type': 'object',
-        'properties': {
-            '_timestamp': {
-                'description': 'An ISO8601 formatted date time',
-                'type': 'string',
-                'format': 'date-time'
+
+    base_schema = {
+        "definitions": {
+            "_timestamp": {
+                "$schema": "http://json-schema.org/schema#",
+                "title": "Timestamps",
+                "type": "object",
+                "properties": {
+                    "_timestamp": {
+                        "description": "An ISO8601 formatted date time",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+            "required": ["_timestamp"]
             }
         },
-        'required': ['_timestamp']
+        "allOf": [{"$ref": "#/definitions/_timestamp"}]
     }
+
+    def _get_default_schema(self, name=None):
+        schema = self.base_schema
+        schema["description"] = "Schema for {}".format(name)
+        return schema
+
+    def _get_monitoring_schema():
+        return {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/_timestamp"
+                },
+                {
+                    "$ref": "#/definitions/monitoring"
+                }
+            ],
+            "description": "Schema for monitoring-data-set",
+            "definitions": {
+                "_timestamp": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "_timestamp": {
+                            "description": "An ISO8601 formatted date time",
+                            "format": "date-time",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "_timestamp"
+                    ],
+                    "title": "Timestamps",
+                    "type": "object"
+                },
+                "monitoring": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "downtime": {
+                            "description": "Integer",
+                            "type": "integer"
+                        },
+                        "required": [
+                            "uptime",
+                            "downtime"
+                        ],
+                        "uptime": {
+                            "description": "Integer",
+                            "type": "integer"
+                        }
+                    },
+                    "title": "Monitoring",
+                    "type": "object"
+                }
+            }
+        }
+
+    monitoring_schema = _get_monitoring_schema()
 
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
@@ -101,8 +164,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
             },
             {
                 'bearer_token': None,
@@ -117,8 +179,7 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
             },
             {
                 'name': 'abc_-0123456789',
@@ -133,11 +194,35 @@ class DataSetsViewsTestCase(TestCase):
                 'queryable': True,
                 'upload_format': '',
                 'raw_queries_allowed': True,
-                'published': False,
-                'schema': self.default_schema
+                'published': False
+            },
+            {
+                'name': 'monitoring-data-set',
+                'data_group': 'group3',
+                'data_type': 'monitoring',
+                'bearer_token': None,
+                'capped_size': None,
+                'realtime': False,
+                'auto_ids': [],
+                'max_age_expected': 86400,
+                'upload_filters': [],
+                'queryable': True,
+                'upload_format': '',
+                'raw_queries_allowed': True,
+                'published': False
             }
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+        response_object = json.loads(resp.content.decode('utf-8'))
+        for i, record in enumerate(expected):
+            if record['data_group'] != 'monitoring':
+                record['schema'] = self._get_default_schema(record['name'])
+            else:
+                record['schema'] = self.monitoring_schema
+
+                assert_equal(
+                    record, response_object[i]
+                )
 
     def test_list_by_data_group(self):
         resp = self.client.get(
@@ -159,10 +244,13 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
+                'schema': self._get_default_schema('set1')
             },
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+        assert_equal(
+            json.loads(resp.content.decode('utf-8')),
+            expected
+        )
 
     def test_list_filtering_works_with_hyphens_or_underscores(self):
         assert_equal(
@@ -184,10 +272,10 @@ class DataSetsViewsTestCase(TestCase):
         )
 
     def test_list_with_trailing_slash_redirects_correctly(self):
-        response = self.client.get('/data-sets/?data-type=aaa',
-                                   HTTP_AUTHORIZATION=('Bearer '
-                                   'dev-data-set-query-token'),
-                                   follow=True)
+        response = self.client.get(
+            '/data-sets/?data-type=aaa',
+            HTTP_AUTHORIZATION=('Bearer dev-data-set-query-token'),
+            follow=True)
         assert_redirects(response, '/data-sets?data-type=aaa',
                          status_code=301, target_status_code=200)
 
@@ -222,7 +310,6 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
             },
             {
                 'bearer_token': None,
@@ -238,10 +325,15 @@ class DataSetsViewsTestCase(TestCase):
                 'upload_format': '',
                 'raw_queries_allowed': True,
                 'published': False,
-                'schema': self.default_schema
             },
         ]
-        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+        response_object = json.loads(resp.content.decode('utf-8'))
+        for i, record in enumerate(expected):
+            record['schema'] = self._get_default_schema(record['name'])
+            assert_equal(
+                record, response_object[i]
+            )
 
     def test_list_nonexistant_key(self):
         resp = self.client.get(
@@ -276,9 +368,22 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self.default_schema
+            'schema': self._get_default_schema('set1')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_monitoring_schema(self):
+
+        resp = self.client.get(
+            '/data-sets/monitoring-data-set',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+        assert_equal(resp.status_code, 200)
+
+        expected_schema = self.monitoring_schema
+
+        resp_json = json.loads(resp.content.decode('utf-8'))
+
+        assert_equal(resp_json['schema'], expected_schema)
 
     def test_detail_works_with_all_slugfield_characters(self):
         resp = self.client.get(
@@ -299,7 +404,7 @@ class DataSetsViewsTestCase(TestCase):
             'upload_format': '',
             'raw_queries_allowed': True,
             'published': False,
-            'schema': self.default_schema
+            'schema': self._get_default_schema('abc_-0123456789')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
@@ -321,4 +426,4 @@ class HealthCheckTestCase(TestCase):
         decoded = json.loads(self.response.content.decode('utf-8'))
         assert_equal(
             decoded,
-            {'message': 'Got 3 data sets.'})
+            {'message': 'Got 4 data sets.'})
