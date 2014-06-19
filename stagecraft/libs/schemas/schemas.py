@@ -30,7 +30,11 @@ def load_json_schema(schema_path):
 
 def get_schema(data_set_model):
     schema = {
-        "description": "Schema for {}".format(data_set_model.name),
+        "description": "Schema for {}".format(
+            data_set_model.data_group.name +
+            "/" +
+            data_set_model.data_type.name
+        ),
         "definitions": {
             "_timestamp": load_json_schema('timestamp.json'),
         },
@@ -41,7 +45,7 @@ def get_schema(data_set_model):
     if data_type in get_defined_schemas('data-types'):
         try:
             schema['definitions'][data_type] = load_json_schema(
-                'data-types/'+data_set_model.data_type.name)
+                'data-types/' + data_set_model.data_type.name)
 
             schema["allOf"].append(
                 {"$ref": "#/definitions/{}".format(data_type)}
