@@ -1,0 +1,37 @@
+[
+{
+    "pk": 1,
+    "model": "datasets.datagroup",
+    "fields": {
+        "name": "scooters"
+    }
+},
+{
+    "pk": 1,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "customer-satisfaction"
+    }
+},
+{
+    "pk": 1,
+    "model": "datasets.dataset",
+    "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "data-scootah",
+        "data_type": 1,
+        "realtime": false,
+        "auto_ids": "aa",
+        "max_age_expected": 86400,
+        "data_group": 1,
+        "upload_filters": "backdrop.filter.1",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
+}
+
+]

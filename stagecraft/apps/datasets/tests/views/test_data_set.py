@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 
 import json
 from nose.tools import assert_equal
-from hamcrest import assert_that
+from hamcrest import assert_that, contains, has_entries, equal_to, \
+    has_entry
 
 from django.test import TestCase
 from django_nose.tools import assert_redirects
@@ -45,7 +46,7 @@ class DataSetsViewsTestCase(TestCase):
                         "format": "date-time"
                     }
                 },
-            "required": ["_timestamp"]
+                "required": ["_timestamp"]
             }
         },
         "allOf": [{"$ref": "#/definitions/_timestamp"}]
@@ -433,3 +434,72 @@ class HealthCheckTestCase(TestCase):
         assert_equal(
             decoded,
             {'message': 'Got 4 data sets.'})
+
+
+class DataSetsSchemasTestCase(TestCase):
+    assert_equal.__self__.maxDiff = None
+    fixtures = ['datasets_testschemas.json']
+
+    def test_customer_satisfaction_schema(self):
+
+        resp = self.client.get(
+            '/data-sets/data-scootah',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+        )
+        assert_equal(resp.status_code, 200)
+
+        resp_json = json.loads(resp.content.decode('utf-8'))
+        schema = resp_json['schema']
+
+        assert_that(
+            schema,
+            has_entries(
+                'allOf',
+                contains(
+                    has_entries({
+                        "$ref": equal_to("#/definitions/_timestamp")
+                    }),
+                    has_entries({
+                        "$ref": equal_to("#/definitions/customer-satisfaction")
+                    })
+                )
+            )
+        )
+
+        assert_that(
+            schema['allOf'],
+            contains(
+                has_entries({
+                    "$ref": equal_to("#/definitions/_timestamp")
+                }),
+                has_entries({
+                    "$ref": equal_to("#/definitions/customer-satisfaction")
+                })
+            )
+        )
+
+        assert_that(
+            schema,
+            has_entry(
+                'definitions', contains(
+                    'customer-satisfaction', '_timestamp'
+                )
+            )
+        )
+
+        assert_that(
+            schema['definitions']['customer-satisfaction'],
+            has_entry(
+                'required',
+                contains(
+                    "comments",
+                    "rating_1",
+                    "rating_2",
+                    "rating_3",
+                    "rating_4",
+                    "rating_5",
+                    "slug",
+                    "total"
+                )
+            )
+        )
