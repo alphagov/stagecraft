@@ -189,7 +189,7 @@ class DataSet(models.Model):
             backdrop_url=settings.BACKDROP_URL,
             data_group=self.data_group,
             data_type=self.data_type)
-        return '<a href="{0}">{0}</a>'.format(path)
+        return '<a href="{0}?limit=10">{0}</a>'.format(path)
     data_location.allow_tags = True
 
     def serialize(self):
