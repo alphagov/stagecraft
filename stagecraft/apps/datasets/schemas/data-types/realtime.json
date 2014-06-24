@@ -6,7 +6,7 @@
             "description": "url parameter indicating the monitored page"
         },
         "unique_visitors": {
-            "type": "Integer",
+            "type": "integer",
             "description": "number of unique_visitors at this time"
         }
     },
