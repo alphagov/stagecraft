@@ -9,6 +9,7 @@ from ..helpers.validators import data_type_name_validator
 class DataType(models.Model):
     name = models.SlugField(max_length=50, unique=True,
                             validators=[data_type_name_validator])
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return "{}".format(self.name)
