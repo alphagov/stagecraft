@@ -28,25 +28,26 @@ export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
 
 # Initialising/adding models
 
-Before the server is run for the first time, and whenever a model is changed,
-the local database (called ``db.sqlite3``) needs to be synced.
+Before the server is run for the first time the database needs to be synced.
 
 *Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
-
 ```
-python manage.py syncdb --migrate
-```
-
-**Need to setup a new superadmin?**
-```
-python manage.py createsuperuser --username=<ADMIN_USER_NAME> --email=<YOUR_EMAIL_ADDRESS>
+python manage.py syncdb
 ```
 
+After creating a model, create the initial migration script with:
+```
+python manage.py schemamigration datasets --initial
+```
 
-In order to generate migrations for a newly added model run:
-
+and then after making any changes to the model, create new migration scripts with:
 ```
 python manage.py schemamigration datasets --auto
+```
+
+Apply migration scripts with:
+```
+python manage.py migrate datasets
 ```
 
 This project uses django-reversion to provide version control functionality.
@@ -62,6 +63,11 @@ python manage.py createinitialrevisions
 should be used to populate the version database with an initial set of model
 data. Depending on the number of rows in the database, this command can take a
 while to execute.
+
+**Need to setup a new superadmin?**
+```
+python manage.py createsuperuser --username=<ADMIN_USER_NAME> --email=<YOUR_EMAIL_ADDRESS>
+```
 
 # Running
 
