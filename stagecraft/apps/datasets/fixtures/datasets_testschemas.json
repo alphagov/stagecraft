@@ -66,7 +66,39 @@
         "upload_format": "",
         "raw_queries_allowed": true
     }
+},
+{
+    "pk": 3,
+    "model": "datasets.datagroup",
+    "fields": {
+        "name": "jonathan_datagroup"
+    }
+},
+{
+    "pk": 3,
+    "model": "datasets.datatype",
+    "fields": {
+        "name": "transactions-by-channel"
+    }
+},
+{
+    "pk": 3,
+    "model": "datasets.dataset",
+    "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "jonathan_datagroup_transactions_by_channel",
+        "data_type": 3,
+        "realtime": false,
+        "auto_ids": "aa",
+        "max_age_expected": 86400,
+        "data_group": 3,
+        "upload_filters": "backdrop.filter.1",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+    }
 }
-
-
 ]
