@@ -251,14 +251,15 @@ class DataSet(models.Model):
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.clean()
-        is_insert = self.pk is None
-        self.name = self.generate_data_set_name()
+        is_new = self.pk is None
+        if is_new:
+            self.name = self.generate_data_set_name()
         super(DataSet, self).save(*args, **kwargs)
-        size_bytes = self.capped_size if self.is_capped else 0
 
-        # Backdrop can't be rolled back dude.
-        # Ensure this is the final action of the save method.
-        if is_insert:
+        if is_new:
+            size_bytes = self.capped_size if self.is_capped else 0
+            # Backdrop can't be rolled back dude.
+            # Ensure this is the final action of the save method.
             create_data_set(self.name, size_bytes)
 
         purge(get_data_set_path_queries(self))
