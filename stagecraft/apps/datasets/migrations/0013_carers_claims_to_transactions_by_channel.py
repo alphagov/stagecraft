@@ -31,65 +31,96 @@ value_mapping = {
 }
 
 
-class Backdropping(object):
+def _get_output_data_set():
+    data_set = client.from_name(base_url, output_set)
+    data_set.set_token(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN)
+    return data_set
 
-    def _get_output_data_set():
-        data_set = client.from_name(base_url, output_set)
-        data_set.set_token(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN)
-        return data_set
 
-    def get_data_from_claims_sets():
-        input_data = []
-        for set_name in input_sets:
-            data_set = client.from_name(base_url, set_name)
-            for item in data_set.get().json()['data']:
-                input_data.append(item)
-        return input_data
+def _generate_bearer_token():
+    chars = "abcdefghjkmnpqrstuvwxyz23456789"
+    token = "".join(map(random.choice, repeat(chars, BEARER_TOKEN_LENGTH)))
+    print('generated token {}'.format(token))
+    return token
 
-    def apply_new_key_mappings(document):
-        for key, val in document.items():
-            if key in key_mapping:
-                document.pop(key)
-                document[key_mapping[key]] = val
-            else:
-                document[key] = val
-        return document
 
-    def apply_new_values(document):
-        for key, val in document.items():
-            if val in value_mapping:
-                document['comment'] = val
-                document[key] = value_mapping[val]
-        return document
+def get_data_from_claims_sets():
+    input_data = []
+    for set_name in input_sets:
+        data_set = client.from_name(base_url, set_name)
+        for item in data_set.get().json()['data']:
+            input_data.append(item)
+    return input_data
 
-    def build_documents(documents):
-        docs = []
-        for document in documents:
-            doc = apply_new_values(apply_new_key_mappings(document))
-            docs.append(doc)
-        return docs
 
-    def post_docs_to_production(documents):
-        data_set = _get_output_data_set()
-        data_set.post(documents)
+def apply_new_key_mappings(document):
+    for key, val in document.items():
+        if key in key_mapping:
+            document.pop(key)
+            document[key_mapping[key]] = val
+        else:
+            document[key] = val
+    return document
 
-    def clear_docs_from_output_set():
-        data_set = _get_output_data_set()
-        data_set.empty_data_set()
+
+def apply_new_values(document):
+    for key, val in document.items():
+        if val in value_mapping:
+            document['comment'] = val
+            document[key] = value_mapping[val]
+    return document
+
+
+def build_documents(documents):
+    docs = []
+    for document in documents:
+        doc = apply_new_values(apply_new_key_mappings(document))
+        docs.append(doc)
+    return docs
+
+
+def post_docs_to_production(documents):
+    data_set = _get_output_data_set()
+    data_set.post(documents)
+
+
+def clear_docs_from_output_set():
+    data_set = _get_output_data_set()
+    data_set.empty_data_set()
+
+
+def get_or_create_carers_transactions_by_channel(orm):
+    try:
+        return orm['datasets.DataSet'].objects.get(
+            name=output_set
+        )
+    except orm['datasets.DataSet'].DoesNotExist:
+        by_transaction = orm['datasets.DataSet'].create(
+            name=output_set,
+            data_group=models.ForeignKey('carers_allowance'),
+            data_type=models.ForeignKey('transactions_by_channel'),
+            bearer_token=_generate_bearer_token(),
+            upload_format='excel',
+            upload_filters='backdrop.core.upload.filters.first_sheet_filter',
+            max_age_expected=2678400,
+            published=True
+        )
+        return by_transaction
 
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        Backdropping.post_docs_to_production(
-            Backdropping.build_documents(
-                Backdropping.get_data_from_claims_sets()
+        get_or_create_carers_transactions_by_channel(orm)
+        post_docs_to_production(
+            build_documents(
+                get_data_from_claims_sets()
             )
         )
 
     def backwards(self, orm):
         "Write your backwards methods here."
-        Backdropping.clear_docs_from_output_set()
+        clear_docs_from_output_set()
 
     models = {
         u'datasets.backdropuser': {
