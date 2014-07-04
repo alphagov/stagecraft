@@ -3,7 +3,9 @@
 # from south.v2 import DataMigration
 # from django.db import models
 # from django.db.models import Q
+from __future__ import unicode_literals
 
+import pprint as pp
 import json
 from performanceplatform.client import DataSet as client
 
@@ -21,18 +23,47 @@ key_mapping = {
     "value": "count"
 }
 
-import pprint as pp
+value_mapping = {
+
+}
 
 
 def get_data_from_claims_sets():
     input_data = []
     for set_name in input_sets:
         data_set = client.from_name(base_url, set_name)
-        pp.pprint(data_set.url)
-        input_data.append(data_set.get().json())
+        for item in data_set.get().json()['data']:
+            input_data.append(item)
     return input_data
 
-pp.pprint(get_data_from_claims_sets())
+
+def apply_new_key_mappings(documents):
+    docs = []
+    for document in documents:
+        for key, val in document.items():
+            if key in key_mapping:
+                document.pop(key)
+                document[key_mapping[key]] = val
+            else:
+                document[key] = val
+        docs.append(document)
+    return docs
+
+
+def unique_vals(docs):
+    for doc in docs:
+        pp.pprint(doc['channel'])
+    return set([doc['channel']] for doc in docs)
+
+
+input_sets_data = get_data_from_claims_sets()
+new = apply_new_key_mappings(input_sets_data)
+pp.pprint(len(input_sets_data))
+pp.pprint(len(new))
+pp.pprint(new[0])
+
+# unique_vals(new)
+# pp.pprint(apply_new_key_mappings(input_sets_data))
 
 
 class Migration(DataMigration):
@@ -49,9 +80,30 @@ class Migration(DataMigration):
     models = {
         u'datasets.backdropuser': {
             'Meta': {'ordering': "[u'email']", 'object_name': 'BackdropUser'},
-            'data_sets': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['datasets.DataSet']", 'symmetrical': 'False', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'unique': 'True', 'max_length': '254'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+            'data_sets': (
+                'django.db.models.fields.related.ManyToManyField',
+                [],
+                {
+                    'to': u"orm['datasets.DataSet']",
+                    'symmetrical': 'False',
+                    'blank': 'True'
+                }
+            ),
+            'email': (
+                'django.db.models.fields.EmailField',
+                [],
+                {
+                    'unique': 'True',
+                    'max_length': '254'
+                }
+            ),
+            u'id': (
+                'django.db.models.fields.AutoField',
+                [],
+                {
+                    'primary_key': 'True'
+                }
+            )
         },
         u'datasets.datagroup': {
             'Meta': {'ordering': "[u'name']", 'object_name': 'DataGroup'},
