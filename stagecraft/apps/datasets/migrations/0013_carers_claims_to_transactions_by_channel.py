@@ -97,8 +97,8 @@ def get_or_create_carers_transactions_by_channel(orm):
     except orm['datasets.DataSet'].DoesNotExist:
         by_transaction = orm['datasets.DataSet'].create(
             name=output_set,
-            data_group=models.ForeignKey('carers_allowance'),
-            data_type=models.ForeignKey('transactions_by_channel'),
+            data_group='carers_allowance',
+            data_type='transactions_by_channel',
             bearer_token=_generate_bearer_token(),
             upload_format='excel',
             upload_filters='backdrop.core.upload.filters.first_sheet_filter',
