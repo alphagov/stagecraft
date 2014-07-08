@@ -11,7 +11,7 @@ import pprint as pp
 import json
 from performanceplatform.client import DataSet as client
 
-base_url = 'https://www.development.performance.service.gov.uk'
+base_url = 'https://www.preview.performance.service.gov.uk'
 
 input_sets = [
     'carers_allowance_monthly_claims',
@@ -31,9 +31,12 @@ value_mapping = {
 }
 
 
-def _get_output_data_set():
+def _get_output_data_set(token=None):
     data_set = client.from_name(base_url, output_set)
-    data_set.set_token(settings.STAGECRAFT_COLLECTION_ENDPOINT_TOKEN)
+    if token is not None:
+        data_set.set_token(token)
+    else:
+        data_set.set_token(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
     return data_set
 
 
@@ -66,7 +69,7 @@ def apply_new_key_mappings(document):
 def apply_new_values(document):
     for key, val in document.items():
         if val in value_mapping:
-            document['comment'] = val
+            document['comment'] = str(document['comment']) + " / " + val
             document[key] = value_mapping[val]
     return document
 
@@ -97,8 +100,8 @@ def get_or_create_carers_transactions_by_channel(orm):
     except orm['datasets.DataSet'].DoesNotExist:
         by_transaction = orm['datasets.DataSet'].create(
             name=output_set,
-            data_group='carers_allowance',
-            data_type='transactions_by_channel',
+            data_group='carers-allowance',
+            data_type='transactions-by-channel',
             bearer_token=_generate_bearer_token(),
             upload_format='excel',
             upload_filters='backdrop.core.upload.filters.first_sheet_filter',
