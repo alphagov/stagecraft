@@ -1,104 +1,104 @@
 [
-{
-    "pk": 1,
-    "model": "datasets.datagroup",
-    "fields": {
-        "name": "scooters"
+    {
+        "fields": {
+            "name": "scooters"
+        },
+        "model": "datasets.datagroup",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "name": "customer-satisfaction"
+        },
+        "model": "datasets.datatype",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "auto_ids": "aa",
+            "bearer_token": "",
+            "capped_size": null,
+            "created": "2014-06-05 00:00:00",
+            "data_group": 1,
+            "data_type": 1,
+            "max_age_expected": 86400,
+            "modified": "2014-06-05 00:00:00",
+            "name": "data-scootah",
+            "queryable": true,
+            "raw_queries_allowed": true,
+            "realtime": false,
+            "upload_filters": "backdrop.filter.1",
+            "upload_format": ""
+        },
+        "model": "datasets.dataset",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "name": "mowers"
+        },
+        "model": "datasets.datagroup",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "name": "realtime"
+        },
+        "model": "datasets.datatype",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "auto_ids": "aa",
+            "bearer_token": "",
+            "capped_size": null,
+            "created": "2014-06-05 00:00:00",
+            "data_group": 2,
+            "data_type": 2,
+            "max_age_expected": 86400,
+            "modified": "2014-06-05 00:00:00",
+            "name": "realtime-mowers",
+            "queryable": true,
+            "raw_queries_allowed": true,
+            "realtime": false,
+            "upload_filters": "backdrop.filter.1",
+            "upload_format": ""
+        },
+        "model": "datasets.dataset",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "name": "jonathan_datagroup"
+        },
+        "model": "datasets.datagroup",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "name": "transactions-by-channel"
+        },
+        "model": "datasets.datatype",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "auto_ids": "aa",
+            "bearer_token": "",
+            "capped_size": null,
+            "created": "2014-06-05 00:00:00",
+            "data_group": 3,
+            "data_type": 3,
+            "max_age_expected": 86400,
+            "modified": "2014-06-05 00:00:00",
+            "name": "jonathan_datagroup_transactions_by_channel",
+            "queryable": true,
+            "raw_queries_allowed": true,
+            "realtime": false,
+            "upload_filters": "backdrop.filter.1",
+            "upload_format": ""
+        },
+        "model": "datasets.dataset",
+        "pk": 3
     }
-},
-{
-    "pk": 1,
-    "model": "datasets.datatype",
-    "fields": {
-        "name": "customer-satisfaction"
-    }
-},
-{
-    "pk": 1,
-    "model": "datasets.dataset",
-    "fields": {
-        "created": "2014-06-05 00:00:00",
-        "modified": "2014-06-05 00:00:00",
-        "bearer_token": "",
-        "capped_size": null,
-        "name": "data-scootah",
-        "data_type": 1,
-        "realtime": false,
-        "auto_ids": "aa",
-        "max_age_expected": 86400,
-        "data_group": 1,
-        "upload_filters": "backdrop.filter.1",
-        "queryable": true,
-        "upload_format": "",
-        "raw_queries_allowed": true
-    }
-},
-{
-    "pk": 2,
-    "model": "datasets.datagroup",
-    "fields": {
-        "name": "mowers"
-    }
-},
-{
-    "pk": 2,
-    "model": "datasets.datatype",
-    "fields": {
-        "name": "realtime"
-    }
-},
-{
-    "pk": 2,
-    "model": "datasets.dataset",
-    "fields": {
-        "created": "2014-06-05 00:00:00",
-        "modified": "2014-06-05 00:00:00",
-        "bearer_token": "",
-        "capped_size": null,
-        "name": "realtime-mowers",
-        "data_type": 2,
-        "realtime": false,
-        "auto_ids": "aa",
-        "max_age_expected": 86400,
-        "data_group": 2,
-        "upload_filters": "backdrop.filter.1",
-        "queryable": true,
-        "upload_format": "",
-        "raw_queries_allowed": true
-    }
-},
-{
-    "pk": 3,
-    "model": "datasets.datagroup",
-    "fields": {
-        "name": "jonathan_datagroup"
-    }
-},
-{
-    "pk": 3,
-    "model": "datasets.datatype",
-    "fields": {
-        "name": "transactions-by-channel"
-    }
-},
-{
-    "pk": 3,
-    "model": "datasets.dataset",
-    "fields": {
-        "created": "2014-06-05 00:00:00",
-        "modified": "2014-06-05 00:00:00",
-        "bearer_token": "",
-        "capped_size": null,
-        "name": "jonathan_datagroup_transactions_by_channel",
-        "data_type": 3,
-        "realtime": false,
-        "auto_ids": "aa",
-        "max_age_expected": 86400,
-        "data_group": 3,
-        "upload_filters": "backdrop.filter.1",
-        "queryable": true,
-        "upload_format": "",
-        "raw_queries_allowed": true
-    }
-}
 ]
