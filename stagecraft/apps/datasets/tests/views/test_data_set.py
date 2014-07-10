@@ -440,6 +440,53 @@ class DataSetsSchemasTestCase(TestCase):
     assert_equal.__self__.maxDiff = None
     fixtures = ['datasets_testschemas.json']
 
+    def test_transactions_by_channel_schema(self):
+
+        resp = self.client.get(
+            '/data-sets/jonathan_datagroup_transactions_by_channel',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+        )
+        assert_equal(resp.status_code, 200)
+
+        resp_json = json.loads(resp.content.decode('utf-8'))
+        schema = resp_json['schema']
+
+        assert_that(
+            schema,
+            has_entries(
+                'allOf',
+                contains(
+                    has_entries({
+                        "$ref": equal_to("#/definitions/_timestamp")
+                    }),
+                    has_entries({
+                        "$ref": equal_to(
+                            "#/definitions/transactions-by-channel")
+                    })
+                )
+            )
+        )
+
+        assert_that(
+            schema,
+            has_entry(
+                'definitions', contains(
+                    'transactions-by-channel', '_timestamp'
+                )
+            )
+        )
+        assert_that(
+            schema['definitions']['transactions-by-channel'],
+            has_entry(
+                'required',
+                contains(
+                    "count",
+                    "period",
+                    "channel"
+                )
+            )
+        )
+
     def test_customer_satisfaction_schema(self):
 
         resp = self.client.get(
