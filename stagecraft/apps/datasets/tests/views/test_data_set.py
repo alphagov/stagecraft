@@ -481,7 +481,6 @@ class DataSetsSchemasTestCase(TestCase):
                 'required',
                 contains(
                     "count",
-                    "period",
                     "channel"
                 )
             )

@@ -24,7 +24,6 @@
     },
     "required": [
         "count",
-        "period",
         "channel"
     ],
     "title": "Transactions by channel",
