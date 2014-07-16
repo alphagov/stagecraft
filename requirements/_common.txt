@@ -8,3 +8,6 @@ logstash_formatter==0.5.7
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.2
+
+# For performing data operations that require speaking to backdrop
+-e git+https://github.com/alphagov/performanceplatform-client.git@0.0.5#egg=performanceplatform-client
