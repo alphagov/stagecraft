@@ -13,7 +13,8 @@ from django.utils.encoding import python_2_unicode_compatible
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
-from stagecraft.libs.backdrop_client import create_data_set, delete_data_set
+from stagecraft.libs.backdrop_client import (create_data_set, delete_data_set,
+                                             BackdropNotFoundError)
 from stagecraft.libs.schemas import get_schema
 
 from stagecraft.libs.purge_varnish import purge
@@ -21,6 +22,7 @@ from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
 import reversion
+import logging
 
 
 class ImmutableFieldError(ValidationError):
@@ -275,7 +277,17 @@ class DataSet(models.Model):
                 and self.capped_size > 0)
 
     def delete(self, *args, **kwargs):
-        delete_data_set(self.name)
+        try:
+            delete_data_set(self.name)
+        except BackdropNotFoundError:
+            # if the dataset doesn't exist in backdrop, safe to delete it from
+            # stagecraft
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                'Deleting data_set {} that doesnt exist in backdrop'.format(
+                    self.name
+                )
+            )
         super(DataSet, self).delete(*args, **kwargs)
         purge(get_data_set_path_queries(self))
 

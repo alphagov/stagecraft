@@ -20,7 +20,7 @@ from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.apps.datasets.models.data_set import ImmutableFieldError
 
 from stagecraft.libs.backdrop_client import (
-    BackdropError, disable_backdrop_connection)
+    BackdropError, disable_backdrop_connection, BackdropNotFoundError)
 
 from stagecraft.libs.purge_varnish import disable_purge_varnish
 
@@ -375,6 +375,24 @@ class BackdropIntegrationTestCase(TransactionTestCase):
 
             data_set.delete()
         mock_delete_data_set.assert_called_once_with(data_set.name)
+
+    @disable_purge_varnish
+    @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
+    @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
+    def test_data_set_deleted_when_backdrop_404s(self, mock_delete_data_set,
+                                                 mock_create_data_set):
+        mock_delete_data_set.side_effect = BackdropNotFoundError
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set = DataSet.objects.create(
+                data_group=data_group,
+                data_type=data_type)
+
+            try:
+                data_set.delete()
+            except BackdropNotFoundError:
+                self.fail('Deleting dataset raised a 404 error')
+        mock_delete_data_set.assert_called_once_with(data_set.name)
+        assert_equal(0, len(DataSet.objects.filter(name=data_set.name)))
 
     @disable_purge_varnish
     @mock.patch('stagecraft.apps.datasets.models.data_set.create_data_set')
