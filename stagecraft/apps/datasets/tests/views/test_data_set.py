@@ -94,13 +94,13 @@ class DataSetsViewsTestCase(TestCase):
     def test_list_vary_on_authorization_header(self):
         resp = self.client.get(
             '/data-sets',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_that(resp, has_header('Vary', 'Authorization'))
 
     def test_detail_vary_on_authorization_header(self):
         resp = self.client.get(
             '/data-sets',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_that(resp, has_header('Vary', 'Authorization'))
 
     def test_authorization_header_needed_for_list(self):
@@ -116,14 +116,14 @@ class DataSetsViewsTestCase(TestCase):
     def test_correct_format_authorization_header_needed_for_list(self):
         resp = self.client.get(
             '/data-sets',
-            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
     def test_correct_format_authorization_header_needed_for_detail(self):
         resp = self.client.get(
             '/data-sets/set1',
-            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
@@ -144,7 +144,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_list(self):
         resp = self.client.get(
             '/data-sets',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = [
             {
@@ -226,7 +226,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_list_by_data_group(self):
         resp = self.client.get(
             '/data-sets?data-group=group1',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = [
             {
@@ -255,25 +255,29 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(
             self.client.get(
                 '/data-sets?data-type=type1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+            ).content,
             self.client.get(
                 '/data-sets?data_type=type1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+            ).content
         )
 
         assert_equal(
             self.client.get(
                 '/data-sets?data-group=group1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+            ).content,
             self.client.get(
                 '/data-sets?data_group=group1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+            ).content,
         )
 
     def test_list_with_trailing_slash_redirects_correctly(self):
         response = self.client.get(
             '/data-sets/?data-type=aaa',
-            HTTP_AUTHORIZATION=('Bearer dev-data-set-query-token'),
+            HTTP_AUTHORIZATION=('Bearer development-oauth-access-token'),
             follow=True)
         assert_redirects(response, '/data-sets?data-type=aaa',
                          status_code=301, target_status_code=200)
@@ -282,17 +286,18 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(
             self.client.get(
                 '/data-sets?data-type=type1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token').content,
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+            ).content,
             self.client.get(
                 '/data-sets/?data-type=type1',
-                HTTP_AUTHORIZATION='Bearer dev-data-set-query-token',
+                HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
                 follow=True).content
         )
 
     def test_list_by_data_type(self):
         resp = self.client.get(
             '/data-sets?data-type=type1',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = [
             {
@@ -340,13 +345,13 @@ class DataSetsViewsTestCase(TestCase):
     def test_list_nonexistant_key(self):
         resp = self.client.get(
             '/data-sets?nonexistant-key=something',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 400)
 
     def test_list_nonexistant_record(self):
         resp = self.client.get(
             '/data-sets?data-group=nonexistant-group',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = []
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -354,7 +359,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_detail(self):
         resp = self.client.get(
             '/data-sets/set1',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = {
             'bearer_token': None,
@@ -378,7 +383,7 @@ class DataSetsViewsTestCase(TestCase):
 
         resp = self.client.get(
             '/data-sets/monitoring-data-set',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
 
         expected_schema = self.monitoring_schema
@@ -390,7 +395,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_detail_works_with_all_slugfield_characters(self):
         resp = self.client.get(
             '/data-sets/abc_-0123456789',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = {
             'name': 'abc_-0123456789',
@@ -413,7 +418,7 @@ class DataSetsViewsTestCase(TestCase):
     def test_detail_nonexistant_dataset(self):
         resp = self.client.get(
             '/data-sets/nonexistant-dataset',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 404)
 
 
@@ -439,7 +444,7 @@ class DataSetsSchemasTestCase(TestCase):
 
         resp = self.client.get(
             '/data-sets/jonathan_datagroup_transactions_by_channel',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
         )
         assert_equal(resp.status_code, 200)
 
@@ -485,7 +490,7 @@ class DataSetsSchemasTestCase(TestCase):
 
         resp = self.client.get(
             '/data-sets/data-scootah',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
         )
         assert_equal(resp.status_code, 200)
 
@@ -537,7 +542,7 @@ class DataSetsSchemasTestCase(TestCase):
 
         resp = self.client.get(
             '/data-sets/realtime-mowers',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token'
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
         )
         assert_equal(resp.status_code, 200)
 

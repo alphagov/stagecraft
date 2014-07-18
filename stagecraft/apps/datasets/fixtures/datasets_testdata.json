@@ -128,6 +128,13 @@
         "upload_format": "",
         "raw_queries_allowed": true
     }
+},
+{
+  "pk": 1,
+  "model": "datasets.backdropuser",
+  "fields": {
+      "email": "some.user@digital.cabinet-office.gov.uk",
+      "data_sets": [1, 2, 3]
+  }
 }
-
 ]

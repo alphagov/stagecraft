@@ -11,10 +11,10 @@ from stagecraft.apps.datasets.models import DataSet
 logger = logging.getLogger(__name__)
 
 
-@token_required(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
+@permission_required('dataset')
 @long_cache
 @vary_on_headers('Authorization')
-def detail(request, name):
+def detail(user, request, name):
     try:
         data_set = DataSet.objects.get(name=name)
     except DataSet.DoesNotExist:
@@ -28,10 +28,10 @@ def detail(request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@token_required(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
+@permission_required('dataset')
 @long_cache
 @vary_on_headers('Authorization')
-def list(request, data_group=None, data_type=None):
+def list(user, request, data_group=None, data_type=None):
     def get_filter_kwargs(key_map, query_params):
         """Return Django filter kwargs from query parameters"""
         return {key_map[k]: v for k, v in query_params if k in key_map}

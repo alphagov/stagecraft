@@ -10,10 +10,10 @@ from stagecraft.apps.datasets.models import BackdropUser
 logger = logging.getLogger(__name__)
 
 
-@token_required(settings.STAGECRAFT_DATA_SET_QUERY_TOKEN)
+@permission_required('user')
 @long_cache
 @vary_on_headers('Authorization')
-def detail(request, email):
+def detail(user, request, email):
     try:
         backdrop_user = BackdropUser.objects.get(email=email)
     except BackdropUser.DoesNotExist:
