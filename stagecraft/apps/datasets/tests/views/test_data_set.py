@@ -12,23 +12,6 @@ from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
 
 
-class LongCacheTestCase(TestCase):
-
-    def test_list_sets_long_cache_headers(self):
-        resp = self.client.get(
-            '/data-sets',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
-        assert_that(resp, has_header('Cache-Control', 'max-age=31536000'))
-        assert_that(resp, has_header('Vary', 'Authorization'))
-
-    def test_detail_sets_long_cache_headers(self):
-        resp = self.client.get(
-            '/data-sets/set1',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
-        assert_that(resp, has_header('Cache-Control', 'max-age=31536000'))
-        assert_that(resp, has_header('Vary', 'Authorization'))
-
-
 class DataSetsViewsTestCase(TestCase):
     assert_equal.__self__.maxDiff = None
     fixtures = ['datasets_testdata.json']
@@ -107,6 +90,18 @@ class DataSetsViewsTestCase(TestCase):
         }
 
     monitoring_schema = _get_monitoring_schema()
+
+    def test_list_vary_on_authorization_header(self):
+        resp = self.client.get(
+            '/data-sets',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+        assert_that(resp, has_header('Vary', 'Authorization'))
+
+    def test_detail_vary_on_authorization_header(self):
+        resp = self.client.get(
+            '/data-sets',
+            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+        assert_that(resp, has_header('Vary', 'Authorization'))
 
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
