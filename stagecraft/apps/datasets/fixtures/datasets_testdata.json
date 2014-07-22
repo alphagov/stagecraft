@@ -21,6 +21,13 @@
     }
 },
 {
+    "pk": 4,
+    "model": "datasets.datagroup",
+    "fields": {
+        "name": "group4"
+    }
+},
+{
     "pk": 1,
     "model": "datasets.datatype",
     "fields": {
@@ -130,11 +137,31 @@
     }
 },
 {
+  "pk": 5,
+  "model": "datasets.dataset",
+  "fields": {
+        "created": "2014-06-05 00:00:00",
+        "modified": "2014-06-05 00:00:00",
+        "bearer_token": "",
+        "capped_size": null,
+        "name": "unseen",
+        "data_type": 4,
+        "realtime": false,
+        "auto_ids": "",
+        "max_age_expected": 86400,
+        "data_group": 4,
+        "upload_filters": "",
+        "queryable": true,
+        "upload_format": "",
+        "raw_queries_allowed": true
+  }
+},
+{
   "pk": 1,
   "model": "datasets.backdropuser",
   "fields": {
       "email": "some.user@digital.cabinet-office.gov.uk",
-      "data_sets": [1, 2, 3]
+      "data_sets": [1, 2, 3, 4]
   }
 }
 ]

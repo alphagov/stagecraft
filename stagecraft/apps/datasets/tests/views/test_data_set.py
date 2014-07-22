@@ -141,6 +141,14 @@ class DataSetsViewsTestCase(TestCase):
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
+    def test_list_only_returns_data_sets_the_user_can_see(self):
+        resp = self.client.get(
+            '/data-sets',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 200)
+        response_object = json.loads(resp.content.decode('utf-8'))
+        assert_equal(len(response_object), 4)
+
     def test_list(self):
         resp = self.client.get(
             '/data-sets',
@@ -210,6 +218,8 @@ class DataSetsViewsTestCase(TestCase):
         ]
 
         response_object = json.loads(resp.content.decode('utf-8'))
+
+        assert_equal(len(response_object), len(expected))
         for i, record in enumerate(expected):
             if record['data_group'] != 'monitoring':
                 record['schema'] = self._get_default_schema(
@@ -219,9 +229,9 @@ class DataSetsViewsTestCase(TestCase):
             else:
                 record['schema'] = self.monitoring_schema
 
-                assert_equal(
-                    record, response_object[i]
-                )
+            assert_equal(
+                record, response_object[i]
+            )
 
     def test_list_by_data_group(self):
         resp = self.client.get(
@@ -433,7 +443,7 @@ class HealthCheckTestCase(TestCase):
         decoded = json.loads(self.response.content.decode('utf-8'))
         assert_equal(
             decoded,
-            {'message': 'Got 4 data sets.'})
+            {'message': 'Got 5 data sets.'})
 
 
 class DataSetsSchemasTestCase(TestCase):
