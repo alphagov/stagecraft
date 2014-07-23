@@ -11,7 +11,7 @@ from stagecraft.apps.datasets.models import DataSet
 logger = logging.getLogger(__name__)
 
 
-@permission_required('dataset')
+@permission_required('signin')
 @long_cache
 @vary_on_headers('Authorization')
 def detail(user, request, name):
@@ -28,7 +28,7 @@ def detail(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@permission_required('dataset')
+@permission_required('signin')
 @long_cache
 @vary_on_headers('Authorization')
 def list(user, request, data_group=None, data_type=None):
