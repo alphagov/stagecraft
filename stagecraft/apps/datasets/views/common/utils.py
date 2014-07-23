@@ -9,7 +9,7 @@ from functools import wraps
 
 def _get_user(access_token):
     user = None
-    if not access_token is None:
+    if access_token is not None:
         if settings.USE_DEVELOPMENT_USERS is True:
             try:
                 user = settings.DEVELOPMENT_USERS[access_token]

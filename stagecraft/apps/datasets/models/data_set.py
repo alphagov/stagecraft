@@ -82,6 +82,7 @@ class DataSet(models.Model):
         - Use hyphens to separate words.
         """
     )
+
     raw_queries_allowed = models.BooleanField(default=True, editable=False)
     bearer_token = models.CharField(
         max_length=255, blank=True, null=False,

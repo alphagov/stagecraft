@@ -4,12 +4,15 @@ import json
 from nose.tools import assert_equal
 from hamcrest import assert_that, contains, has_entries, equal_to, \
     has_entry
+from httmock import HTTMock
 
+from django.conf import settings
 from django.test import TestCase
 from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
+from stagecraft.apps.datasets.tests.views.test_utils import govuk_signon_mock
 
 
 class DataSetsViewsTestCase(TestCase):
@@ -34,6 +37,9 @@ class DataSetsViewsTestCase(TestCase):
         },
         "allOf": [{"$ref": "#/definitions/_timestamp"}]
     }
+
+    def tearDown(self):
+        settings.USE_DEVELOPMENT_USERS = True
 
     def _get_default_schema(self, name=None):
         schema = self.base_schema
@@ -141,14 +147,6 @@ class DataSetsViewsTestCase(TestCase):
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
-    def test_list_only_returns_data_sets_the_user_can_see(self):
-        resp = self.client.get(
-            '/data-sets',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        assert_equal(resp.status_code, 200)
-        response_object = json.loads(resp.content.decode('utf-8'))
-        assert_equal(len(response_object), 4)
-
     def test_list(self):
         resp = self.client.get(
             '/data-sets',
@@ -221,7 +219,7 @@ class DataSetsViewsTestCase(TestCase):
 
         assert_equal(len(response_object), len(expected))
         for i, record in enumerate(expected):
-            if record['data_group'] != 'monitoring':
+            if record['data_type'] != 'monitoring':
                 record['schema'] = self._get_default_schema(
                     record['data_group'] + "/" +
                     record['data_type']
@@ -232,6 +230,36 @@ class DataSetsViewsTestCase(TestCase):
             assert_equal(
                 record, response_object[i]
             )
+
+    def test_list_only_returns_data_sets_the_user_can_see(self):
+        resp = self.client.get(
+            '/data-sets',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 200)
+        response_object = json.loads(resp.content.decode('utf-8'))
+        assert_equal(len(response_object), 4)
+
+    def test_list_returns_all_data_sets_if_user_has_admin_permission(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['signin', 'dataset', 'admin'])
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_equal(resp.status_code, 200)
+            response_object = json.loads(resp.content.decode('utf-8'))
+            assert_equal(len(response_object), 5)
+
+    def test_list_returns_no_data_sets_if_there_is_no_backdrop_user(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['signin', 'dataset'])
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_equal(resp.status_code, 200)
+            response_object = json.loads(resp.content.decode('utf-8'))
+            assert_equal(len(response_object), 0)
 
     def test_list_by_data_group(self):
         resp = self.client.get(
