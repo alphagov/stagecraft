@@ -6,7 +6,7 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.views.decorators.vary import vary_on_headers
 
-from stagecraft.apps.datasets.models import DataSet
+from stagecraft.apps.datasets.models import DataSet, BackdropUser
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 def detail(user, request, name):
     try:
         data_set = DataSet.objects.get(name=name)
+        user_is_not_admin = 'admin' not in user['permissions']
+        user_is_not_assigned = data_set.backdropuser_set.filter(
+            email=user['email']).count() == 0
+        if user_is_not_admin and user_is_not_assigned:
+            logger.warn("Unauthorized access to '{}' by '{}'".format(
+                name, user['email']))
+            raise DataSet.DoesNotExist()
     except DataSet.DoesNotExist:
         error = {'status': 'error',
                  'message': "No Data Set named '{}' exists".format(name)}
@@ -54,9 +61,16 @@ def list(user, request, data_group=None, data_type=None):
         logger.error(error)
         return HttpResponseBadRequest(to_json(error))
 
-    filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
-    data_sets = DataSet.objects.filter(**filter_kwargs).order_by('pk')
-    json_str = to_json([ds.serialize() for ds in data_sets])
+    try:
+        filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
+        if 'admin' not in user['permissions']:
+            filter_kwargs['backdropuser'] = BackdropUser.objects.filter(
+                email=user['email'])
+
+        data_sets = DataSet.objects.filter(**filter_kwargs).order_by('pk')
+        json_str = to_json([ds.serialize() for ds in data_sets])
+    except BackdropUser.DoesNotExist:
+        json_str = '[]'
 
     return HttpResponse(json_str, content_type='application/json')
 
