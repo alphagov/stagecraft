@@ -417,8 +417,22 @@ class DataSetsViewsTestCase(TestCase):
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
-    def test_monitoring_schema(self):
+    def test_detail_does_not_return_data_sets_the_user_cannot_see(self):
+        resp = self.client.get(
+            '/data-sets/unseen',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 404)
 
+    def test_detail_returns_all_data_sets_if_user_has_admin_permission(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['signin', 'admin'])
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets/unseen',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_equal(resp.status_code, 200)
+
+    def test_monitoring_schema(self):
         resp = self.client.get(
             '/data-sets/monitoring-data-set',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')

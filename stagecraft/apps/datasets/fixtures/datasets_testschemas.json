@@ -100,5 +100,13 @@
         },
         "model": "datasets.dataset",
         "pk": 3
+    },
+    {
+      "pk": 1,
+      "model": "datasets.backdropuser",
+      "fields": {
+        "email": "some.user@digital.cabinet-office.gov.uk",
+        "data_sets": [1, 2, 3]
+      }
     }
 ]

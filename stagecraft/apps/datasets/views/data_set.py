@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 def detail(user, request, name):
     try:
         data_set = DataSet.objects.get(name=name)
+        user_is_not_admin = 'admin' not in user['permissions']
+        user_is_not_assigned = data_set.backdropuser_set.filter(
+            email=user['email']).count() == 0
+        if user_is_not_admin and user_is_not_assigned:
+            logger.warn("Unauthorized access to '{}' by '{}'".format(
+                name, user['email']))
+            raise DataSet.DoesNotExist()
     except DataSet.DoesNotExist:
         error = {'status': 'error',
                  'message': "No Data Set named '{}' exists".format(name)}
