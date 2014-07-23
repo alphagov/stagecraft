@@ -34,7 +34,8 @@ DEVELOPMENT_USERS = {
         "permissions": [
             "signin",
             "dataset",
-            "user"
+            "user",
+            "admin",
         ],
         "uid": "00000000-0000-0000-0000-000000000000"
     }
