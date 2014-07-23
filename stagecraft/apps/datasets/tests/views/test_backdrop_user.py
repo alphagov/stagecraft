@@ -14,7 +14,7 @@ class LongCacheTestCase(TestCase):
     def test_detail_sets_long_cache_headers(self):
         resp = self.client.get(
             '/data-sets/set1',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_that(resp, has_header('Cache-Control', 'max-age=31536000'))
         assert_that(resp, has_header('Vary', 'Authorization'))
 
@@ -30,7 +30,7 @@ class BackdropUserViewsTestCase(TestCase):
     def test_correct_format_authorization_header_needed_for_detail(self):
         resp = self.client.get(
             '/users/tea%40yourmumshouse.com',
-            HTTP_AUTHORIZATION='Nearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
@@ -44,7 +44,7 @@ class BackdropUserViewsTestCase(TestCase):
     def test_detail(self):
         resp = self.client.get(
             '/users/foo%40bar.com',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = {'data_sets': ['set1', 'set2'], 'email': 'foo@bar.com'}
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
@@ -52,7 +52,7 @@ class BackdropUserViewsTestCase(TestCase):
     def test_detail_nonexistant_user(self):
         resp = self.client.get(
             '/users/nonexistant@user.com',
-            HTTP_AUTHORIZATION='Bearer dev-data-set-query-token')
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 404)
         assert_that(resp, is_error_response(
             "No user with email address 'nonexistant@user.com' exists"))

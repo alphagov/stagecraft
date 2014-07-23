@@ -23,6 +23,23 @@ TEMPLATE_DEBUG = True
 
 APP_HOSTNAME = 'stagecraft.perfplat.dev'
 
+SIGNON_URL = 'http://signon.dev.gov.uk'
+USE_DEVELOPMENT_USERS = True
+DEVELOPMENT_USERS = {
+    'development-oauth-access-token':
+    {
+        "email": "some.user@digital.cabinet-office.gov.uk",
+        "name": "Some User",
+        "organisation_slug": "cabinet-office",
+        "permissions": [
+            "signin",
+            "dataset",
+            "user"
+        ],
+        "uid": "00000000-0000-0000-0000-000000000000"
+    }
+}
+
 VARNISH_CACHES = [
     ('http://development-1', 7999)
 ]
@@ -71,7 +88,6 @@ else:
 
 BACKDROP_URL = 'http://localhost:3039'
 STAGECRAFT_COLLECTION_ENDPOINT_TOKEN = 'dev-create-endpoint-token'
-STAGECRAFT_DATA_SET_QUERY_TOKEN = 'dev-data-set-query-token'
 
 LOGGING = {
     'version': 1,
