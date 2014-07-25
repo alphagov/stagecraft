@@ -10,4 +10,4 @@ logstash_formatter==0.5.7
 psycopg2==2.5.2
 
 # For performing data operations that require speaking to backdrop
--e git+https://github.com/alphagov/performanceplatform-client.git@0.0.5#egg=performanceplatform-client
+-e git+https://github.com/alphagov/performanceplatform-client.git@0.0.7#egg=performanceplatform-client
