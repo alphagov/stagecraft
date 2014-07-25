@@ -148,9 +148,15 @@ class DataSetsViewsTestCase(TestCase):
         assert_that(resp, is_error_response())
 
     def test_list(self):
-        resp = self.client.get(
-            '/data-sets',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['signin', 'dataset'],
+            email='some.user@digital.cabinet-office.gov.uk')
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+
         assert_equal(resp.status_code, 200)
         expected = [
             {
@@ -232,9 +238,14 @@ class DataSetsViewsTestCase(TestCase):
             )
 
     def test_list_only_returns_data_sets_the_user_can_see(self):
-        resp = self.client.get(
-            '/data-sets',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['signin', 'dataset'],
+            email='some.user@digital.cabinet-office.gov.uk')
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets',
+                HTTP_AUTHORIZATION='Bearer correct-token')
         assert_equal(resp.status_code, 200)
         response_object = json.loads(resp.content.decode('utf-8'))
         assert_equal(len(response_object), 4)
@@ -418,10 +429,15 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_detail_does_not_return_data_sets_the_user_cannot_see(self):
-        resp = self.client.get(
-            '/data-sets/unseen',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        assert_equal(resp.status_code, 404)
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['signin', 'dataset'],
+            email='some.user@digital.cabinet-office.gov.uk')
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets/unseen',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_equal(resp.status_code, 404)
 
     def test_detail_returns_all_data_sets_if_user_has_admin_permission(self):
         settings.USE_DEVELOPMENT_USERS = False
