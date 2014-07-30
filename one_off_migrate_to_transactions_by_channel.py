@@ -50,10 +50,10 @@ transaction_by_channel_data_set_mappings = [
 
 def run():
     for mapping in transaction_by_channel_data_set_mappings:
-        print "converting {} to {}".format(
+        print("converting {} to {}".format(
             mapping['old_data_set'],
-            mapping['new_data_set'])
-        print "this will not delete the old data set"
+            mapping['new_data_set']))
+        print("this will not delete the old data set")
         migrate_data_set(mapping['old_data_set'],
                          mapping['new_data_set'],
                          mapping["data_mapping"])
