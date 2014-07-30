@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
+from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import DataSet, BackdropUser
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @permission_required('signin')
-@long_cache
+@never_cache
 @vary_on_headers('Authorization')
 def detail(user, request, name):
     try:
@@ -36,7 +37,7 @@ def detail(user, request, name):
 
 
 @permission_required('signin')
-@long_cache
+@never_cache
 @vary_on_headers('Authorization')
 def list(user, request, data_group=None, data_type=None):
     def get_filter_kwargs(key_map, query_params):

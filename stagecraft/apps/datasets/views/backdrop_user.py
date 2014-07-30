@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseNotFound)
+from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import BackdropUser
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @permission_required('user')
-@long_cache
+@never_cache
 @vary_on_headers('Authorization')
 def detail(user, request, email):
     try:
