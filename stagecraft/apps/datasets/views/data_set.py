@@ -36,6 +36,25 @@ def detail(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
+@permission_required('admin')
+@long_cache
+@vary_on_headers('Authorization')
+def users(user, request, dataset_name):
+
+    backdrop_users = BackdropUser.objects.filter(
+        data_sets__name=dataset_name
+    )
+
+    if backdrop_users:
+        json_str = to_json(
+            [u.api_object() for u in backdrop_users]
+        )
+    else:
+        json_str = to_json([])
+
+    return HttpResponse(json_str, content_type='application/json')
+
+
 @permission_required('signin')
 @never_cache
 @vary_on_headers('Authorization')
