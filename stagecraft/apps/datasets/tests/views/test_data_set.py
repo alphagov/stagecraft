@@ -17,7 +17,10 @@ from stagecraft.apps.datasets.tests.views.test_utils import govuk_signon_mock
 
 class DataSetsViewsTestCase(TestCase):
     assert_equal.__self__.maxDiff = None
-    fixtures = ['datasets_testdata.json']
+    fixtures = [
+        'datasets_testdata.json',
+        'backdrop_users_import_testdata.json'
+    ]
 
     base_schema = {
         "definitions": {
@@ -434,6 +437,16 @@ class DataSetsViewsTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = []
+        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_users_for_dataset_returns_list(self):
+        resp = self.client.get(
+            '/data-sets/abc_-0123456789/users',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 200)
+        expected = [
+            {'email': 'some.user@digital.cabinet-office.gov.uk'}
+        ]
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_detail_does_not_return_data_sets_the_user_cannot_see(self):

@@ -32,6 +32,14 @@ class BackdropUser(models.Model):
             ('data_sets', get_names(self.data_sets.all()))
         ])
 
+    def api_object(self):
+        """
+        Just the parts of a user object we would want to return
+        """
+        return {
+            'email': self.email
+        }
+
     @transaction.atomic
     def save(self, *args, **kwargs):
         super(BackdropUser, self).save(*args, **kwargs)

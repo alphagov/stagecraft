@@ -36,17 +36,19 @@ def detail(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@permission_required('signin')
-@never_cache
+@permission_required('admin')
+@long_cache
 @vary_on_headers('Authorization')
 def users(user, request, dataset_name):
 
     backdrop_users = BackdropUser.objects.filter(
-        data_sets__name=[dataset_name]
+        data_sets__name=dataset_name
     )
 
     if backdrop_users:
-        json_str = to_json(backdrop_users)
+        json_str = to_json(
+            [u.api_object() for u in backdrop_users]
+        )
     else:
         json_str = to_json([])
 
@@ -54,7 +56,7 @@ def users(user, request, dataset_name):
 
 
 @permission_required('signin')
-@long_cache
+@never_cache
 @vary_on_headers('Authorization')
 def list(user, request, data_group=None, data_type=None):
     def get_filter_kwargs(key_map, query_params):
