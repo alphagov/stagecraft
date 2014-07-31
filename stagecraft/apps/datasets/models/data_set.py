@@ -17,8 +17,6 @@ from stagecraft.libs.backdrop_client import (create_data_set, delete_data_set,
                                              BackdropNotFoundError)
 from stagecraft.libs.schemas import get_schema
 
-from stagecraft.libs.purge_varnish import purge
-from ..helpers.calculate_purge_urls import get_data_set_path_queries
 from ..helpers.validators import data_set_name_validator
 
 import reversion
@@ -265,8 +263,6 @@ class DataSet(models.Model):
             # Ensure this is the final action of the save method.
             create_data_set(self.name, size_bytes)
 
-        purge(get_data_set_path_queries(self))
-
     def generate_data_set_name(self):
         return '_'.join((self.data_group.name,
                          self.data_type.name)).replace('-', '_')
@@ -290,7 +286,6 @@ class DataSet(models.Model):
                 )
             )
         super(DataSet, self).delete(*args, **kwargs)
-        purge(get_data_set_path_queries(self))
 
     class Meta:
         app_label = 'datasets'

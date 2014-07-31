@@ -1,5 +1,4 @@
 from django.test import TestCase
-import mock
 from stagecraft.apps.datasets.models import BackdropUser
 
 from django.core.management import call_command
@@ -15,8 +14,7 @@ class TestImportBackdropUser(TestCase):
             user.data_sets.clear()
             user.delete()
 
-    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
-    def tearDown(self, mock_purge):
+    def tearDown(self):
         for user in BackdropUser.objects.all():
             user.data_sets.clear()
             user.delete()
@@ -32,9 +30,7 @@ class TestImportBackdropUser(TestCase):
                 *args, **options
             ))
 
-    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
-    def test_creates_correct_users_when_valid_file_passed_in(
-            self, mock_purge):
+    def test_creates_correct_users_when_valid_file_passed_in(self):
         args = ["stagecraft/apps/\
 datasets/tests/fixtures/backdrop_users_import_testdata.json"]
         options = {}
@@ -48,9 +44,7 @@ datasets/tests/fixtures/backdrop_users_import_testdata.json"]
                                'mike.bracken@gov.uk'])
         assert_equal(expected_emails, received_emails)
 
-    @mock.patch('stagecraft.apps.datasets.models.backdrop_user.purge')
-    def test_creates_assigns_existing_datasets_when_valid_file_passed_in(
-            self, mock_purge):
+    def test_creates_assigns_existing_datasets_when_valid_file_passed_in(self):
         def _get_user(email):
             return BackdropUser.objects.filter(email=email).first()
 
