@@ -428,6 +428,14 @@ class DataSetsViewsTestCase(TestCase):
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
+    def test_users_for_nonexistant_dataset_returns_empty_list(self):
+        resp = self.client.get(
+            '/data-sets/example-data-set/users',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 200)
+        expected = []
+        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
     def test_detail_does_not_return_data_sets_the_user_cannot_see(self):
         settings.USE_DEVELOPMENT_USERS = False
         signon = govuk_signon_mock(
