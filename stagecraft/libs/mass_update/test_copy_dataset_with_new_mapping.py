@@ -1,6 +1,5 @@
 import mock
 from stagecraft.apps.datasets.models import DataSet
-from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from django.test import TestCase
 from stagecraft.libs.mass_update import migrate_data_set
 from nose.tools import assert_equal
@@ -53,7 +52,7 @@ class TestDataSetMassUpdate(TestCase):
             }
         }
 
-        #existing data set config comes from fixture
+        # existing data set config comes from fixture
         self.new_dataset_config = {
             u'auto_ids': [u'foo', u'bar', u'baz'],
             u'bearer_token': None,
@@ -136,7 +135,6 @@ class TestDataSetMassUpdate(TestCase):
                 }
             ]}
 
-    @disable_backdrop_connection
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_correct_new_data_set_created(self, client_post, client_get):
@@ -151,7 +149,6 @@ class TestDataSetMassUpdate(TestCase):
         del new_data_set_serialised['schema']
         assert_equal(new_data_set_serialised, self.new_dataset_config)
 
-    @disable_backdrop_connection
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_handles_new_data_set_already_exists(
@@ -168,7 +165,6 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(new_data_set_serialised,
                      self.new_dataset_config_already_exists)
 
-    @disable_backdrop_connection
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_correct_data_posted_to_new_data_set_given_response(

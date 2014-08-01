@@ -13,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 
-from stagecraft.libs.backdrop_client import (create_data_set, delete_data_set,
+from stagecraft.libs.backdrop_client import (delete_data_set,
                                              BackdropNotFoundError)
 from stagecraft.libs.schemas import get_schema
 
@@ -256,12 +256,6 @@ class DataSet(models.Model):
         if is_new:
             self.name = self.generate_data_set_name()
         super(DataSet, self).save(*args, **kwargs)
-
-        if is_new:
-            size_bytes = self.capped_size if self.is_capped else 0
-            # Backdrop can't be rolled back dude.
-            # Ensure this is the final action of the save method.
-            create_data_set(self.name, size_bytes)
 
     def generate_data_set_name(self):
         return '_'.join((self.data_group.name,

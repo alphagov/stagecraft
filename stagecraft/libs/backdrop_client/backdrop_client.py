@@ -97,31 +97,6 @@ def _get_headers():
 
 
 @check_disabled
-def create_data_set(name, capped_size):
-    """
-    Connect to Backdrop and create a new collection called ``name``.
-    Specify ``capped_size`` in bytes to create a capped collection, or 0 to
-    create an uncapped collection.
-    """
-
-    if not isinstance(capped_size, int) or capped_size < 0:
-        raise BackdropError(
-            "capped_size must be 0 or a positive integer number of bytes.")
-
-    json_request = json.dumps({'capped_size': capped_size})
-
-    endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
-                                                   name=name)
-
-    backdrop_request = lambda: requests.post(
-        endpoint_url,
-        headers=_get_headers(),
-        data=json_request)
-
-    _send_backdrop_request(backdrop_request)
-
-
-@check_disabled
 def delete_data_set(name):
     """
     Connect to Backdrop and delete a collection called ``name``.
