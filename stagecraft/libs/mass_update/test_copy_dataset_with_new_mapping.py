@@ -1,7 +1,6 @@
 import mock
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
-from stagecraft.libs.purge_varnish import disable_purge_varnish
 from django.test import TestCase
 from stagecraft.libs.mass_update import migrate_data_set
 from nose.tools import assert_equal
@@ -138,7 +137,6 @@ class TestDataSetMassUpdate(TestCase):
             ]}
 
     @disable_backdrop_connection
-    @disable_purge_varnish
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_correct_new_data_set_created(self, client_post, client_get):
@@ -154,7 +152,6 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(new_data_set_serialised, self.new_dataset_config)
 
     @disable_backdrop_connection
-    @disable_purge_varnish
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_handles_new_data_set_already_exists(
@@ -172,7 +169,6 @@ class TestDataSetMassUpdate(TestCase):
                      self.new_dataset_config_already_exists)
 
     @disable_backdrop_connection
-    @disable_purge_varnish
     @mock.patch("performanceplatform.client.DataSet.get")
     @mock.patch("performanceplatform.client.DataSet.post")
     def test_correct_data_posted_to_new_data_set_given_response(

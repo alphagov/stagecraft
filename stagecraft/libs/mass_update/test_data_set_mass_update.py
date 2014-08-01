@@ -1,7 +1,5 @@
-import mock
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
-from stagecraft.libs.purge_varnish import disable_purge_varnish
 from django.test import TestCase
 from stagecraft.libs.mass_update import DataSetMassUpdate
 from nose.tools import assert_equal
@@ -10,7 +8,6 @@ from nose.tools import assert_equal
 class TestDataSetMassUpdate(TestCase):
     @classmethod
     @disable_backdrop_connection
-    @disable_purge_varnish
     def setUpClass(cls):
         cls.data_group1 = DataGroup.objects.create(name='datagroup1')
         cls.data_group2 = DataGroup.objects.create(name='datagroup2')
@@ -35,18 +32,10 @@ class TestDataSetMassUpdate(TestCase):
             bearer_token="999999",
             data_type=cls.data_type2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
-                spec_set=True)
-    @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
-    def test_update_bearer_token_by_date_type(
-            self,
-            mock_get_path_queries,
-            mock_purge):
+    def test_update_bearer_token_by_date_type(self):
 
         new_bearer_token = "ghi789"
-        mock_get_path_queries.return_value = ['/some_url']
 
         query = {u'data_type': self.data_type1.name}
         number_updated = DataSetMassUpdate \
@@ -61,22 +50,11 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token, new_bearer_token)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
-        calls = [mock.call(['/some_url']), mock.call(['/some_url'])]
-        mock_purge.assert_has_calls(calls)
-        assert_equal(mock_purge.call_count, 2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
-                spec_set=True)
-    @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
-    def test_update_bearer_token_by_data_group(
-            self,
-            mock_get_path_queries,
-            mock_purge):
+    def test_update_bearer_token_by_data_group(self):
 
         new_bearer_token = "ghi789"
-        mock_get_path_queries.return_value = ['/some_url']
 
         query = {u'data_group': self.data_group2.name}
         number_updated = DataSetMassUpdate \
@@ -91,22 +69,11 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token, new_bearer_token)
-        calls = [mock.call(['/some_url']), mock.call(['/some_url'])]
-        mock_purge.assert_has_calls(calls)
-        assert_equal(mock_purge.call_count, 2)
 
-    @mock.patch('stagecraft.apps.datasets.models.data_set.purge',
-                spec_set=True)
-    @mock.patch('stagecraft.apps.datasets.models.data_set.'
-                'get_data_set_path_queries', spec_set=True)
     @disable_backdrop_connection
-    def test_update_bearer_token_by_data_group_and_data_type(
-            self,
-            mock_get_path_queries,
-            mock_purge):
+    def test_update_bearer_token_by_data_group_and_data_type(self):
 
         new_bearer_token = "ghi789"
-        mock_get_path_queries.return_value = ['/some_url']
 
         query = {
             u'data_type': self.data_type1.name,
@@ -123,6 +90,3 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_a.bearer_token == new_bearer_token, False)
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
-        calls = [mock.call(['/some_url'])]
-        mock_purge.assert_has_calls(calls)
-        assert_equal(mock_purge.call_count, 1)

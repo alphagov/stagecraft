@@ -1,11 +1,8 @@
 from __future__ import unicode_literals
-from django.db import transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
 from stagecraft.apps.datasets.models import DataSet
 from collections import OrderedDict
-from stagecraft.libs.purge_varnish import purge
-from ..helpers.calculate_purge_urls import get_backdrop_user_path_queries
 
 import reversion
 
@@ -39,17 +36,6 @@ class BackdropUser(models.Model):
         return {
             'email': self.email
         }
-
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        super(BackdropUser, self).save(*args, **kwargs)
-        # Backdrop can't be rolled back dude.
-        # Ensure this is the final action of the save method.
-        purge(get_backdrop_user_path_queries(self))
-
-    def delete(self, *args, **kwargs):
-        super(BackdropUser, self).delete(*args, **kwargs)
-        purge(get_backdrop_user_path_queries(self))
 
     def __str__(self):
         return "{}".format(self.email)
