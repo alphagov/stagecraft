@@ -110,4 +110,55 @@ Outside of requests (e.g. in scripts) you will need to use the following:
 - Ensure the model is registered with `reversion.register(DataGroup)` if used in a context where the admin registration has not run.
 - Run all database modifying operations in functions with the `@reversion.create_revision()` decorator or in the `reversion.create_revision():` context manager.
 
-See [the docs](http://django-reversion.readthedocs.org/en/latest/api.html) for more info.
+See [the docs](http://django-reversion.readthedocs.org/en/latest/api.html) for more info
+
+
+# Migrating to new data set schemas.
+
+As more schemas are added to describe data types we may find ourselves needing to migrate data sets to these new schemas. This is the purpose of `stagecraft/libs/mass_update/copy_dataset_with_new_mapping.py`.
+
+To use this define a mapping of the format:
+
+```python
+mapping = {
+    #finds an old data set to copy config and data from.
+    'old_data_set': {
+        'data_group': "carers-allowance",
+        'data_type': "weekly-claims"
+    },
+    #a new data set with the data group and type here will be created
+    #all config will be copied from the old data set 
+    #except for anything specified here which will override this config
+    #(in this case this is the auto_ids field)
+    'new_data_set': {
+        'auto_ids': '_timestamp,channel',
+        'data_group': "carers-allowance",
+        'data_type': "transactions-by-channel"
+    },
+    'data_mapping': {
+        #this specifies a mapping of keys in the old data set data which will be changed
+        'key_mapping': {
+            "key": "channel",
+            "value": "count"
+        },
+        #this specifies a mapping of values in the old data set data which will be changed
+        'value_mapping': {
+            "ca_clerical_received": "paper",
+            "ca_e_claims_received": "digital"
+        }
+    }
+}
+``` 
+
+Run it with:
+
+```python
+migrate_data_set(mapping['old_data_set'],
+                 mapping['new_data_set'],
+                 mapping["data_mapping"])
+
+```
+
+This will not delete the old data set. This should be done later when you are happy with the result.
+
+Tests which further specify the behaviour of this can be found in `test_copy_dataset_with_new_mapping.py`.
