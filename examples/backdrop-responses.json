@@ -22,10 +22,16 @@ GET /data-sets/<name>
 }
 
 
-Retrieve a user
-DOES NOT YET EXIST
+Retrieve a user for a specific data-set
 
-{
-  "email": "foo@bar.com",
-  "data_sets": ["foo", "bar"]
-}
+// GET /data-sets/<name_of_data_set>/users
+// curl -i -H "Authorization: Bearer <SIGNON_API_USER_TOKEN>" https://stagecraft.preview.performance.service.gov.uk/data-sets/carers_allowance_transactions_by_channel/users
+
+[
+  {
+    "email": "foo@bar.com",
+  },
+  {
+    "email": "another@email.com",
+  },
+]
