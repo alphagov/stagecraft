@@ -4,12 +4,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.contrib import admin
-from django.contrib import messages
 
 import reversion
 
 from stagecraft.apps.datasets.models.data_set import DataSet
-from stagecraft.libs.backdrop_client import BackdropError
 
 
 class DataSetAdmin(reversion.VersionAdmin):
@@ -37,63 +35,12 @@ class DataSetAdmin(reversion.VersionAdmin):
         }
         js = ("admin/js/datasets.js",)
 
-    def __init__(self, *args, **kwargs):
-        super(DataSetAdmin, self).__init__(*args, **kwargs)
-        self.successful_save = False
-        self.exception = None
-
     # Get fields that are only editable on creation
     def get_readonly_fields(self, request, obj=None):
         if obj:  # record already exists
             return self.readonly_after_created
         else:
             return self.readonly_fields
-
-    def save_model(self, request, *args, **kwargs):
-        try:
-            super(DataSetAdmin, self).save_model(request, *args, **kwargs)
-        except BackdropError as e:
-            self.successful_save = False
-            logger.exception(e)
-            self.exception = e
-        else:
-            self.successful_save = True
-
-    def log_addition(self, *args, **kwargs):
-        if self.successful_save is True:
-            super(DataSetAdmin, self).log_addition(*args, **kwargs)
-        else:
-            logger.warning("save(..) failed, blocking log_addition(..)")
-
-    def log_change(self, *args, **kwargs):
-        if self.successful_save is True:
-            super(DataSetAdmin, self).log_change(*args, **kwargs)
-        else:
-            logger.warning("save(..) failed, blocking log_change(..)")
-
-    def response_add(self, request, obj, *args, **kwargs):
-        """
-        Generate the HTTP response for an add action.
-        """
-        if self.successful_save is True:
-            # The base response_add() emits an appropriate success message
-            return super(DataSetAdmin, self).response_add(
-                request, obj, *args, **kwargs)
-
-        messages.error(request, str(self.exception))
-        return self.response_post_save_add(request, obj)
-
-    def response_change(self, request, obj, *args, **kwargs):
-        """
-        Generate the HTTP response for a save action.
-        """
-        if self.successful_save is True:
-            # The base response_change() emits an appropriate success message
-            return super(DataSetAdmin, self).response_change(
-                request, obj, *args, **kwargs)
-
-        messages.error(request, str(self.exception))
-        return self.response_post_save_change(request, obj)
 
     readonly_after_created = set(
         ['name', 'data_group', 'data_type', 'capped_size'])

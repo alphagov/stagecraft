@@ -9,7 +9,6 @@ from django.db import transaction
 from django.core.management.base import BaseCommand, CommandError
 
 from stagecraft.apps.datasets.models import DataSet, DataGroup, DataType
-from stagecraft.libs.backdrop_client import backdrop_connection_disabled
 
 
 class Command(BaseCommand):
@@ -35,8 +34,7 @@ class Command(BaseCommand):
 
             if options['without_backdrop']:
                 self.stdout.write("Disabling Backdrop")
-                with backdrop_connection_disabled():
-                    self.load_data_sets_from_data_sets_json(filename)
+                self.load_data_sets_from_data_sets_json(filename)
             else:
                 self.stdout.write("Not disabling Backdrop")
                 self.load_data_sets_from_data_sets_json(filename)
@@ -56,7 +54,7 @@ class Command(BaseCommand):
             return
 
         with transaction.atomic(), reversion.create_revision():
-            #self.stdout.write("Creating DataSet from:\n{}".format(data_set))
+            # self.stdout.write("Creating DataSet from:\n{}".format(data_set))
             DataSet.objects.create(
                 name=name,
                 data_group=self.get_or_create(

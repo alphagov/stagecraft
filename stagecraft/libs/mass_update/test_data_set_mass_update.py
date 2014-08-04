@@ -1,5 +1,4 @@
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
-from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from django.test import TestCase
 from stagecraft.libs.mass_update import DataSetMassUpdate
 from nose.tools import assert_equal
@@ -7,7 +6,6 @@ from nose.tools import assert_equal
 
 class TestDataSetMassUpdate(TestCase):
     @classmethod
-    @disable_backdrop_connection
     def setUpClass(cls):
         cls.data_group1 = DataGroup.objects.create(name='datagroup1')
         cls.data_group2 = DataGroup.objects.create(name='datagroup2')
@@ -32,7 +30,6 @@ class TestDataSetMassUpdate(TestCase):
             bearer_token="999999",
             data_type=cls.data_type2)
 
-    @disable_backdrop_connection
     def test_update_bearer_token_by_date_type(self):
 
         new_bearer_token = "ghi789"
@@ -51,7 +48,6 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token == new_bearer_token, False)
 
-    @disable_backdrop_connection
     def test_update_bearer_token_by_data_group(self):
 
         new_bearer_token = "ghi789"
@@ -70,7 +66,6 @@ class TestDataSetMassUpdate(TestCase):
         assert_equal(dataset_b.bearer_token, new_bearer_token)
         assert_equal(dataset_c.bearer_token, new_bearer_token)
 
-    @disable_backdrop_connection
     def test_update_bearer_token_by_data_group_and_data_type(self):
 
         new_bearer_token = "ghi789"
