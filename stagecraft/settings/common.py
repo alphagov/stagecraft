@@ -32,6 +32,11 @@ ALLOWED_HOSTS = []
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+STATSD_HOST = 'localhost'
+STATSD_PORT = 8125
+STATSD_PREFIX = 'pp.apps.stagecraft'
+STATSD_MAXUDPSIZE = 512
+
 
 def load_databases_from_environment():
     # eg postgres://user3123:pass123@database.foo.com:6212/db982398
