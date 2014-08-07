@@ -4,7 +4,7 @@ from stagecraft.libs.validation.validation import extract_bearer_token
 from django.conf import settings
 from django.http import (HttpResponseForbidden)
 from django.utils.cache import patch_response_headers
-from statsd.defaults.env import statsd
+from statsd.defaults.django import statsd
 from functools import wraps
 
 
