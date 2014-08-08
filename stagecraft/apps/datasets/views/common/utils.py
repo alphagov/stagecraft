@@ -56,7 +56,14 @@ def _get_user_from_database(access_token):
 
 
 def _set_user_to_database(access_token, user):
-    pass
+    oauth_user = OAuthUser(
+        access_token=access_token,
+        uid=user['uid'],
+        email=user['email'],
+        permissions=user['permissions'],
+        expires_at=datetime.datetime.now() + datetime.timedelta(minutes=15))
+
+    oauth_user.save()
 
 
 def check_permission(access_token, permission_requested):

@@ -108,6 +108,19 @@ class CheckPermissionTestCase(TestCase):
         assert_that(has_permission, equal_to(False))
         assert_that(OAuthUser.objects.count(), equal_to(0))
 
+    def test_user_is_written_to_database_after_successful_auth(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission('correct-token',
+                                                      'signin')
+
+        assert_that(OAuthUser.objects.count(), equal_to(1))
+
+        (user, has_permission) = check_permission('correct-token', 'signin')
+
+        assert_that(has_permission, equal_to(True))
+
 
 class LongCacheTestCase(TestCase):
     fixtures = ['datasets_testdata.json']
