@@ -1,7 +1,7 @@
-from stagecraft.apps.datasets.views.common.utils import *
+from stagecraft.apps.datasets.views.common.utils import (
+    permission_required, to_json, long_cache)
 import logging
 
-from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.views.decorators.cache import never_cache
