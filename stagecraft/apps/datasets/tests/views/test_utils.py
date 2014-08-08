@@ -1,9 +1,12 @@
+from datetime import datetime, timedelta
+
 from hamcrest import assert_that, equal_to, none
 from httmock import urlmatch, HTTMock
 
 from django.conf import settings
 from django.test import TestCase
 
+from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.apps.datasets.tests.support.test_helpers import has_header
 from stagecraft.apps.datasets.views.common.utils import check_permission
 
@@ -47,7 +50,7 @@ class CheckPermissionTestCase(TestCase):
         assert_that(user['name'], equal_to('Some User'))
         assert_that(has_permission, equal_to(True))
 
-    def test_user_with_permission_returns_object_and_true(self):
+    def test_user_with_permission_from_signon_returns_object_and_true(self):
         settings.USE_DEVELOPMENT_USERS = False
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission(
@@ -55,11 +58,38 @@ class CheckPermissionTestCase(TestCase):
         assert_that(user['name'], equal_to('Foobar'))
         assert_that(has_permission, equal_to(True))
 
-    def test_user_without_permission_returns_none_and_false(self):
+    def test_user_without_permission_from_signon_returns_none_and_false(self):
         settings.USE_DEVELOPMENT_USERS = False
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission('bad-auth', 'signin')
         assert_that(user, none())
+        assert_that(has_permission, equal_to(False))
+
+    def test_user_with_permission_from_database_returns_object_and_true(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        OAuthUser.objects.create(access_token='correct-token',
+                                 uid='my-uid',
+                                 email='joe@example.com',
+                                 permissions=['signin'],
+                                 expires_at=datetime.now() + timedelta(days=1))
+
+        (user, has_permission) = check_permission(
+            'correct-token', 'signin')
+
+        assert_that(user['email'], equal_to('joe@example.com'))
+        assert_that(has_permission, equal_to(True))
+
+    def test_user_without_permission_from_database_returns_false(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        OAuthUser.objects.create(access_token='correct-token',
+                                 uid='my-uid',
+                                 email='joe@example.com',
+                                 permissions=['signin'],
+                                 expires_at=datetime.now() + timedelta(days=1))
+
+        (user, has_permission) = check_permission('correct-token', 'admin')
+
         assert_that(has_permission, equal_to(False))
 
 

@@ -1,5 +1,6 @@
 import json
 import requests
+from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
 from django.conf import settings
 from django.http import (HttpResponseForbidden)
@@ -12,20 +13,47 @@ from functools import wraps
 def _get_user(access_token):
     user = None
     if access_token is not None:
+
         if settings.USE_DEVELOPMENT_USERS is True:
             try:
                 user = settings.DEVELOPMENT_USERS[access_token]
             except KeyError:
                 user = None
         else:
-            response = requests.get(
-                '{0}/user.json'.format(settings.SIGNON_URL),
-                headers={'Authorization': 'Bearer {0}'.format(access_token)}
-            )
-            if response.status_code == 200:
-                user = response.json()['user']
+            user = _get_user_from_database(access_token)
+            if user is None:
+                user = _get_user_from_signon(access_token)
+                if user is not None:
+                    _set_user_to_database(access_token, user)
 
     return user
+
+
+def _get_user_from_signon(access_token):
+    response = requests.get(
+        '{0}/user.json'.format(settings.SIGNON_URL),
+        headers={'Authorization': 'Bearer {0}'.format(access_token)}
+    )
+    if response.status_code == 200:
+        return response.json()['user']
+
+
+def _get_user_from_database(access_token):
+    try:
+        oauth_user = OAuthUser.objects.get(access_token=access_token)
+        # check expiry
+        return {
+            "uid": oauth_user.uid,
+            "email": oauth_user.email,
+            "permissions": oauth_user.permissions,
+        }
+    except OAuthUser.DoesNotExist:
+        pass
+    return None
+
+
+def _set_user_to_database(access_token, user):
+    pass
 
 
 def check_permission(access_token, permission_requested):
