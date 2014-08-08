@@ -10,8 +10,8 @@ from django.db.models.query import QuerySet
 
 from django.utils.encoding import python_2_unicode_compatible
 
-from stagecraft.apps.datasets.models.data_group import DataGroup
-from stagecraft.apps.datasets.models.data_type import DataType
+from .data_group import DataGroup
+from .data_type import DataType
 
 from stagecraft.libs.backdrop_client import (delete_data_set,
                                              BackdropNotFoundError)
