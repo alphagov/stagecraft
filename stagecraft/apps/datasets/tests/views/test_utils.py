@@ -92,6 +92,22 @@ class CheckPermissionTestCase(TestCase):
 
         assert_that(has_permission, equal_to(False))
 
+    def test_user_from_database_should_not_be_returned_if_expired(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        OAuthUser.objects.create(access_token='correct-token-2',
+                                 uid='my-uid',
+                                 email='joe@example.com',
+                                 permissions=['signin'],
+                                 expires_at=datetime.now() - timedelta(days=1))
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission('correct-token-2',
+                                                      'admin')
+
+        assert_that(user, none())
+        assert_that(has_permission, equal_to(False))
+        assert_that(OAuthUser.objects.count(), equal_to(0))
+
 
 class LongCacheTestCase(TestCase):
     fixtures = ['datasets_testdata.json']

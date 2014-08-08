@@ -6,6 +6,7 @@ from django.conf import settings
 from django.http import (HttpResponseForbidden)
 from django.utils.cache import patch_response_headers
 from statsd.defaults.django import statsd
+from south.utils import datetime_utils as datetime
 from functools import wraps
 
 
@@ -41,7 +42,9 @@ def _get_user_from_signon(access_token):
 def _get_user_from_database(access_token):
     try:
         oauth_user = OAuthUser.objects.get(access_token=access_token)
-        # check expiry
+        if oauth_user.expires_at < datetime.datetime.now():
+            oauth_user.delete()
+            return
         return {
             "uid": oauth_user.uid,
             "email": oauth_user.email,
@@ -49,7 +52,7 @@ def _get_user_from_database(access_token):
         }
     except OAuthUser.DoesNotExist:
         pass
-    return None
+    return
 
 
 def _set_user_to_database(access_token, user):
