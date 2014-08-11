@@ -57,6 +57,22 @@ class OAuthReauthTestCase(TestCase):
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_that(resp.status_code, equal_to(200))
 
+    def test_subsequent_requests_are_unauthorized(self):
+        self._create_oauth_user()
+        resp = self.client.get(
+            '/data-sets',
+            HTTP_AUTHORIZATION='Bearer the-token')
+        assert_that(resp.status_code, equal_to(200))
+
+        with self._mock_signon(['signin', 'user_update_permission']):
+            self.client.post(
+                '/auth/gds/api/users/the-uid/reauth',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            resp = self.client.get(
+                '/data-sets',
+                HTTP_AUTHORIZATION='Bearer the-token')
+            assert_that(resp, is_unauthorized())
+
     def test_fails_with_get(self):
         with self._mock_signon(['signin', 'user_update_permission']):
             resp = self.client.get(
