@@ -3,7 +3,7 @@ import requests
 from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
 from django.conf import settings
-from django.http import (HttpResponseForbidden)
+from django.http import (HttpResponseForbidden, HttpResponse)
 from django.utils.cache import patch_response_headers
 from statsd.defaults.django import statsd
 from functools import wraps
@@ -55,23 +55,36 @@ def check_permission(access_token, permission_requested):
     return (user, has_permission)
 
 
+def unauthorized(message):
+    response = HttpResponse(to_json({
+        'status': 'error',
+        'message': 'Unauthorizd: {}'.format(message),
+    }), status=401)
+    response['WWW-Authenticate'] = 'Bearer'
+    return response
+
+
+def forbidden(message):
+    return HttpResponseForbidden(to_json({
+        'status': 'error',
+        'message': 'Forbidden: {}'.format(message)
+    }))
+
+
 def permission_required(permission):
     def decorator(a_view):
         def _wrapped_view(request, *args, **kwargs):
 
             access_token = extract_bearer_token(request)
+            if access_token is None:
+                return unauthorized('no access token given.')
+
             (user, has_permission) = check_permission(access_token, permission)
 
             if user is None:
-                return HttpResponseForbidden(to_json({
-                    'status': 'error',
-                    'message': 'Forbidden: invalid or no token given.'
-                }))
+                return unauthorized('invalid access token.')
             elif not has_permission:
-                return HttpResponseForbidden(to_json({
-                    'status': 'error',
-                    'message': 'Forbidden: user lacks permission.'
-                }))
+                return forbidden('user lacks permission.')
             else:
                 return a_view(user, request, *args, **kwargs)
         return _wrapped_view

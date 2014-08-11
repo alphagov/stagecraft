@@ -3,11 +3,14 @@ from __future__ import unicode_literals
 import json
 from nose.tools import assert_equal
 from hamcrest import assert_that
+from httmock import HTTMock
 
+from django.conf import settings
 from django.test import TestCase
 
-from stagecraft.apps.datasets.tests.support.test_helpers import (
-    is_unauthorized, is_error_response, has_header)
+from .test_utils import govuk_signon_mock
+from ..support.test_helpers import (
+    is_unauthorized, is_forbidden, is_error_response, has_header)
 
 
 class LongCacheTestCase(TestCase):
@@ -40,6 +43,17 @@ class BackdropUserViewsTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer I AM WRONG')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
+
+    def test_user_permission_needed(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['signin'])
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/users/foo%40bar.com',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_that(resp, is_forbidden())
+            assert_that(resp, is_error_response())
+        settings.USE_DEVELOPMENT_USERS = True
 
     def test_detail(self):
         resp = self.client.get(

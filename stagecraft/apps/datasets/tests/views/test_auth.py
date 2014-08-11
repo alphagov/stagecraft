@@ -6,18 +6,22 @@ from httmock import HTTMock
 
 from stagecraft.apps.datasets.models.oauth_user import OAuthUser
 from .test_utils import govuk_signon_mock
+from ..support.test_helpers import is_unauthorized, is_forbidden
 
 
 class OAuthReauthTestCase(TestCase):
     def setUp(self):
         settings.USE_DEVELOPMENT_USERS = False
 
+    def tearDown(self):
+        settings.USE_DEVELOPMENT_USERS = True
+
     def _create_oauth_user(self):
         OAuthUser.objects.cache_user(
             'the-token',
             {"uid": "the-uid",
              "email": "foo@foo.com",
-             "permissions": ['signin']})
+             "permissions": ['signin', 'admin']})
 
     def _mock_signon(self, permissions):
         return HTTMock(
@@ -41,7 +45,7 @@ class OAuthReauthTestCase(TestCase):
             resp = self.client.post(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
-            assert_that(resp.status_code, equal_to(403))
+            assert_that(resp, is_forbidden())
             assert_that(
                 OAuthUser.objects.get_by_access_token('the-token'),
                 is_not(None))
