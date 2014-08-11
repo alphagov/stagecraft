@@ -29,6 +29,9 @@ class OAuthUserManager(models.Manager):
             expires_at=datetime.now() + timedelta(minutes=15))
         oauth_user.save()
 
+    def purge_user(self, uid):
+        self.filter(uid=uid).delete()
+
 
 @python_2_unicode_compatible
 class OAuthUser(models.Model):
