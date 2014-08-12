@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.encoding import python_2_unicode_compatible
 from south.utils.datetime_utils import datetime, timedelta
 
@@ -27,7 +27,12 @@ class OAuthUserManager(models.Manager):
             email=user['email'],
             permissions=user['permissions'],
             expires_at=datetime.now() + timedelta(minutes=15))
-        oauth_user.save()
+        try:
+            oauth_user.save()
+        except IntegrityError:
+            # can happen if another request completed in the meantime
+            # in which case, we can just trust what's in there
+            pass
 
     def purge_user(self, uid):
         self.filter(uid=uid).delete()
