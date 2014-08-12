@@ -88,7 +88,6 @@ class DataSet(models.Model):
         max_length=255, blank=True, null=False,
         default="",
         help_text="""
-        - If data is only coming from csv/excel, leave this field blank.<br/>
         - If it's for an internal collector or customer-satisfaction,
         copy the token from another data-set of the same data type.<br/>
         - If it's for a new type then copy from a data-set of the same
