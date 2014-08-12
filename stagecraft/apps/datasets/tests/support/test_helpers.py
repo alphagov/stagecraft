@@ -38,6 +38,10 @@ def has_status(status_code):
 
 
 def is_unauthorized():
+    return has_status(401)
+
+
+def is_forbidden():
     return has_status(403)
 
 
