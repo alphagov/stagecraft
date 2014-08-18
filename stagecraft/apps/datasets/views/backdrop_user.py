@@ -1,4 +1,3 @@
-from stagecraft.apps.datasets.views.common.utils import *
 import logging
 
 from django.conf import settings
@@ -7,6 +6,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import BackdropUser
+from stagecraft.libs.authorization.http import permission_required
+from .common.utils import to_json
 
 logger = logging.getLogger(__name__)
 

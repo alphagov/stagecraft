@@ -5,7 +5,7 @@ from hamcrest import assert_that, is_, is_not, equal_to
 from httmock import HTTMock
 
 from stagecraft.apps.datasets.models.oauth_user import OAuthUser
-from .test_utils import govuk_signon_mock
+from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 from ..support.test_helpers import is_unauthorized, is_forbidden
 
 

@@ -12,7 +12,7 @@ from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
-from stagecraft.apps.datasets.tests.views.test_utils import govuk_signon_mock
+from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
 class DataSetsViewsTestCase(TestCase):
