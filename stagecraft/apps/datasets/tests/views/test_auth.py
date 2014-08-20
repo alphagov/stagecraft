@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, Client
 
 from hamcrest import assert_that, is_, is_not, equal_to
 from httmock import HTTMock
@@ -11,6 +11,7 @@ from ..support.test_helpers import is_unauthorized, is_forbidden
 
 class OAuthReauthTestCase(TestCase):
     def setUp(self):
+        self.client = Client(enforce_csrf_checks=True)
         settings.USE_DEVELOPMENT_USERS = False
 
     def tearDown(self):
