@@ -36,6 +36,7 @@ DEVELOPMENT_USERS = {
             "dataset",
             "user",
             "admin",
+            "organisation",
         ],
         "uid": "00000000-0000-0000-0000-000000000000"
     }
