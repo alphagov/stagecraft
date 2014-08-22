@@ -1,12 +1,16 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
+import logging
 
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, InternalError
 from django.utils.encoding import python_2_unicode_compatible
 from south.utils.datetime_utils import datetime, timedelta
 
 import dbarray
+
+
+log = logging.getLogger(__name__)
 
 
 class OAuthUserManager(models.Manager):
@@ -19,6 +23,8 @@ class OAuthUserManager(models.Manager):
             return oauth_user
         except OAuthUser.DoesNotExist:
             pass
+        except InternalError as e:
+            log.error(e)
 
     def cache_user(self, access_token, user):
         oauth_user = OAuthUser(
@@ -33,6 +39,8 @@ class OAuthUserManager(models.Manager):
             # can happen if another request completed in the meantime
             # in which case, we can just trust what's in there
             pass
+        except InternalError as e:
+            log.error(e)
 
     def purge_user(self, uid):
         self.filter(uid=uid).delete()
