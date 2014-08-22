@@ -6,6 +6,7 @@ import logging
 from django.db import models, IntegrityError, InternalError
 from django.utils.encoding import python_2_unicode_compatible
 from south.utils.datetime_utils import datetime, timedelta
+from statsd.defaults.django import statsd
 
 import dbarray
 
@@ -24,6 +25,7 @@ class OAuthUserManager(models.Manager):
         except OAuthUser.DoesNotExist:
             pass
         except InternalError as e:
+            statsd.counter.increment('oauth_user.internal_error.count')
             log.error(e)
 
     def cache_user(self, access_token, user):
@@ -40,6 +42,7 @@ class OAuthUserManager(models.Manager):
             # in which case, we can just trust what's in there
             pass
         except InternalError as e:
+            statsd.counter.increment('oauth_user.internal_error.count')
             log.error(e)
 
     def purge_user(self, uid):
