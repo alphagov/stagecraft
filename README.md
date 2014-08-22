@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/alphagov/stagecraft.png?branch=master)](https://travis-ci.org/alphagov/stagecraft?branch=master)
 
-Application for managing performance platform datasets.
+Application for managing performance platform.
 
 # Installing
 
@@ -26,28 +26,13 @@ you run through ``manage.py``.
 export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
 ```
 
-# Initialising/adding models
+# Initialising database
 
 Before the server is run for the first time the database needs to be synced.
 
 *Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
 ```
 python manage.py syncdb
-```
-
-After creating a model, create the initial migration script with:
-```
-python manage.py schemamigration datasets --initial
-```
-
-and then after making any changes to the model, create new migration scripts with:
-```
-python manage.py schemamigration datasets --auto
-```
-
-Apply migration scripts with:
-```
-python manage.py migrate datasets
 ```
 
 This project uses django-reversion to provide version control functionality.
@@ -67,6 +52,23 @@ while to execute.
 **Need to setup a new superadmin?**
 ```
 python manage.py createsuperuser --username=<ADMIN_USER_NAME> --email=<YOUR_EMAIL_ADDRESS>
+```
+
+# Adding a new model
+
+After creating a model, create the initial migration script with:
+```
+python manage.py schemamigration [app_name] --initial
+```
+
+and then after making any changes to the model, create new migration scripts with:
+```
+python manage.py schemamigration [app_name] --auto
+```
+
+Apply migration scripts with:
+```
+python manage.py migrate [app_name]
 ```
 
 # Running
