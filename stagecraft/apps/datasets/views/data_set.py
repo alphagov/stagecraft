@@ -1,5 +1,6 @@
 from stagecraft.apps.datasets.views.common.utils import (
-    permission_required, to_json, long_cache)
+    to_json, long_cache)
+from stagecraft.libs.authorization.http import permission_required
 import logging
 
 from django.http import (HttpResponse, HttpResponseBadRequest,

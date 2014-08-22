@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from ..models.oauth_user import OAuthUser
-from .common.utils import permission_required
+from stagecraft.libs.authorization.http import permission_required
 
 
 @csrf_exempt

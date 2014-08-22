@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'south',
 
     'stagecraft.apps.datasets',
+    'stagecraft.apps.organisation',
 )
 
 MIDDLEWARE_CLASSES = (
