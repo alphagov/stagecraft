@@ -5,12 +5,10 @@ from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
 from django.conf import settings
 from django.http import (HttpResponseForbidden, HttpResponse)
-from django.utils.cache import patch_response_headers
 from statsd.defaults.django import statsd
-from functools import wraps
 
 
-@statsd.timer('get_user.timer')
+@statsd.timer('get_user.both')
 def _get_user(access_token):
     user = None
     if access_token is not None:
@@ -30,6 +28,7 @@ def _get_user(access_token):
     return user
 
 
+@statsd.timer('get_user.signon')
 def _get_user_from_signon(access_token):
     response = requests.get(
         '{0}/user.json'.format(settings.SIGNON_URL),
@@ -39,6 +38,7 @@ def _get_user_from_signon(access_token):
         return response.json()['user']
 
 
+@statsd.timer('get_user.postgres')
 def _get_user_from_database(access_token):
     oauth_user = OAuthUser.objects.get_by_access_token(access_token)
     if oauth_user:
