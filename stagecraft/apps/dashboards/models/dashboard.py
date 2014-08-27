@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
+from ...organisation.models import Node
 
 
 def list_to_tuple_pairs(elements):
@@ -84,6 +85,8 @@ class Dashboard(models.Model):
         default=straplines[0]
     )
     tagline = models.CharField(max_length=400, blank=True)
+    organisation = models.ForeignKey(
+        'organisation.Node', blank=True, null=True)
 
     def serialize(self):
         json = {}
