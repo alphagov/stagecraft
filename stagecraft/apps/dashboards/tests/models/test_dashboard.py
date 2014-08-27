@@ -7,7 +7,7 @@ from hamcrest import (
 )
 from nose.tools import eq_, assert_raises
 
-from ..models import Dashboard, Link
+from ...models import Dashboard, Link
 
 
 class DashboardTestCase(TransactionTestCase):

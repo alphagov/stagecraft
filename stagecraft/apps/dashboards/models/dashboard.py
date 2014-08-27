@@ -160,6 +160,9 @@ class Dashboard(models.Model):
         self.full_clean()
         self.save()
 
+    class Meta:
+        app_label = 'dashboards'
+
 
 class Link(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
@@ -180,3 +183,6 @@ class Link(models.Model):
             'title': self.title,
             'url': self.url,
         }
+
+    class Meta:
+        app_label = 'dashboards'
