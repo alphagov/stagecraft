@@ -32,7 +32,7 @@ class OAuthReauthTestCase(TestCase):
     def test_reauth_with_permission(self):
         self._create_oauth_user()
         with self._mock_signon(['signin', 'user_update_permission']):
-            resp = self.client.post(
+            resp = self.client.put(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_that(resp.status_code, equal_to(200))
@@ -43,7 +43,7 @@ class OAuthReauthTestCase(TestCase):
     def test_reauth_without_permission(self):
         self._create_oauth_user()
         with self._mock_signon(['signin']):
-            resp = self.client.post(
+            resp = self.client.put(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_that(resp, is_forbidden())
@@ -53,7 +53,7 @@ class OAuthReauthTestCase(TestCase):
 
     def test_reauth_returns_200_if_user_is_not_found(self):
         with self._mock_signon(['signin', 'user_update_permission']):
-            resp = self.client.post(
+            resp = self.client.put(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_that(resp.status_code, equal_to(200))
@@ -66,7 +66,7 @@ class OAuthReauthTestCase(TestCase):
         assert_that(resp.status_code, equal_to(200))
 
         with self._mock_signon(['signin', 'user_update_permission']):
-            self.client.post(
+            self.client.put(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
             resp = self.client.get(
