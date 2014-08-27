@@ -96,3 +96,7 @@ class DashboardTestCase(TransactionTestCase):
 
         assert_that(self.dashboard.serialize(), is_not(has_key('id')))
         assert_that(self.dashboard.serialize(), is_not(has_key('link')))
+
+    def test_dashboard_without_transaction_link_will_serialize(self):
+        assert_that(
+            self.dashboard.serialize(), has_entries({'title': 'title'}))

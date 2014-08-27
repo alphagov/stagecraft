@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
+from ...organisation.models import Node
 
 
 def list_to_tuple_pairs(elements):
@@ -84,6 +85,8 @@ class Dashboard(models.Model):
         default=straplines[0]
     )
     tagline = models.CharField(max_length=400, blank=True)
+    organisation = models.ForeignKey(
+        'organisation.Node', blank=True, null=True)
 
     def serialize(self):
         json = {}
@@ -112,9 +115,11 @@ class Dashboard(models.Model):
             json[field.replace('_', '-')] = getattr(self, field)
 
         related_pages = {}
-        related_pages['transaction_link'] = (
-            self.get_transaction_link().serialize()
-        )
+        transaction_link = self.get_transaction_link()
+        if transaction_link is not None:
+            related_pages['transaction_link'] = (
+                transaction_link.serialize()
+            )
         related_pages['other_links'] = [
             link.serialize() for link
             in self.get_other_links()
