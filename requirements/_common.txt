@@ -10,6 +10,8 @@ South==0.8.4
 requests==2.2.1
 logstash_formatter==0.5.7
 
+jsonschema==2.3.0
+
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.2
 
