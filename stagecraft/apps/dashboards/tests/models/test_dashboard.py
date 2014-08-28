@@ -5,9 +5,13 @@ from hamcrest import (
     starts_with
 )
 
-from ...models import Dashboard, Link
+from ...models import Link
 from ....organisation.models import Node, NodeType
-import factory
+from stagecraft.apps.dashboards.tests.factories.factories import(
+    DashboardFactory,
+    DepartmentFactory,
+    AgencyFactory,
+    AgencyWithDepartmentFactory)
 
 
 class DashboardTestCase(TransactionTestCase):
@@ -176,47 +180,3 @@ class DashboardTestCase(TransactionTestCase):
         )
         agency.save()
         return agency
-
-
-class DashboardFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Dashboard
-
-    published = True
-    title = "title"
-    slug = factory.Sequence(lambda n: 'slug%s' % n)
-
-
-class NodeTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = NodeType
-
-
-class DepartmentTypeFactory(NodeTypeFactory):
-    name = 'department'
-
-
-class AgencyTypeFactory(NodeTypeFactory):
-    name = 'agency'
-
-
-class NodeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Node
-    name = factory.Sequence(lambda n: 'name-%s' % n)
-    abbreviation = factory.Sequence(lambda n: 'abbreviation-%s' % n)
-    typeOf = factory.SubFactory(NodeTypeFactory)
-
-
-class DepartmentFactory(NodeFactory):
-    name = factory.Sequence(lambda n: 'department-%s' % n)
-    typeOf = factory.SubFactory(DepartmentTypeFactory)
-
-
-class AgencyFactory(NodeFactory):
-    name = factory.Sequence(lambda n: 'agency-%s' % n)
-    typeOf = factory.SubFactory(AgencyTypeFactory)
-
-
-class AgencyWithDepartmentFactory(AgencyFactory):
-    parent = factory.SubFactory(DepartmentFactory)

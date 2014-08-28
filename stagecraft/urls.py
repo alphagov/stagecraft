@@ -7,6 +7,7 @@ import stagecraft.apps.organisation.views as organisation_views
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
 from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
+from stagecraft.apps.dashboards.views import dashboard as dashboard_views
 from stagecraft.libs.status import views as status_views
 
 admin.autodiscover()
@@ -42,4 +43,9 @@ urlpatterns = patterns(
     url(r'^organisation/type$', organisation_views.root_types),
     url(r'^_status/data-sets$', datasets_views.health_check),
     url(r'^_status$', status_views.status),
+    url(r'^public/dashboards$', dashboard_views.dashboards, name='dashboards'),
+    url(r'^public/dashboards/$', RedirectView.as_view(
+        pattern_name='dashboards',
+        permanent=True,
+        query_string=True)),
 )
