@@ -43,3 +43,12 @@ class Node(MPTTModel):
                 node['parent'] = None
 
         return node
+
+    def spotlightify(self):
+        node = {}
+        if self.abbreviation is not None:
+            node['abbr'] = self.abbreviation
+        else:
+            node['abbr'] = self.name
+        node['title'] = self.name
+        return node

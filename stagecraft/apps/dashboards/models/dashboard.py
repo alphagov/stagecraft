@@ -1,8 +1,6 @@
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
-from ...organisation.models import Node
 
 
 def list_to_tuple_pairs(elements):
@@ -88,51 +86,56 @@ class Dashboard(models.Model):
     organisation = models.ForeignKey(
         'organisation.Node', blank=True, null=True)
 
-    def serialize(self):
-        json = {}
-        fields = [
-            field for field
-            in self._meta.get_all_field_names()
-            if field != 'link'
-            and field != 'id'
-        ]
-        fields = [
-            'business_model',
-            'costs',
-            'customer_type',
-            'dashboard_type',
-            'description',
-            'description_extra',
-            'other_notes',
-            'page_type',
-            'published',
-            'slug',
-            'strapline',
-            'tagline',
-            'title'
-        ]
-        for field in fields:
-            json[field.replace('_', '-')] = getattr(self, field)
+    spotlightify_base_fields = [
+        'business_model',
+        'costs',
+        'customer_type',
+        'dashboard_type',
+        'description',
+        'description_extra',
+        'other_notes',
+        'page_type',
+        'published',
+        'slug',
+        'strapline',
+        'tagline',
+        'title'
+    ]
 
-        related_pages = {}
+    def spotlightify_base_dict(self):
+        base_dict = {}
+        for field in self.spotlightify_base_fields:
+            base_dict[field.replace('_', '-')] = getattr(self, field)
+        return base_dict
+
+    def related_pages_dict(self):
+        related_pages_dict = {}
         transaction_link = self.get_transaction_link()
-        if transaction_link is not None:
-            related_pages['transaction_link'] = (
-                transaction_link.serialize()
-            )
-        related_pages['other_links'] = [
+        if transaction_link:
+            related_pages_dict['transaction_link'] = (
+                transaction_link.serialize())
+
+        related_pages_dict['other_links'] = [
             link.serialize() for link
             in self.get_other_links()
         ]
-        related_pages['improve-dashboard-message'] = (
+        related_pages_dict['improve-dashboard-message'] = (
             self.improve_dashboard_message
         )
-        json['relatedPages'] = related_pages
-        return json
+        return related_pages_dict
+
+    def spotlightify(self):
+        base_dict = self.spotlightify_base_dict()
+        base_dict['relatedPages'] = self.related_pages_dict()
+        if self.department():
+            base_dict['department'] = self.department().spotlightify()
+        if self.agency():
+            base_dict['agency'] = self.agency().spotlightify()
+        return base_dict
 
     def update_transaction_link(self, title, url):
         transaction_link = self.get_transaction_link()
-        if transaction_link is None:
+        if not transaction_link:
             self.link_set.create(
                 title=title,
                 url=url,
@@ -167,6 +170,22 @@ class Dashboard(models.Model):
 
     class Meta:
         app_label = 'dashboards'
+
+    def agency(self):
+        if not self.organisation:
+            return None
+        if self.organisation.typeOf.name == 'agency':
+            return self.organisation
+        return None
+
+    def department(self):
+        agency = self.agency()
+        if agency and not agency.parent:
+            raise ValueError
+        elif agency:
+            return agency.parent
+        else:
+            return self.organisation
 
 
 class Link(models.Model):
