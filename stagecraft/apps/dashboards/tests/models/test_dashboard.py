@@ -17,11 +17,7 @@ import factory
 class DashboardTestCase(TransactionTestCase):
 
     def setUp(self):
-        self.dashboard = Dashboard.objects.create(
-            published=True,
-            title="title",
-            slug="slug"
-        )
+        self.dashboard = DashboardFactory()
 
     def test_transaction_link(self):
         self.dashboard.update_transaction_link('blah', 'http://www.gov.uk')
@@ -53,7 +49,8 @@ class DashboardTestCase(TransactionTestCase):
             equal_to('other')
         )
 
-    def test_other_and_transaction_link(self):
+##
+    def test_spotlightify_handles_other_and_transaction_links(self):
         self.dashboard.add_other_link('other', 'http://www.gov.uk')
         self.dashboard.add_other_link('other2', 'http://www.gov.uk')
         self.dashboard.update_transaction_link(
@@ -72,7 +69,7 @@ class DashboardTestCase(TransactionTestCase):
             equal_to('other')
         )
         assert_that(
-            self.dashboard.serialize(),
+            self.dashboard.spotlightify(),
             has_entries({
                 'title': 'title',
                 'page-type': 'dashboard',
@@ -98,55 +95,38 @@ class DashboardTestCase(TransactionTestCase):
             })
         )
 
-        assert_that(self.dashboard.serialize(), is_not(has_key('id')))
-        assert_that(self.dashboard.serialize(), is_not(has_key('link')))
+        assert_that(self.dashboard.spotlightify(), is_not(has_key('id')))
+        assert_that(self.dashboard.spotlightify(), is_not(has_key('link')))
 
-    def test_dashboard_without_transaction_link_will_serialize(self):
+    def test_spotlightify_handles_dashboard_without_transaction_link(self):
         assert_that(
-            self.dashboard.serialize(), has_entries({'title': 'title'}))
+            self.dashboard.spotlightify(), has_entries({'title': 'title'}))
 
-    def test_department(self):
-        # dashboard = DashboardFactory()
-        # node = NodeFactory()
-        department_type = NodeType.objects.create(
-            name='department'
-        )
-        department = Node.objects.create(
-            name='department-node',
-            typeOf=department_type
-        )
-        department.save()
-        agency_type = NodeType.objects.create(
-            name='agency'
-        )
-        agency = Node.objects.create(
-            name='agency-node',
-            typeOf=agency_type,
-            parent=department
-        )
-
+    def test_spotlightify_handles_department_and_agency(self):
+        agency = AgencyWithDepartmentFactory()
         self.dashboard.organisation = agency
         self.dashboard.validate_and_save()
         assert_that(
-            self.dashboard.serialize(),
+            self.dashboard.spotlightify(),
             has_entry(
                 'department',
                 has_entries({
                     'title': starts_with('department'),
-                    'abbr': starts_with('department')
+                    'abbr': starts_with('abbreviation')
                 })
             )
         )
         assert_that(
-            self.dashboard.serialize(),
+            self.dashboard.spotlightify(),
             has_entry(
                 'agency',
                 has_entries({
                     'title': starts_with('agency'),
-                    'abbr': starts_with('agency')
+                    'abbr': starts_with('abbreviation')
                 })
             )
         )
+##
 
     def test_agency_returns_none_when_no_organisation(self):
         assert_that(self.dashboard.agency(), is_(none()))
@@ -202,13 +182,12 @@ class DashboardTestCase(TransactionTestCase):
         return agency
 
 
-
 class DashboardFactory(factory.DjangoModelFactory):
     class Meta:
         model = Dashboard
 
-    published = True,
-    title = "title",
+    published = True
+    title = "title"
     slug = factory.Sequence(lambda n: 'slug%s' % n)
 
 

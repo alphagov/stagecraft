@@ -88,7 +88,7 @@ class Dashboard(models.Model):
     organisation = models.ForeignKey(
         'organisation.Node', blank=True, null=True)
 
-    def serialize(self):
+    def spotlightify(self):
         json = {}
         fields = [
             field for field
@@ -128,6 +128,11 @@ class Dashboard(models.Model):
             self.improve_dashboard_message
         )
         json['relatedPages'] = related_pages
+        if self.department() is not None:
+            json['department'] = self.department().spotlightify()
+        if self.agency() is not None:
+            json['agency'] = self.agency().spotlightify()
+        print json
         return json
 
     def update_transaction_link(self, title, url):
@@ -167,6 +172,24 @@ class Dashboard(models.Model):
 
     class Meta:
         app_label = 'dashboards'
+
+    def agency(self):
+        if self.organisation is None:
+            return None
+        if self.organisation.typeOf.name == 'agency':
+            return self.organisation
+        return None
+
+    def department(self):
+        if self.organisation is None:
+            return None
+        if self.organisation.typeOf.name == 'department':
+            return self.organisation
+        elif self.organisation.typeOf.name == 'agency':
+            if self.organisation.parent is None:
+                raise ValueError
+            else:
+                return self.organisation.parent
 
 
 class Link(models.Model):
