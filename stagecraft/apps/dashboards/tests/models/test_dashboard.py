@@ -1,17 +1,13 @@
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from hamcrest import (
     assert_that, has_entry, has_key, is_not, has_length, equal_to, instance_of,
-    has_entries, has_items, is_not, has_property, is_, none, calling, raises,
+    has_entries, has_items, has_property, is_, none, calling, raises,
     starts_with
 )
-from nose.tools import eq_, assert_raises
 
 from ...models import Dashboard, Link
 from ....organisation.models import Node, NodeType
 import factory
-
 
 
 class DashboardTestCase(TransactionTestCase):
@@ -142,12 +138,12 @@ class DashboardTestCase(TransactionTestCase):
         self.dashboard.organisation = agency
         assert_that(self.dashboard.agency(), equal_to(agency))
 
-    def test_department_returns_organisation_when_organisation_is_a_department(self):
+    def test_department_returns_organisation_when_organisation_is_a_department(self):  # noqa
         self.dashboard.organisation = DepartmentFactory()
         assert_that(
             self.dashboard.department(), equal_to(self.dashboard.organisation))
 
-    def test_department_returns_agency_department_when_organisation_is_an_agency(self):
+    def test_department_returns_agency_department_when_organisation_is_an_agency(self):  # noqa
         agency = AgencyWithDepartmentFactory()
         self.dashboard.organisation = agency
         assert_that(self.dashboard.department(), equal_to(agency.parent))

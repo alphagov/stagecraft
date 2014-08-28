@@ -1,8 +1,6 @@
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
-from ...organisation.models import Node
 
 
 def list_to_tuple_pairs(elements):
@@ -132,7 +130,6 @@ class Dashboard(models.Model):
             json['department'] = self.department().spotlightify()
         if self.agency() is not None:
             json['agency'] = self.agency().spotlightify()
-        print json
         return json
 
     def update_transaction_link(self, title, url):
