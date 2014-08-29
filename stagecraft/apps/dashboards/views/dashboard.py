@@ -20,7 +20,7 @@ def dashboards(request):
                 dashboard_slug)
         }
         logger.warn(error)
-        raise HttpResponseNotFound
+        return HttpResponseNotFound(to_json(error))
     json_str = to_json(dashboard.spotlightify())
 
     return HttpResponse(json_str, content_type='application/json')
