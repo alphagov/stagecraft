@@ -9,7 +9,7 @@ from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 from ..support.test_helpers import is_unauthorized, is_forbidden
 
 
-class OAuthReauthTestCase(TestCase):
+class OAuthInvalidateTestCase(TestCase):
     def setUp(self):
         self.client = Client(enforce_csrf_checks=True)
         settings.USE_DEVELOPMENT_USERS = False
@@ -40,7 +40,18 @@ class OAuthReauthTestCase(TestCase):
                 OAuthUser.objects.get_by_access_token('the-token'),
                 is_(None))
 
-    def test_reauth_without_permission(self):
+    def test_update_with_permission(self):
+        self._create_oauth_user()
+        with self._mock_signon(['signin', 'user_update_permission']):
+            resp = self.client.put(
+                '/auth/gds/api/users/the-uid',
+                HTTP_AUTHORIZATION='Bearer correct-token')
+            assert_that(resp.status_code, equal_to(200))
+            assert_that(
+                OAuthUser.objects.get_by_access_token('the-token'),
+                is_(None))
+
+    def test_invalidate_without_permission(self):
         self._create_oauth_user()
         with self._mock_signon(['signin']):
             resp = self.client.post(
@@ -51,7 +62,7 @@ class OAuthReauthTestCase(TestCase):
                 OAuthUser.objects.get_by_access_token('the-token'),
                 is_not(None))
 
-    def test_reauth_returns_200_if_user_is_not_found(self):
+    def test_invalidate_returns_200_if_user_is_not_found(self):
         with self._mock_signon(['signin', 'user_update_permission']):
             resp = self.client.post(
                 '/auth/gds/api/users/the-uid/reauth',
