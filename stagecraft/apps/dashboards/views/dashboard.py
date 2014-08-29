@@ -26,13 +26,17 @@ def dashboards(request):
     return HttpResponse(json_str, content_type='application/json')
 
 
-def recursively_fetch_dashboard(dashboard_slug):
+def recursively_fetch_dashboard(dashboard_slug, count=3):
+    if count == 0:
+        return None
     slug_parts = dashboard_slug.split('/')
     current_part = slug_parts.pop()
     dashboard = Dashboard.objects.filter(slug=current_part).first()
     if not dashboard:
         if slug_parts:
-            dashboard = recursively_fetch_dashboard(('/').join(slug_parts))
+            count -= 1
+            dashboard = recursively_fetch_dashboard(
+                ('/').join(slug_parts), count=count)
         else:
             return None
     return dashboard
