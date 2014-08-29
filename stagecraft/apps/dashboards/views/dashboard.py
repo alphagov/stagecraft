@@ -1,6 +1,6 @@
 import logging
 from django.http import HttpResponse, HttpResponseNotFound
-from stagecraft.apps.datasets.views.common.utils import to_json
+from stagecraft.libs.views.utils import to_json
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
 
 # this needs to go somewhere EVEN MORE COMMON
