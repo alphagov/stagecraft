@@ -27,13 +27,12 @@ def dashboards(request):
 
 
 def recursively_fetch_dashboard(dashboard_slug):
-    slug_parts = dashboard_slug.split('')
+    slug_parts = dashboard_slug.split('/')
     current_part = slug_parts.pop()
-    dashboard = Dashboard.object.filter(slug=current_part).first()
+    dashboard = Dashboard.objects.filter(slug=current_part).first()
     if not dashboard:
         if slug_parts:
             dashboard = recursively_fetch_dashboard(('/').join(slug_parts))
         else:
             return None
-    else:
-        return dashboard
+    return dashboard
