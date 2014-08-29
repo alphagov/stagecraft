@@ -2,12 +2,14 @@ import logging
 from django.http import HttpResponse, HttpResponseNotFound
 from stagecraft.libs.views.utils import to_json
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
+from django.views.decorators.cache import cache_control
 
 # this needs to go somewhere EVEN MORE COMMON
 
 logger = logging.getLogger(__name__)
 
 
+@cache_control(max_age=300)
 def dashboards(request):
     dashboard_slug = request.GET.get('slug')
     dashboard = Dashboard.objects.filter(slug=dashboard_slug).first()

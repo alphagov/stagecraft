@@ -25,6 +25,7 @@ class DashboardViewsTestCase(TestCase):
         resp = self.client.get(
             '/public/dashboards', {'slug': 'my_first_slug'})
         assert_that(json.loads(resp.content), equal_to(spotlightify_response))
+        assert_that(resp['Cache-Control'], equal_to('max-age=300'))
 
     @patch(
         'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
