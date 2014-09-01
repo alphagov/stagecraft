@@ -12,9 +12,7 @@ logger = logging.getLogger(__name__)
 @cache_control(max_age=300)
 def dashboards(request):
     dashboard_slug = request.GET.get('slug')
-    dashboard = Dashboard.objects.filter(slug=dashboard_slug).first()
-    if not dashboard:
-        dashboard = recursively_fetch_dashboard(dashboard_slug)
+    dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
         error = {
             'status': 'error',
@@ -28,18 +26,17 @@ def dashboards(request):
     return HttpResponse(json_str, content_type='application/json')
 
 
-def recursively_fetch_dashboard(dashboard_slug, count=2):
+def recursively_fetch_dashboard(dashboard_slug, count=3):
     if count == 0:
         return None
-    slug_parts = dashboard_slug.split('/')
-    slug_parts.pop()
-    current_dashboard_slug = ('/').join(slug_parts)
-    dashboard = Dashboard.objects.filter(slug=current_dashboard_slug).first()
+
+    dashboard = Dashboard.objects.filter(slug=dashboard_slug).first()
+
     if not dashboard:
-        if slug_parts:
-            count -= 1
+        slug_parts = dashboard_slug.split('/')
+        if len(slug_parts) > 1:
+            slug_parts.pop()
             dashboard = recursively_fetch_dashboard(
-                current_dashboard_slug, count=count)
-        else:
-            return None
+                '/'.join(slug_parts), count=count-1)
+
     return dashboard

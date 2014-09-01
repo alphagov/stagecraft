@@ -23,7 +23,7 @@ class DashboardViewsTestCase(TestCase):
         }
         spotlightify_patch.return_value = spotlightify_response
         resp = self.client.get(
-            '/public/dashboards', {'slug': 'my_first_slug'})
+            '/public/dashboards', {'slug': 'my_first_slug/this'})
         assert_that(json.loads(resp.content), equal_to(spotlightify_response))
         assert_that(resp['Cache-Control'], equal_to('max-age=300'))
 
@@ -43,11 +43,11 @@ class DashboardViewsTestCase(TestCase):
     def test_recursively_fetch_dashboard_recurses_down_the_slug_fragments(
             self):
         dashboard = DashboardFactory(slug='experimental/my_first_slug')
-        slug = 'experimental/my_first_slug/another'
+        slug = 'experimental/my_first_slug/another/thing'
         returned_dashboard = recursively_fetch_dashboard(slug)
         assert_that(dashboard.id, equal_to(returned_dashboard.id))
 
-    def test_recursively_fetch_dashboard_ignore_level_1_and_returns_none_after_2_levels(  # noqa
+    def test_recursively_fetch_dashboard_returns_none_after_3_levels(
             self):
         DashboardFactory(slug='my_first_slug')
         slug = 'my_first_slug/some_url_fragment/another/another'
