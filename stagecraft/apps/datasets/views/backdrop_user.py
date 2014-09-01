@@ -7,7 +7,7 @@ from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import BackdropUser
 from stagecraft.libs.authorization.http import permission_required
-from .common.utils import to_json
+from stagecraft.libs.views.utils import to_json
 
 logger = logging.getLogger(__name__)
 

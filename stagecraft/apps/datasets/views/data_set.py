@@ -1,5 +1,4 @@
-from stagecraft.apps.datasets.views.common.utils import (
-    to_json, long_cache)
+from stagecraft.libs.views.utils import to_json, long_cache
 from stagecraft.libs.authorization.http import permission_required
 import logging
 
