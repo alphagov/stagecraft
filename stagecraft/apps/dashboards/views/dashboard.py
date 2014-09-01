@@ -1,8 +1,14 @@
+import json
 import logging
+
 from django.http import HttpResponse, HttpResponseNotFound
-from stagecraft.libs.views.utils import to_json
+from django.views.decorators.cache import cache_control, never_cache
+from django.views.decorators.csrf import csrf_exempt
+
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
-from django.views.decorators.cache import cache_control
+from stagecraft.apps.organisation.models import Node
+from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.views.utils import to_json
 
 # this needs to go somewhere EVEN MORE COMMON
 
@@ -46,3 +52,22 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
                 '/'.join(slug_parts), count=count-1)
 
     return dashboard
+
+
+@csrf_exempt
+@permission_required('dashboard')
+@never_cache
+def dashboard(user, request):
+    data = json.loads(request.body)
+
+    organisation = Node.objects.get(id=data['organisation'])
+    dashboard = Dashboard()
+    dashboard.organisation = organisation
+    for key, value in data.iteritems():
+        if key != 'organisation':
+            setattr(dashboard, key.replace('-', '_'), value)
+
+    dashboard.save()
+
+    return HttpResponse(json.dumps({'status': 'ok'}),
+                        content_type='application/json')

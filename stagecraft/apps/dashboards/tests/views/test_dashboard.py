@@ -1,14 +1,19 @@
 import json
+
 from django.test import TestCase
-from mock import patch
 from hamcrest import assert_that, equal_to, is_, none
+from mock import patch
+
 from stagecraft.apps.dashboards.tests.factories.factories import(
-    DashboardFactory)
+    DashboardFactory, DepartmentFactory)
+from stagecraft.apps.dashboards.models.dashboard import (
+    Dashboard)
 from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
+from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
-class DashboardViewsTestCase(TestCase):
+class DashboardViewsListTestCase(TestCase):
 
     @patch(
         'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
@@ -65,3 +70,41 @@ class DashboardViewsTestCase(TestCase):
         slug = 'my_first_slug/some_url_fragment/another/another'
         returned_dashboard = recursively_fetch_dashboard(slug)
         assert_that(returned_dashboard, is_(none()))
+
+
+class DashboardViewsCreateTestCase(TestCase):
+    def setUp(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+    def tearDown(self):
+        settings.USE_DEVELOPMENT_USERS = True
+
+    def test_create_a_new_dashboard_with_no_modules(self):
+        department = DepartmentFactory()
+        data = {
+            "slug": "/foo",
+            "dashboard-type": "transaction",
+            "page-type": "dashboard",
+            "published": True,
+            "title": "Foo dashboard",
+            "description": "This is a foo",
+            "description-extra": "This is some extra",
+            "costs": "eh?",
+            "other-notes": "some other notes",
+            "customer-type": "Business",
+            "business-model": "Department budget",
+            "improve-dashboard-message": True,
+            "strapline": "This is the strapline",
+            "tagline": "This is the tagline",
+            "organisation": "{}".format(department.id),
+        }
+        signon = govuk_signon_mock(permissions=['dashboard'])
+
+        with HTTMock(signon):
+            resp = self.client.post(
+                '/dashboard', json.dumps(data),
+                content_type="application/json",
+                HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(Dashboard.objects.count(), equal_to(1))
