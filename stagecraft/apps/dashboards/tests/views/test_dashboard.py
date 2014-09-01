@@ -42,20 +42,14 @@ class DashboardViewsTestCase(TestCase):
 
     def test_recursively_fetch_dashboard_recurses_down_the_slug_fragments(
             self):
-        dashboard = DashboardFactory(slug='my_first_slug')
-        slug = 'my_first_slug/some_url_fragment/another'
+        dashboard = DashboardFactory(slug='experimental/my_first_slug')
+        slug = 'experimental/my_first_slug/another'
         returned_dashboard = recursively_fetch_dashboard(slug)
         assert_that(dashboard.id, equal_to(returned_dashboard.id))
 
-    def test_recursively_fetch_dashboard_returns_none_after_3_levels(
+    def test_recursively_fetch_dashboard_ignore_level_1_and_returns_none_after_2_levels(  # noqa
             self):
         DashboardFactory(slug='my_first_slug')
         slug = 'my_first_slug/some_url_fragment/another/another'
         returned_dashboard = recursively_fetch_dashboard(slug)
         assert_that(returned_dashboard, is_(none()))
-
-    # test gets the correct dashboard or sub module...
-
-    # services list is dashboards with no slugs
-
-    # test for redirect from /
