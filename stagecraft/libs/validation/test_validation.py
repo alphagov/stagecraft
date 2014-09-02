@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
-from hamcrest import assert_that, is_
+from hamcrest import assert_that, is_, equal_to
 
 from django.http import HttpRequest
 from django.test import TestCase
 
-from stagecraft.libs.validation.validation import extract_bearer_token
+from stagecraft.libs.validation.validation import (
+    extract_bearer_token, is_uuid)
 
 
 def mock_request(auth_header):
@@ -42,3 +43,17 @@ class BearerTokenIsValid(TestCase):
         assert_that(
             extract_bearer_token(mock_request(auth_header)),
             is_(None))
+
+
+class IsUUIDTestCase(TestCase):
+
+    def test_is_uuid(self):
+        assert_that(is_uuid('blah'), equal_to(False))
+        assert_that(
+            is_uuid('edc9aa07-f45f-4d93-9f9c-d9d760f08019'),
+            equal_to(True)
+        )
+        assert_that(
+            is_uuid('edc9aa07f45f4d939f9cd9d760f08019'),
+            equal_to(True)
+        )

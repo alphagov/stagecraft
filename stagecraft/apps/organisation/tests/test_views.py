@@ -1,30 +1,14 @@
 import json
-import unittest
 
 from django.conf import settings
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, has_entry,
-    is_in, has_item, is_not, has_key
+    has_item, has_key
 )
 from httmock import HTTMock
 
 from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
-from ..views import is_uuid
-
-
-class IsUUIDTestCase(unittest.TestCase):
-
-    def test_is_uuid(self):
-        assert_that(is_uuid('blah'), equal_to(False))
-        assert_that(
-            is_uuid('edc9aa07-f45f-4d93-9f9c-d9d760f08019'),
-            equal_to(True)
-        )
-        assert_that(
-            is_uuid('edc9aa07f45f4d939f9cd9d760f08019'),
-            equal_to(True)
-        )
 
 
 class NodeViewsTestCase(TestCase):
