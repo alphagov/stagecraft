@@ -41,6 +41,36 @@ class ModuleTestCase(TestCase):
             calling(create_module).with_args(dashboard_b),
             is_not(raises(IntegrityError)))
 
+    def test_query_params_validated(self):
+        dashboard = Dashboard.objects.create(
+            slug='a-dashboard',
+            published=False,
+        )
+        module_type = ModuleType.objects.create(
+            name='graph',
+        )
+
+        module = Module(
+            slug='a-module',
+            type=module_type,
+            dashboard=dashboard,
+            query_parameters={
+                "collect": ["foo:not-a-thing"],
+            }
+        )
+
+        assert_that(
+            calling(lambda: module.validate_query_parameters()),
+            raises(ValidationError)
+        )
+
+        module.query_parameters["collect"][0] = "foo:sum"
+
+        assert_that(
+            calling(lambda: module.validate_query_parameters()),
+            is_not(raises(ValidationError))
+        )
+
     def test_options_validated_against_type(self):
         dashboard = Dashboard.objects.create(
             slug='a-dashboard',
