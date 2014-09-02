@@ -40,6 +40,7 @@ class Dashboard(models.Model):
         'Department budget',
         'Fees and charges',
         'Taxpayers',
+        'Fees and charges, and taxpayers',
     ]
     straplines = [
         'Dashboard',
