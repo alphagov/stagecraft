@@ -66,8 +66,8 @@ INSTALLED_APPS = (
     'reversion',
     'south',
 
-    'stagecraft.apps.dashboards',
     'stagecraft.apps.datasets',
+    'stagecraft.apps.dashboards',
     'stagecraft.apps.organisation',
 )
 

@@ -8,6 +8,8 @@ from dbarray import CharArrayField
 from jsonfield import JSONField
 from uuidfield import UUIDField
 
+from stagecraft.apps.datasets.models import DataSet
+
 from .dashboard import Dashboard
 
 
@@ -37,6 +39,7 @@ class Module(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
+    data_set = models.ForeignKey(DataSet, null=True)
 
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
