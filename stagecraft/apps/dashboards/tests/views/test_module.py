@@ -4,7 +4,7 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_, none,
-    has_entry, has_item,
+    has_entry, has_item, has_key, is_not
 )
 
 from ...models import ModuleType
@@ -65,3 +65,77 @@ class ModuleTypeViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('name', 'foo')),
         )
+
+    def test_add_type(self):
+        resp = self.client.post(
+            '/module-type',
+            data=json.dumps({
+                'name': 'a-type',
+                'schema': {'type': 'string'},
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(resp_json, has_key('id'))
+        assert_that(resp_json, has_entry('name', 'a-type'))
+        assert_that(resp_json, has_entry('schema', {'type': 'string'}))
+
+        stored_types = ModuleType.objects.get(id=resp_json['id'])
+        assert_that(stored_types, is_not(None))
+
+    def test_add_type_not_json(self):
+        resp = self.client.post(
+            '/module-type',
+            data=json.dumps({
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/something-else')
+
+        assert_that(resp.status_code, is_(equal_to(415)))
+
+    def test_add_type_with_no_name(self):
+        resp = self.client.post(
+            '/module-type',
+            data=json.dumps({
+                'schema': {'type': 'string'},
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(400)))
+
+    def test_add_type_with_no_schema(self):
+        resp = self.client.post(
+            '/module-type',
+            data=json.dumps({
+                'name': 'a-type',
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(400)))
+
+    def test_add_type_with_an_invalid_schema(self):
+        resp = self.client.post(
+            '/module-type',
+            data=json.dumps({
+                'name': 'a-type',
+                'schema': {'type': 'some wrong type'},
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(400)))
+
+    def test_add_type_with_invalid_json(self):
+        resp = self.client.post(
+            '/module-type',
+            data='not json',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(400)))

@@ -2,7 +2,10 @@
 import json
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from jsonschema.exceptions import SchemaError
 
+from stagecraft.libs.authorization.http import permission_required
 from ..models import ModuleType
 
 
@@ -37,5 +40,29 @@ def list_types(request):
     return json_response(serialized)
 
 
-def add_type(request):
-    return HttpResponse('{}')
+@csrf_exempt
+@permission_required('dashboard')
+def add_type(user, request):
+    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
+        return HttpResponse('bad content type', status=415)
+
+    try:
+        type_settings = json.loads(request.body)
+    except ValueError:
+        return HttpResponse('bad json', status=400)
+
+    if 'name' not in type_settings or 'schema' not in type_settings:
+        return HttpResponse('name and schema fields required', status=400)
+
+    module_type = ModuleType(
+        name=type_settings['name'],
+        schema=type_settings['schema'])
+
+    try:
+        module_type.validate_schema()
+    except SchemaError as err:
+        return HttpResponse('bad schema: ' + err.message, status=400)
+
+    module_type.save()
+
+    return json_response(module_type.serialize())
