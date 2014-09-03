@@ -10,7 +10,8 @@ from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
 from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
-from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
+from stagecraft.libs.authorization.tests.test_http import (
+    govuk_signon_mock, with_govuk_signon)
 
 
 class DashboardViewsListTestCase(TestCase):
@@ -73,14 +74,7 @@ class DashboardViewsListTestCase(TestCase):
 
 
 class DashboardViewsCreateTestCase(TestCase):
-    def setUp(self):
-        settings.USE_DEVELOPMENT_USERS = False
-
-    def tearDown(self):
-        settings.USE_DEVELOPMENT_USERS = True
-
-    def test_create_a_new_dashboard_with_no_modules(self):
-        department = DepartmentFactory()
+    def _get_dashboard_payload(self, **kwargs):
         data = {
             "slug": "/foo",
             "dashboard-type": "transaction",
@@ -96,15 +90,61 @@ class DashboardViewsCreateTestCase(TestCase):
             "improve-dashboard-message": True,
             "strapline": "This is the strapline",
             "tagline": "This is the tagline",
-            "organisation": "{}".format(department.id),
+            "organisation": None,
         }
-        signon = govuk_signon_mock(permissions=['dashboard'])
+        for k, v in kwargs.iteritems():
+            data[k.replace('_', '-')] = v
 
-        with HTTMock(signon):
-            resp = self.client.post(
-                '/dashboard', json.dumps(data),
-                content_type="application/json",
-                HTTP_AUTHORIZATION='Bearer correct-token')
+        return data
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_with_organisation(self):
+        department = DepartmentFactory()
+        data = self._get_dashboard_payload(
+            organisation='{}'.format(department.id))
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(Dashboard.objects.count(), equal_to(1))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_fails_with_invalid_organisation_uuid(self):
+        data = self._get_dashboard_payload(organisation='invalid')
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+        assert_that(Dashboard.objects.count(), equal_to(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_fails_with_non_existent_organisation(self):
+        data = self._get_dashboard_payload(
+            organisation='7969dcd9-7e9e-4cab-a352-424d57724523')
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+        assert_that(Dashboard.objects.count(), equal_to(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_ok_with_no_organisation(self):
+        data = self._get_dashboard_payload(
+            organisation=None)
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, equal_to(200))
         assert_that(Dashboard.objects.count(), equal_to(1))

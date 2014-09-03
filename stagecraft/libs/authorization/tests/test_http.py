@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from functools import wraps
 
 from hamcrest import assert_that, equal_to, none
 from httmock import urlmatch, HTTMock
@@ -34,6 +35,24 @@ def govuk_signon_mock(**kwargs):
         return {'status_code': status_code, 'content': user}
 
     return func
+
+
+def with_govuk_signon(**signon_kwargs):
+
+    def decorator(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            use_development_users = settings.USE_DEVELOPMENT_USERS
+            settings.USE_DEVELOPMENT_USERS = False
+            signon_mock = HTTMock(
+                govuk_signon_mock(**signon_kwargs))
+            with signon_mock:
+                result = func(*args, **kwargs)
+            settings.USE_DEVELOPMENT_USERS = use_development_users
+            return result
+        return wrapped
+
+    return decorator
 
 
 class CheckPermissionTestCase(TestCase):

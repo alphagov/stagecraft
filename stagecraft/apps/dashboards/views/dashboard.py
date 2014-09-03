@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
 from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.utils import to_json
 
 # this needs to go somewhere EVEN MORE COMMON
@@ -60,9 +61,19 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
 def dashboard(user, request):
     data = json.loads(request.body)
 
-    organisation = Node.objects.get(id=data['organisation'])
     dashboard = Dashboard()
-    dashboard.organisation = organisation
+
+    if data['organisation']:
+        if not is_uuid(data['organisation']):
+            return HttpResponse(
+                "organisation must be a valid uuid", status=400)
+
+        try:
+            organisation = Node.objects.get(id=data['organisation'])
+            dashboard.organisation = organisation
+        except Node.DoesNotExist:
+            return HttpResponse("organisation does not exist", status=400)
+
     for key, value in data.iteritems():
         if key != 'organisation':
             setattr(dashboard, key.replace('-', '_'), value)
