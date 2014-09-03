@@ -53,6 +53,62 @@ class ModuleViewsTestCase(TestCase):
         cls.module_type.delete()
         cls.dashboard.delete()
 
+    def test_modules_on_dashboard_only_get_post(self):
+        delete_resp = self.client.delete(
+            '/dashboard/{}/module'.format(str(self.dashboard.id)),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        put_resp = self.client.put(
+            '/dashboard/{}/module'.format(str(self.dashboard.id)),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+
+        assert_that(delete_resp.status_code, equal_to(405))
+        assert_that(put_resp.status_code, equal_to(405))
+
+    def test_list_modules_on_dashboard(self):
+        dashboard2 = Dashboard.objects.create(
+            published=True,
+            title='A service',
+            slug='some/slug2',
+        )
+        module1 = Module.objects.create(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={})
+        module2 = Module.objects.create(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-2',
+            options={})
+        module3 = Module.objects.create(
+            type=self.module_type,
+            dashboard=dashboard2,
+            slug='module-3',
+            options={})
+
+        resp = self.client.get(
+            '/dashboard/{}/module'.format(self.dashboard.id))
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), is_(equal_to(2)))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module1.id))))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module2.id))))
+        assert_that(
+            resp_json,
+            is_not(has_item(has_entry('id', str(module3.id)))))
+
+        module1.delete()
+        module2.delete()
+        module3.delete()
+        dashboard2.delete()
+
     def test_add_a_module_to_a_dashboard(self):
         resp = self.client.post(
             '/dashboard/{}/module'.format(self.dashboard.id),

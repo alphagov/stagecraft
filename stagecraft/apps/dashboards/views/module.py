@@ -21,16 +21,32 @@ def json_response(obj):
 required_keys = ['type_id', 'slug', 'title', 'description', 'info', 'options']
 
 
-@csrf_exempt
-@permission_required('dashboard')
-def add_module_to_dashboard(user, request, dashboard_id):
-    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
-        return HttpResponse('bad content type', status=415)
-
+def modules_on_dashboard(request, dashboard_id):
     try:
         dashboard = Dashboard.objects.get(id=dashboard_id)
     except Dashboard.DoesNotExist:
         return HttpResponse('dashboard does not exist', status=404)
+
+    if request.method == 'GET':
+        return list_modules_on_dashboard(request, dashboard)
+    elif request.method == 'POST':
+        return add_module_to_dashboard(request, dashboard)
+    else:
+        return HttpResponse('', status=405)
+
+
+def list_modules_on_dashboard(request, dashboard):
+    modules = Module.objects.filter(dashboard=dashboard)
+    serialized = [module.serialize() for module in modules]
+
+    return json_response(serialized)
+
+
+@csrf_exempt
+@permission_required('dashboard')
+def add_module_to_dashboard(user, request, dashboard):
+    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
+        return HttpResponse('bad content type', status=415)
 
     try:
         module_settings = json.loads(request.body)
