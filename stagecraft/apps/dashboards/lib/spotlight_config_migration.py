@@ -4,6 +4,7 @@ import os
 import json
 from mock import patch
 import requests
+import logging
 
 
 def spotlight_json(path):
@@ -19,6 +20,7 @@ class Dashboard():
 
     def __init__(self, url):
         self.url = url
+        self.type_id_map = {}
 
     def set_data(self, **kwargs):
         self.data = kwargs
@@ -29,6 +31,25 @@ class Dashboard():
             "abbreviation": self.data["department"]["abbr"]
         }
 
+    def get_type_id(self, type_str):
+        if type_str not in self.type_id_map:
+            type_request = requests.get(
+                self.url + "/organisation/type",
+                params={"name": type}
+            )
+            if len(type_request.json()) == 1:
+                self.type_id_map[type_str] = type_request.json()['id']
+            else:
+                logging.getLogger(__name__).info('Unknown type {} for dashboard {}, creating'.format(
+                    type_str, self.data['slug']))
+                post_request = requests.post(
+                    self.url + "/organisation/type",
+                    {"name" :type_str}
+                )
+                self.type_id_map[type_str] = post_request.json()['id']
+
+        return self.type_id_map[type_str]
+
     def create_organisation(self, organisation_type, parent_id=None):
             resp = requests.get(
                 self.url + "/organisation/node",
@@ -37,19 +58,24 @@ class Dashboard():
                     "abbreviation": self.data[organisation_type]['abbr']
                 }
             )
-            if resp.status_code == 404:
+            print resp.content
+            if resp.status_code == 200 and len(resp.json()) == 0:
                 post_data = {
                     "name": self.data[organisation_type]["title"],
                     "abbreviation": self.data[organisation_type]["abbr"],
-                    "type_id": resp.json()["type_id"]
+                    "type_id": self.get_type_id(organisation_type)
                 }
                 if parent_id:
                     post_data['parent_id'] = parent_id
                 post_resp = requests.post(
                     self.url + "/organisation/node", post_data
                 )
-                org_id = post_resp.json()['id']
-            else:
+                org_id = post_resp.json()[0]['id']
+            elif len(response.json()) > 1:
+                logger.warning(
+                    'multiple organisations found for dashboard{}'.format(
+                        self.data['slug']
+                    ))
                 org_id = resp.json()['id']
             self.data.pop(organisation_type)
             return org_id
