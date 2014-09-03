@@ -8,6 +8,7 @@ from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
 from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
 from stagecraft.apps.dashboards.views import dashboard as dashboard_views
+from stagecraft.apps.dashboards.views import module as module_views
 from stagecraft.libs.status import views as status_views
 
 admin.autodiscover()
@@ -49,4 +50,5 @@ urlpatterns = patterns(
         pattern_name='dashboards',
         permanent=True,
         query_string=True)),
+    url(r'^module-type$', module_views.root_types),
 )
