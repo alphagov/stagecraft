@@ -34,6 +34,13 @@ class ModuleType(models.Model):
     class Meta:
         app_label = 'dashboards'
 
+    def serialize(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'schema': self.schema,
+        }
+
 
 class Module(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)

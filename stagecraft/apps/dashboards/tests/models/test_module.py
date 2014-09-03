@@ -3,11 +3,28 @@ from django.db import transaction, IntegrityError
 from django.test import TestCase, TransactionTestCase
 from jsonschema.exceptions import ValidationError
 from hamcrest import (
-    assert_that, equal_to, calling, raises, is_not
+    assert_that, equal_to, calling, raises, is_not, has_entry, has_key
 )
 
 from ...models.dashboard import Dashboard
 from ...models.module import Module, ModuleType
+
+
+class ModuelTypeTestCase(TestCase):
+
+    def test_module_type_serialization(self):
+        module_type = ModuleType.objects.create(
+            name='foo',
+            schema={
+                'some': 'thing',
+            }
+        )
+
+        assert_that(module_type.serialize(), has_key('id'))
+        assert_that(module_type.serialize(), has_entry('name', 'foo'))
+        assert_that(
+            module_type.serialize(),
+            has_entry('schema', {'some': 'thing'}))
 
 
 class ModuleTestCase(TestCase):
