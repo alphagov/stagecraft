@@ -72,18 +72,11 @@ class Module(models.Model):
     query_parameters = JSONField(null=True)
 
     def validate_options(self):
-        logging.info(self.type.schema)
-        logging.info(self.options)
-
         jsonschema.validate(self.options, self.type.schema)
         return True
 
     def validate_query_parameters(self):
-        try:
-            jsonschema.validate(self.query_parameters, query_param_schema)
-        except Exception as err:
-            logging.info(err)
-            raise err
+        jsonschema.validate(self.query_parameters, query_param_schema)
         return True
 
     class Meta:
