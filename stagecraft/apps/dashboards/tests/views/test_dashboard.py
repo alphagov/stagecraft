@@ -27,6 +27,18 @@ class DashboardViewsTestCase(TestCase):
         assert_that(json.loads(resp.content), equal_to(spotlightify_response))
         assert_that(resp['Cache-Control'], equal_to('max-age=300'))
 
+    def test_get_dashboards_only_caches_when_published(self):
+        DashboardFactory(slug='published_dashboard')
+        DashboardFactory(slug='unpublished_dashboard', published=False)
+
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'published_dashboard'})
+        assert_that(resp['Cache-Control'], equal_to('max-age=300'))
+
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'unpublished_dashboard'})
+        assert_that(resp['Cache-Control'], equal_to('no-cache'))
+
     @patch(
         'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
     def test_get_dashboards_with_slug_query_param_returns_404_if_no_dashboard(
