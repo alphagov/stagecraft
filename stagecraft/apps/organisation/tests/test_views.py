@@ -58,6 +58,67 @@ class NodeViewsTestCase(TestCase):
             has_item(has_entry('id', 'f59bddcc-4494-46f8-a2c9-884030fa3087'))
         )
 
+    def test_list_nodes_filter_by_name(self):
+        resp = self.client.get(
+            '/organisation/node?name=Brie',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
+        )
+
+    def test_list_nodes_filter_by_name(self):
+        resp = self.client.get(
+            '/organisation/node?abbreviation=BR',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
+        )
+
+    def test_list_nodes_filter_by_both(self):
+        resp = self.client.get(
+            '/organisation/node?name=Brie&&abbreviation=BR',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
+        )
+
+    def test_list_nodes_filter_by_both_is_and(self):
+        resp = self.client.get(
+            '/organisation/node?name=Cheese&&abbreviation=BR',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(0))
+
+    def test_list_nodes_filter_by_is_case_insensitive(self):
+        resp = self.client.get(
+            '/organisation/node?name=brie&&abbreviation=br',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
+        )
+
     def test_get_nodes_ancestors(self):
         node_uuid = 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'
         resp = self.client.get(
@@ -286,6 +347,32 @@ class NodeTypeViewsTestCase(TestCase):
         assert_that(
             resp_json,
             has_item(has_entry('id', 'f9510fef-a879-4cf8-bcfb-9e0871579f5a'))
+        )
+
+    def test_list_types_filter_name(self):
+        resp = self.client.get(
+            '/organisation/type?name=Thing',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4'))
+        )
+
+    def test_list_types_filter_name_should_be_case_insensitive(self):
+        resp = self.client.get(
+            '/organisation/type?name=thing',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(1))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4'))
         )
 
     def test_add_type(self):

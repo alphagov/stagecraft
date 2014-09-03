@@ -34,7 +34,16 @@ def root_nodes(request):
 
 
 def list_nodes(request):
-    nodes = Node.objects.all()
+    query_parameters = {
+        'name': request.GET.get('name', None),
+        'abbreviation': request.GET.get('abbreviation', None),
+    }
+    filter_args = {
+        "{}__iexact".format(k): v
+        for (k, v) in query_parameters.items() if v is not None
+    }
+
+    nodes = Node.objects.filter(**filter_args)
     serialized = [node.serialize() for node in nodes]
 
     return json_response(serialized)
@@ -107,7 +116,15 @@ def root_types(request):
 
 
 def list_types(request):
-    node_types = NodeType.objects.all()
+    query_parameters = {
+        'name': request.GET.get('name', None),
+    }
+    filter_args = {
+        "{}__iexact".format(k): v
+        for (k, v) in query_parameters.items() if v is not None
+    }
+
+    node_types = NodeType.objects.filter(**filter_args)
     serialized = [node_type.serialize() for node_type in node_types]
 
     return json_response(serialized)
