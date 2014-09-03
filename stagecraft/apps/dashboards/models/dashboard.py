@@ -134,6 +134,20 @@ class Dashboard(models.Model):
             base_dict['agency'] = self.agency().spotlightify()
         return base_dict
 
+    def serialize(self):
+        serialized = {}
+        fields = self._meta.get_fields_with_model()
+        field_names = [field.name for field, _ in fields]
+
+        for field in field_names:
+            value = getattr(self, field)
+            serialized[field] = value
+
+        serialized['links'] = [link.serialize()
+                               for link in self.link_set.all()]
+
+        return serialized
+
     def update_transaction_link(self, title, url):
         transaction_link = self.get_transaction_link()
         if not transaction_link:

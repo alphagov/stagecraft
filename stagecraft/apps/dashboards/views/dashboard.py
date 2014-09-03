@@ -103,5 +103,5 @@ def dashboard(user, request):
             dashboard.link_set.create(link_type=link_data.pop('type'),
                                       **link_data)
 
-    return HttpResponse(json.dumps({'status': 'ok'}),
+    return HttpResponse(to_json(dashboard.serialize()),
                         content_type='application/json')
