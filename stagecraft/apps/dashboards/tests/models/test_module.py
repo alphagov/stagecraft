@@ -1,7 +1,7 @@
 
 from django.db import transaction, IntegrityError
 from django.test import TestCase, TransactionTestCase
-from jsonschema.exceptions import ValidationError
+from jsonschema.exceptions import ValidationError, SchemaError
 from hamcrest import (
     assert_that, equal_to, calling, raises, is_not, has_entry, has_key
 )
@@ -25,6 +25,22 @@ class ModuelTypeTestCase(TestCase):
         assert_that(
             module_type.serialize(),
             has_entry('schema', {'some': 'thing'}))
+
+    def test_schema_validation(self):
+        module_type = ModuleType(
+            name='foo',
+            schema={"type": "some made up type"}
+        )
+        assert_that(
+            calling(module_type.validate_schema),
+            raises(SchemaError)
+        )
+
+        module_type.schema = {"type": "string"}
+        assert_that(
+            calling(module_type.validate_schema),
+            is_not(raises(SchemaError))
+        )
 
 
 class ModuleTestCase(TestCase):

@@ -6,6 +6,7 @@ from django.db import models
 
 from dbarray import CharArrayField
 from jsonfield import JSONField
+from jsonschema.validators import validator_for
 from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataSet
@@ -33,6 +34,10 @@ class ModuleType(models.Model):
 
     class Meta:
         app_label = 'dashboards'
+
+    def validate_schema(self):
+        validator_for(self.schema).check_schema(self.schema)
+        return True
 
     def serialize(self):
         return {
