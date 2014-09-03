@@ -51,4 +51,6 @@ urlpatterns = patterns(
         permanent=True,
         query_string=True)),
     url(r'^module-type$', module_views.root_types),
+    url(r'^dashboard/(?P<dashboard_id>{})/module$'.format(uuid_regexp),
+        module_views.add_module_to_dashboard),
 )
