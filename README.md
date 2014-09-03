@@ -54,6 +54,11 @@ while to execute.
 python manage.py createsuperuser --username=<ADMIN_USER_NAME> --email=<YOUR_EMAIL_ADDRESS>
 ```
 
+**Need to delete all tables and start again?**
+```
+./tools/drop-tables.sh
+```
+
 # Adding a new model
 
 After creating a model, create the initial migration script with:
