@@ -79,6 +79,32 @@ class Module(models.Model):
         jsonschema.validate(self.query_parameters, query_param_schema)
         return True
 
+    def serialize(self):
+        out = {
+            'id': str(self.id),
+            'type': {
+                'id': str(self.type.id),
+            },
+            'dashboard': {
+                'id': str(self.dashboard.id),
+            },
+            'slug': self.slug,
+            'title': self.title,
+            'description': self.description,
+            'info': self.info,
+            'options': self.options,
+            'query_parameters': self.query_parameters,
+        }
+
+        if self.data_set is not None:
+            out['data_set'] = {
+                'id': self.data_set.id,
+            }
+        else:
+            out['data_set'] = None
+
+        return out
+
     class Meta:
         app_label = 'dashboards'
         unique_together = ('dashboard', 'slug')
