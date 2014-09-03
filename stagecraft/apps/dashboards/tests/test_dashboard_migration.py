@@ -60,6 +60,7 @@ class DashboardFromJsonTestCase(TestCase):
         }
         self.dashboard.set_data(**dashboard_data)
         get_mock.return_value.status_code = 200
+        get_mock.return_value.json.return_value = {"id": "uid"}
         self.dashboard.send()
         get_mock.assert_called_with(
             self.test_url + '/organisation/node',
@@ -69,6 +70,7 @@ class DashboardFromJsonTestCase(TestCase):
             }
         )
         dashboard_data.pop('department')
+        dashboard_data['organisation'] = "uid"
         post_mock.assert_called_with(
             # @todo replace this endpoint!
             self.test_url + '/dashboard/',
@@ -89,6 +91,7 @@ class DashboardFromJsonTestCase(TestCase):
         get_mock.return_value.status_code = 404
         get_mock.return_value.json.return_value = {"type_id": "type_uid"}
         post_mock.return_value.status_code = 200
+        post_mock.return_value.json.return_value = {"id": "uid"}
         self.dashboard.send()
         post_mock.assert_any_call(
             # @todo replace this endpoint!
@@ -97,6 +100,7 @@ class DashboardFromJsonTestCase(TestCase):
              "type_id": "type_uid"}
         )
         dashboard_data.pop('department')
+        dashboard_data["organisation"] = 'uid'
         post_mock.assert_any_call(
             # @todo replace this endpoint!
             self.test_url + '/dashboard/',
@@ -120,7 +124,7 @@ class DashboardFromJsonTestCase(TestCase):
             mock = Mock()
             if params["name"] == 'test-department':
                 mock.status_code = 200
-                mock.json.return_value = {"type_id": "department-type-id"}
+                mock.json.return_value = {"id": "department-uid", "type_id": "department-type-id"}
             else:
                 mock.status_code = 404
                 mock.json.return_value = {"type_id": "agency-type-id"}
@@ -128,15 +132,17 @@ class DashboardFromJsonTestCase(TestCase):
 
         get_mock.side_effect = get_side_effect
         post_mock.return_value.status_code = 200
+        post_mock.return_value.json.return_value = {"id": "uid"}
         self.dashboard.send()
         post_mock.assert_any_call(
             # @todo replace this endpoint!
             self.test_url + '/organisation/node',
             {"name": "test-agency", "abbreviation": "TAD",
-             "type_id": "agency-type-id"}
+             "type_id": "agency-type-id", "parent_id": "department-uid"}
         )
         dashboard_data.pop('department')
         dashboard_data.pop('agency')
+        dashboard_data["organisation"] = "uid"
         post_mock.assert_any_call(
             # @todo replace this endpoint!
             self.test_url + '/dashboard/',
