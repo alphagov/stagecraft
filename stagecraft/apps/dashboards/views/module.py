@@ -21,6 +21,7 @@ def json_response(obj):
 required_keys = ['type_id', 'slug', 'title', 'description', 'info', 'options']
 
 
+@csrf_exempt
 def modules_on_dashboard(request, dashboard_id):
     try:
         dashboard = Dashboard.objects.get(id=dashboard_id)
@@ -42,7 +43,6 @@ def list_modules_on_dashboard(request, dashboard):
     return json_response(serialized)
 
 
-@csrf_exempt
 @permission_required('dashboard')
 def add_module_to_dashboard(user, request, dashboard):
     if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
@@ -105,6 +105,7 @@ def add_module_to_dashboard(user, request, dashboard):
     return json_response(module.serialize())
 
 
+@csrf_exempt
 def root_types(request):
     if request.method == 'GET':
         return list_types(request)
@@ -129,7 +130,6 @@ def list_types(request):
     return json_response(serialized)
 
 
-@csrf_exempt
 @permission_required('dashboard')
 def add_type(user, request):
     if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
