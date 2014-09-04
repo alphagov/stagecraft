@@ -2,13 +2,14 @@ from django.test import TransactionTestCase
 from hamcrest import (
     assert_that, has_entry, has_key, is_not, has_length, equal_to, instance_of,
     has_entries, has_items, has_property, is_, none, calling, raises,
-    starts_with
+    starts_with, contains
 )
 
 from ...models import Link
 from ....organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
+    LinkFactory,
     DepartmentFactory,
     AgencyFactory,
     AgencyWithDepartmentFactory)
@@ -49,7 +50,6 @@ class DashboardTestCase(TransactionTestCase):
             equal_to('other')
         )
 
-##
     def test_spotlightify_handles_other_and_transaction_links(self):
         self.dashboard.add_other_link('other', 'http://www.gov.uk')
         self.dashboard.add_other_link('other2', 'http://www.gov.uk')
@@ -126,7 +126,23 @@ class DashboardTestCase(TransactionTestCase):
                 })
             )
         )
-##
+
+    def test_serialize_contains_dashboard_properties(self):
+        data = self.dashboard.serialize()
+
+        assert_that(data['title'], is_('title'))
+        assert_that(data['published'], is_(True))
+
+    def test_serialize_serializes_dashboard_links(self):
+        link = LinkFactory(dashboard=self.dashboard)
+        data = self.dashboard.serialize()
+
+        expected_link = {
+            'url': u'https://www.gov.uk/link-1',
+            'title': u'Link title'
+        }
+
+        assert_that(data['links'], contains(expected_link))
 
     def test_agency_returns_none_when_no_organisation(self):
         assert_that(self.dashboard.agency(), is_(none()))

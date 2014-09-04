@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 
@@ -31,3 +32,11 @@ def get_valid_token(auth_header):
     token = auth_header[len(prefix):]
     logger.debug("Got token: '{}'".format(token))
     return token if len(token) else None
+
+
+def is_uuid(s):
+    try:
+        uuid.UUID(s)
+        return True
+    except ValueError:
+        return False

@@ -1,8 +1,18 @@
+import json
 import logging
-from django.http import HttpResponse, HttpResponseNotFound
-from stagecraft.libs.views.utils import to_json
+
+from django.db import transaction, IntegrityError
+from django.http import (HttpResponse,
+                         HttpResponseBadRequest,
+                         HttpResponseNotFound)
+from django.views.decorators.cache import cache_control, never_cache
+from django.views.decorators.csrf import csrf_exempt
+
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
-from django.views.decorators.cache import cache_control
+from stagecraft.apps.organisation.models import Node
+from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.validation.validation import is_uuid
+from stagecraft.libs.views.utils import to_json
 
 # this needs to go somewhere EVEN MORE COMMON
 
@@ -46,3 +56,52 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
                 '/'.join(slug_parts), count=count-1)
 
     return dashboard
+
+
+@csrf_exempt
+@permission_required('dashboard')
+@never_cache
+def dashboard(user, request):
+    data = json.loads(request.body)
+
+    dashboard = Dashboard()
+
+    if data.get('organisation'):
+        if not is_uuid(data['organisation']):
+            error = {
+                'status': 'error',
+                'message': 'Organisation must be a valid UUID',
+            }
+            return HttpResponseBadRequest(to_json(error))
+
+        try:
+            organisation = Node.objects.get(id=data['organisation'])
+            dashboard.organisation = organisation
+        except Node.DoesNotExist:
+            error = {
+                'status': 'error',
+                'message': 'Organisation does not exist',
+            }
+            return HttpResponseBadRequest(to_json(error))
+
+    for key, value in data.iteritems():
+        if key not in ['organisation', 'links']:
+            setattr(dashboard, key.replace('-', '_'), value)
+
+    try:
+        with transaction.atomic():
+            dashboard.save()
+    except IntegrityError as e:
+        error = {
+            'status': 'error',
+            'message': '{0}'.format(e.message),
+        }
+        return HttpResponseBadRequest(to_json(error))
+
+    if 'links' in data:
+        for link_data in data['links']:
+            dashboard.link_set.create(link_type=link_data.pop('type'),
+                                      **link_data)
+
+    return HttpResponse(to_json(dashboard.serialize()),
+                        content_type='application/json')

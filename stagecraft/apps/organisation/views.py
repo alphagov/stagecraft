@@ -1,11 +1,11 @@
 import json
-import uuid
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.validation.validation import is_uuid
 from .models import Node, NodeType
 
 
@@ -14,14 +14,6 @@ def json_response(obj):
         json.dumps(obj),
         content_type='application/json'
     )
-
-
-def is_uuid(s):
-    try:
-        uuid.UUID(s)
-        return True
-    except ValueError:
-        return False
 
 
 def root_nodes(request):

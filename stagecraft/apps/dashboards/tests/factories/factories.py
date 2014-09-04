@@ -1,5 +1,5 @@
 import factory
-from ...models import Dashboard
+from ...models import Dashboard, Link
 from ....organisation.models import Node, NodeType
 
 
@@ -10,6 +10,16 @@ class DashboardFactory(factory.DjangoModelFactory):
     published = True
     title = "title"
     slug = factory.Sequence(lambda n: 'slug%s' % n)
+
+
+class LinkFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Link
+
+    url = factory.Sequence(lambda n: 'https://www.gov.uk/link-%s' % n)
+    title = 'Link title'
+    link_type = 'transaction'
+    dashboard = factory.SubFactory(DashboardFactory)
 
 
 class NodeTypeFactory(factory.DjangoModelFactory):
