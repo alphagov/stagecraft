@@ -9,7 +9,6 @@ from django.views.decorators.cache import cache_control
 logger = logging.getLogger(__name__)
 
 
-@cache_control(max_age=300)
 def dashboards(request):
     dashboard_slug = request.GET.get('slug')
     dashboard = recursively_fetch_dashboard(dashboard_slug)
@@ -23,7 +22,14 @@ def dashboards(request):
         return HttpResponseNotFound(to_json(error))
     json_str = to_json(dashboard.spotlightify())
 
-    return HttpResponse(json_str, content_type='application/json')
+    response = HttpResponse(json_str, content_type='application/json')
+
+    if dashboard.published:
+        response['Cache-Control'] = 'max-age=300'
+    else:
+        response['Cache-Control'] = 'no-cache'
+
+    return response
 
 
 def recursively_fetch_dashboard(dashboard_slug, count=3):
