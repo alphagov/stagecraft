@@ -36,6 +36,7 @@ STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 STATSD_PREFIX = 'pp.apps.stagecraft'
 STATSD_MAXUDPSIZE = 512
+STATSD_CLIENT = 'django_statsd.clients.normal'
 
 
 def load_databases_from_environment():
@@ -72,6 +73,8 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
+    'django_statsd.middleware.GraphiteMiddleware',
     'stagecraft.libs.request_logger.middleware.RequestLoggerMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -83,6 +86,9 @@ MIDDLEWARE_CLASSES = (
     'reversion.middleware.RevisionMiddleware',
 )
 
+STATSD_PATCHES = (
+    'django_statsd.patches.db',
+)
 ROOT_URLCONF = 'stagecraft.urls'
 
 WSGI_APPLICATION = 'stagecraft.wsgi.application'
