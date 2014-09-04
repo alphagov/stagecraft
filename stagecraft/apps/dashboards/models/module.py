@@ -6,6 +6,7 @@ from django.db import models
 
 from dbarray import CharArrayField
 from jsonfield import JSONField
+from jsonschema.validators import validator_for
 from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataSet
@@ -34,6 +35,17 @@ class ModuleType(models.Model):
     class Meta:
         app_label = 'dashboards'
 
+    def validate_schema(self):
+        validator_for(self.schema).check_schema(self.schema)
+        return True
+
+    def serialize(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'schema': self.schema,
+        }
+
 
 class Module(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
@@ -60,19 +72,38 @@ class Module(models.Model):
     query_parameters = JSONField(null=True)
 
     def validate_options(self):
-        logging.info(self.type.schema)
-        logging.info(self.options)
-
         jsonschema.validate(self.options, self.type.schema)
         return True
 
     def validate_query_parameters(self):
-        try:
-            jsonschema.validate(self.query_parameters, query_param_schema)
-        except Exception as err:
-            logging.info(err)
-            raise err
+        jsonschema.validate(self.query_parameters, query_param_schema)
         return True
+
+    def serialize(self):
+        out = {
+            'id': str(self.id),
+            'type': {
+                'id': str(self.type.id),
+            },
+            'dashboard': {
+                'id': str(self.dashboard.id),
+            },
+            'slug': self.slug,
+            'title': self.title,
+            'description': self.description,
+            'info': self.info,
+            'options': self.options,
+            'query_parameters': self.query_parameters,
+        }
+
+        if self.data_set is not None:
+            out['data_set'] = {
+                'id': self.data_set.id,
+            }
+        else:
+            out['data_set'] = None
+
+        return out
 
     class Meta:
         app_label = 'dashboards'
