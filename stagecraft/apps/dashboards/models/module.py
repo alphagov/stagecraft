@@ -1,3 +1,4 @@
+import copy
 import logging
 import jsonschema
 
@@ -78,6 +79,25 @@ class Module(models.Model):
     def validate_query_parameters(self):
         jsonschema.validate(self.query_parameters, query_param_schema)
         return True
+
+    def spotlightify(self):
+        out = copy.deepcopy(self.options)
+        out['module-type'] = self.type.name
+        out['slug'] = self.slug
+        out['title'] = self.title
+        out['description'] = self.description
+        out['info'] = self.info
+
+        if self.data_set is not None:
+            out['data-source'] = {
+                'data-group': self.data_set.data_group.name,
+                'data-type': self.data_set.data_type.name,
+            }
+
+            if self.query_parameters is not None:
+                out['data-source']['query-params'] = self.query_parameters
+
+        return out
 
     def serialize(self):
         out = {

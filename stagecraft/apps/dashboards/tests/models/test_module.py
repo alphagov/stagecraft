@@ -74,6 +74,59 @@ class ModuleTestCase(TestCase):
         cls.dashboard_a.delete()
         cls.dashboard_b.delete()
 
+    def test_spotlightify(self):
+        module = Module.objects.create(
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            data_set=self.data_set,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={
+                'sort_by': 'foo'
+            })
+
+        spotlight_module = module.spotlightify()
+
+        assert_that(spotlight_module['slug'], equal_to('a-module'))
+        assert_that(spotlight_module['foo'], equal_to('bar'))
+        assert_that(
+            spotlight_module['module-type'],
+            equal_to(self.module_type.name))
+        assert_that(
+            spotlight_module['data-source']['data-group'],
+            equal_to(self.data_group.name))
+        assert_that(
+            spotlight_module['data-source']['data-type'],
+            equal_to(self.data_type.name))
+        assert_that(
+            spotlight_module['data-source']['query-params']['sort_by'],
+            equal_to('foo'))
+
+    def test_spotlightify_with_no_data_set(self):
+        module = Module.objects.create(
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={
+                'sort_by': 'foo'
+            })
+
+        spotlight_module = module.spotlightify()
+
+        assert_that(spotlight_module['slug'], equal_to('a-module'))
+        assert_that(spotlight_module['foo'], equal_to('bar'))
+        assert_that(
+            spotlight_module['module-type'],
+            equal_to(self.module_type.name))
+        assert_that(
+            spotlight_module,
+            is_not(has_key('data-source')))
+
     def test_serialize_with_no_dataset(self):
         module = Module.objects.create(
             slug='a-module',
