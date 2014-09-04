@@ -16,6 +16,7 @@ def json_response(obj):
     )
 
 
+@csrf_exempt
 def root_nodes(request):
     if request.method == 'GET':
         return list_nodes(request)
@@ -41,7 +42,6 @@ def list_nodes(request):
     return json_response(serialized)
 
 
-@csrf_exempt
 @permission_required('organisation')
 def add_node(user, request):
     try:
@@ -98,6 +98,7 @@ def node_ancestors(request, node_id):
     return json_response(serialized)
 
 
+@csrf_exempt
 def root_types(request):
     if request.method == 'GET':
         return list_types(request)
@@ -122,7 +123,6 @@ def list_types(request):
     return json_response(serialized)
 
 
-@csrf_exempt
 @permission_required('organisation')
 def add_type(user, request):
     try:
