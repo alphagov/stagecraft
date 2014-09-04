@@ -1,7 +1,7 @@
 import json
 
 from django.test import TestCase
-from hamcrest import assert_that, equal_to, is_, none
+from hamcrest import assert_that, equal_to, is_, none, has_property, contains
 from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
@@ -91,6 +91,13 @@ class DashboardViewsCreateTestCase(TestCase):
             "strapline": "This is the strapline",
             "tagline": "This is the tagline",
             "organisation": None,
+            "links": [
+                {
+                    "title": "External link",
+                    "url": "https://www.gov.uk/",
+                    "type": "transaction",
+                }
+            ],
         }
         for k, v in kwargs.iteritems():
             data[k.replace('_', '-')] = v
@@ -148,3 +155,20 @@ class DashboardViewsCreateTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(200))
         assert_that(Dashboard.objects.count(), equal_to(1))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_ok_with_links(self):
+        data = self._get_dashboard_payload()
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        dashboard = Dashboard.objects.first()
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(dashboard.link_set.count(), equal_to(1))
+        assert_that(dashboard.link_set.all(),
+                    contains(has_property('title',
+                                          equal_to('External link'))))

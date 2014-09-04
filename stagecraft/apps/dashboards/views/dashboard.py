@@ -75,10 +75,15 @@ def dashboard(user, request):
             return HttpResponse("organisation does not exist", status=400)
 
     for key, value in data.iteritems():
-        if key != 'organisation':
+        if key not in ['organisation', 'links']:
             setattr(dashboard, key.replace('-', '_'), value)
 
     dashboard.save()
+
+    if 'links' in data:
+        for link_data in data['links']:
+            dashboard.link_set.create(link_type=link_data.pop('type'),
+                                      **link_data)
 
     return HttpResponse(json.dumps({'status': 'ok'}),
                         content_type='application/json')
