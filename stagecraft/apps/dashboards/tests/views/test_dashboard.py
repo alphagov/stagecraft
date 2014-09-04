@@ -172,3 +172,20 @@ class DashboardViewsCreateTestCase(TestCase):
         assert_that(dashboard.link_set.all(),
                     contains(has_property('title',
                                           equal_to('External link'))))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_with_reused_slug_is_bad_request(self):
+        data = self._get_dashboard_payload()
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        second_resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(second_resp.status_code, equal_to(400))
+        assert_that(Dashboard.objects.count(), equal_to(1))
