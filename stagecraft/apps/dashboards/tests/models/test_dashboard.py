@@ -2,10 +2,10 @@ from django.test import TransactionTestCase
 from hamcrest import (
     assert_that, has_entry, has_key, is_not, has_length, equal_to, instance_of,
     has_entries, has_items, has_property, is_, none, calling, raises,
-    starts_with, contains
+    starts_with, contains, has_item
 )
 
-from ...models import Link
+from ...models import Link, Module, ModuleType
 from ....organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
@@ -19,6 +19,31 @@ class DashboardTestCase(TransactionTestCase):
 
     def setUp(self):
         self.dashboard = DashboardFactory()
+
+    def test_spotlightify_no_modules(self):
+        spotlight_dashboard = self.dashboard.spotlightify()
+        assert_that(spotlight_dashboard, has_entry('modules', []))
+
+    def test_spotlightify_with_a_module(self):
+        module_type = ModuleType.objects.create(name='graph', schema={})
+        module = Module.objects.create(
+            type=module_type,
+            dashboard=self.dashboard,
+            slug='a-module',
+            options={},
+        )
+
+        module_type.save()
+        module.save()
+
+        spotlight_dashboard = self.dashboard.spotlightify()
+        assert_that(len(spotlight_dashboard['modules']), equal_to(1))
+        assert_that(
+            spotlight_dashboard['modules'],
+            has_item(has_entry('slug', 'a-module')))
+
+        module.delete()
+        module_type.delete()
 
     def test_transaction_link(self):
         self.dashboard.update_transaction_link('blah', 'http://www.gov.uk')
