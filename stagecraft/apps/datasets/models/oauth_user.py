@@ -6,7 +6,7 @@ import logging
 from django.db import models, IntegrityError, InternalError
 from django.utils.encoding import python_2_unicode_compatible
 from south.utils.datetime_utils import datetime, timedelta
-from statsd.defaults.django import statsd
+from django_statsd.clients import statsd
 
 import dbarray
 

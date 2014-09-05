@@ -5,7 +5,7 @@ from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
 from django.conf import settings
 from django.http import (HttpResponseForbidden, HttpResponse)
-from statsd.defaults.django import statsd
+from django_statsd.clients import statsd
 
 
 @statsd.timer('get_user.both')
