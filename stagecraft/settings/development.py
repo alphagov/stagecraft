@@ -33,7 +33,6 @@ DEVELOPMENT_USERS = {
         "organisation_slug": "cabinet-office",
         "permissions": [
             "signin",
-            "dataset",
             "user",
             "admin",
             "organisation",
