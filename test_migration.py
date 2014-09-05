@@ -12,7 +12,7 @@ for filename, json in spotlight_json(os.path.join(os.path.dirname(__file__), '..
     logger.debug('Creating dashboard for {}'.format(filename))
     dashboard = Dashboard(
         'http://stagecraft.development.performance.service.gov.uk')
-    if isinstance(json, dict):
+    if isinstance(json, dict) and json.get('published', None):
         dashboard.set_data(**json)
         dashboard.send()
     else:
