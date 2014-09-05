@@ -70,7 +70,7 @@ class Dashboard(models.Model):
         blank=True
     )
     business_model = models.CharField(
-        max_length=20,
+        max_length=31,
         choices=list_to_tuple_pairs(business_models),
         default=business_models[0],
         blank=True
