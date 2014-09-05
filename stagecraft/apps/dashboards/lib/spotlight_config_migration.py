@@ -112,13 +112,21 @@ class StagecraftClient():
     def create_organisation_type(self, name):
         return self.post("/organisation/type", {"name": name})
 
+    def log_response(self, response):
+        logger.debug('Response: {}: {}'.format(
+            response.status_code,
+            response.content
+        ))
+
     def post(self, url, data):
         logger.debug('Posting {} to {}'.format(data, url))
         headers = {}
         headers['Authorization'] = 'Bearer {}'.format(self.token)
         headers['Content-type'] = 'application/json'
-        return requests.post(
+        response = requests.post(
             self.url + url, data=json.dumps(data), headers=headers)
+        self.log_response(response)
+        return response
 
     def get(self, url, params={}):
         logger.debug('Getting from {}, with params {}'.format(url, params))
