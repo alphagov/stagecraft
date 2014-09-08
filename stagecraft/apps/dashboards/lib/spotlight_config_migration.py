@@ -91,7 +91,49 @@ class Dashboard():
             self.data["organisation"] = agency_id
         elif department_id:
             self.data["organisation"] = department_id
-        self.stagecraft_client.create_dashboard(self.data)
+        dashboard_response = self.stagecraft_client.create_dashboard(self.data)
+        self.create_modules(dashboard_response.json()['id'])
+
+    def create_modules(self, dashboard_id):
+        for module in self.data['modules']:
+            module_type_id = self.get_module_type_id(module['module-type'])
+            options = self.get_options_for_module(module)
+            logger.debug(module['slug'])
+            self.stagecraft_client.add_module_to_dashboard(
+                dashboard_id,
+                {
+                    'type_id': module_type_id,
+                    'slug': module['slug'],
+                    'title': module['title'],
+                    'description': module.get('description', ''),
+                    'info': module.get('info', []),
+                    'options': options,
+                })
+
+    def get_options_for_module(self, module):
+        keys_to_remove = [
+            'slug', 'module-type', 'title', 'description', 'info',
+            'data-source'
+        ]
+        return {k: v for k, v in module.items() if k not in keys_to_remove}
+
+    def get_module_type_id(self, module_type):
+        get_response = self.stagecraft_client.get_module_type(module_type)
+        assert get_response.status_code == 200
+        if len(get_response.json()) == 0:
+            post_response = self.stagecraft_client.create_module_type(
+                module_type)
+            module_type_id = post_response.json()['id']
+        elif len(get_response.json()) > 1:
+            logger.warning(
+                'multiple org types for {} found, using first returned'.format(
+                    module_type))
+            module_type_id = get_response.json()[0]['id']
+        else:
+            module_type_id = get_response.json()[0]['id']
+        return module_type_id
+
+
 
 
 class StagecraftClient():
@@ -159,3 +201,21 @@ class StagecraftClient():
             "/organisation/type",
             params={"name": name}
         )
+
+    def create_module_type(self, name):
+        response = self.post(
+            "/module-type", {"name": name, "schema": {}}
+        )
+        return response
+
+    def get_module_type(self, name):
+        response = self.get(
+            "/module-type", params={"name": name}
+        )
+        return response
+
+    def add_module_to_dashboard(self, dashboard_id, data):
+        response = self.post(
+            "/dashboard/{}/module".format(dashboard_id), data
+        )
+        return response
