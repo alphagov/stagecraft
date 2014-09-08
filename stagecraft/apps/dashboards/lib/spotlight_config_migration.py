@@ -136,8 +136,6 @@ class Dashboard():
         return module_type_id
 
 
-
-
 class StagecraftClient():
 
     def __init__(self, url, token=None):
