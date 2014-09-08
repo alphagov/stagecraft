@@ -50,7 +50,9 @@ class Dashboard():
                 self.data[organisation_type]['title'],
                 self.data[organisation_type].get('abbr', None)
             )
-            if resp.status_code == 200 and len(resp.json()) == 0:
+            assert resp.status_code == 200
+
+            if len(resp.json()) == 0:
                 post_data = {
                     "name": self.data[organisation_type]["title"],
                     "type_id": self.get_type_id(organisation_type)
@@ -168,6 +170,7 @@ class StagecraftClient():
         response = requests.post(
             self.url + url, data=json.dumps(data), headers=headers)
         self.log_response(response)
+        assert response.status_code == 200
         return response
 
     def get(self, url, params={}):
