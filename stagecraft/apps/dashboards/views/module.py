@@ -73,9 +73,12 @@ def add_module_to_dashboard(dashboard, module_settings):
         raise ValueError(
             'options field failed validation: {}'.format(err.message))
 
-    if 'data_set_id' in module_settings:
+    if 'data_group' in module_settings and 'data_type' in module_settings:
         try:
-            data_set = DataSet.objects.get(id=module_settings['data_set_id'])
+            data_set = DataSet.objects.get(
+                data_group__name=module_settings['data_group'],
+                data_type__name=module_settings['data_type'],
+            )
         except DataSet.DoesNotExist:
             raise ValueError('data set does not exist')
 

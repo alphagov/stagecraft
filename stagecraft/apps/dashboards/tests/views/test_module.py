@@ -175,13 +175,14 @@ class ModuleViewsTestCase(TestCase):
 
         assert_that(resp.status_code, is_(equal_to(404)))
 
-    def test_add_a_module_with_a_data_set(self):
+    def test_add_a_module_with_a_data_set_that_doesnt_exist(self):
         resp = self.client.post(
             '/dashboard/{}/module'.format(self.dashboard.id),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
-                'data_set_id': 'bad-id',
+                'data_group': 'bad-group',
+                'data_type': 'bad-type',
                 'title': 'Some module',
                 'description': 'Some text about the module',
                 'info': ['foo'],
@@ -200,7 +201,8 @@ class ModuleViewsTestCase(TestCase):
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
-                'data_set_id': str(self.data_set.id),
+                'data_type': str(self.data_type.name),
+                'data_group': str(self.data_group.name),
                 'title': 'Some module',
                 'description': 'Some text about the module',
                 'info': ['foo'],
@@ -220,7 +222,8 @@ class ModuleViewsTestCase(TestCase):
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
-                'data_set_id': str(self.data_set.id),
+                'data_type': str(self.data_type.name),
+                'data_group': str(self.data_group.name),
                 'title': 'Some module',
                 'description': 'Some text about the module',
                 'info': ['foo'],
@@ -283,7 +286,8 @@ class ModuleViewsTestCase(TestCase):
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
-                'data_set_id': str(self.data_set.id),
+                'data_type': str(self.data_type.name),
+                'data_group': str(self.data_group.name),
                 'title': 'Some module',
                 'description': 'Some text about the module',
                 'info': ['foo'],
