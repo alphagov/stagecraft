@@ -101,16 +101,22 @@ class Dashboard():
             module_type_id = self.get_module_type_id(module['module-type'])
             options = self.get_options_for_module(module)
             logger.debug(module['slug'])
+            params = {
+                'type_id': module_type_id,
+                'slug': module['slug'],
+                'title': module['title'],
+                'description': module.get('description', ''),
+                'info': module.get('info', []),
+                'options': options,
+            }
+            if 'data-source' in module:
+                data_source = module['data-source']
+                params['data_type'] = data_source['data-type']
+                params['data_group'] = data_source['data-group']
+                if 'query-params' in data_source:
+                    params['query_parameters'] = data_source['query-params']
             self.stagecraft_client.add_module_to_dashboard(
-                dashboard_id,
-                {
-                    'type_id': module_type_id,
-                    'slug': module['slug'],
-                    'title': module['title'],
-                    'description': module.get('description', ''),
-                    'info': module.get('info', []),
-                    'options': options,
-                })
+                dashboard_id, params)
 
     def get_options_for_module(self, module):
         keys_to_remove = [
