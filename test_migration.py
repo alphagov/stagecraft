@@ -26,6 +26,10 @@ if __name__ == '__main__':
         elif filename == 'housing.json':
             logger.warning(
                 'skipping housing dashboard as it references unknown datasets')
+        elif 'department' not in json and 'agency' in json:
+            logger.warning(
+                'skipping dashboard {} that only specifies agency and not'
+                'department'.format(dashboard))
         else:
             dashboard.set_data(**json)
             dashboard.send()
