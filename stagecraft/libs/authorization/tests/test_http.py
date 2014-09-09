@@ -46,9 +46,11 @@ def with_govuk_signon(**signon_kwargs):
             settings.USE_DEVELOPMENT_USERS = False
             signon_mock = HTTMock(
                 govuk_signon_mock(**signon_kwargs))
-            with signon_mock:
-                result = func(*args, **kwargs)
-            settings.USE_DEVELOPMENT_USERS = use_development_users
+            try:
+                with signon_mock:
+                    result = func(*args, **kwargs)
+            finally:
+                settings.USE_DEVELOPMENT_USERS = use_development_users
             return result
         return wrapped
 
