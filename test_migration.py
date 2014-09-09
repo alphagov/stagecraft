@@ -23,6 +23,9 @@ if __name__ == '__main__':
             logger.warning(
                 'skipping dashboard {} as it does not have a published '
                 'attribute'.format(filename))
+        elif filename == 'housing.json':
+            logger.warning(
+                'skipping housing dashboard as it references unknown datasets')
         else:
             dashboard.set_data(**json)
             dashboard.send()
