@@ -93,8 +93,28 @@ class Dashboard():
             self.data["organisation"] = agency_id
         elif department_id:
             self.data["organisation"] = department_id
+        self.create_links()
         dashboard_response = self.stagecraft_client.create_dashboard(self.data)
         self.create_modules(dashboard_response.json()['id'])
+
+    def create_links(self):
+        if 'relatedPages' in self.data:
+            pages = self.data['relatedPages']
+            self.data['links'] = []
+            if 'transaction' in pages:
+                self.create_link(
+                    pages['transaction']['title'],
+                    pages['transaction']['url'],
+                    'transaction',
+                )
+            if 'other' in pages:
+                for link in pages['other']:
+                    self.create_link(link['title'], link['url'], 'other')
+
+    def create_link(self, title, url, link_type):
+        self.data['links'].append(
+            {'title': title, 'url': url, 'type': link_type}
+        )
 
     def create_modules(self, dashboard_id):
         for module in self.data['modules']:
