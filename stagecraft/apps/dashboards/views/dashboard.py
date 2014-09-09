@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
 from django.http import (HttpResponse,
                          HttpResponseBadRequest,
@@ -87,6 +88,15 @@ def dashboard(user, request):
     for key, value in data.iteritems():
         if key not in ['organisation', 'links']:
             setattr(dashboard, key.replace('-', '_'), value)
+
+    try:
+        dashboard.full_clean()
+    except ValidationError as error_details:
+        error = {
+            'status': 'error',
+            'message': error_details.message_dict,
+        }
+        return HttpResponseBadRequest(to_json(error))
 
     try:
         with transaction.atomic():

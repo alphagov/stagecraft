@@ -76,7 +76,7 @@ class DashboardViewsListTestCase(TestCase):
 class DashboardViewsCreateTestCase(TestCase):
     def _get_dashboard_payload(self, **kwargs):
         data = {
-            "slug": "/foo",
+            "slug": "foo",
             "dashboard-type": "transaction",
             "page-type": "dashboard",
             "published": True,
@@ -88,7 +88,7 @@ class DashboardViewsCreateTestCase(TestCase):
             "customer-type": "Business",
             "business-model": "Department budget",
             "improve-dashboard-message": True,
-            "strapline": "This is the strapline",
+            "strapline": "Dashboard",
             "tagline": "This is the tagline",
             "organisation": None,
             "links": [
@@ -189,3 +189,22 @@ class DashboardViewsCreateTestCase(TestCase):
 
         assert_that(second_resp.status_code, equal_to(400))
         assert_that(Dashboard.objects.count(), equal_to(1))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_dashboard_failing_validation_returns_json_error(self):
+        data = {
+            'slug': 'my-dashboard',
+            'title': 'My dashboard',
+            'strapline': 'Invalid text',
+        }
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type='application/json',
+            HTTP_AUTHORIZATION='Bearer correct-token')
+        response_dictionary = json.loads(resp.content)
+
+        assert_that(resp.status_code, equal_to(400))
+        assert_that(response_dictionary['status'], equal_to('error'))
+        assert_that(response_dictionary['message']['strapline'][0],
+                    equal_to("Value u'Invalid text' is not a valid choice."))
