@@ -94,6 +94,8 @@ class Dashboard():
         elif department_id:
             self.data["organisation"] = department_id
         self.create_links()
+        self.data['improve-dashboard-message'] = self.data.get(
+            'relatedPages', {}).get('improve-dashboard-message', False)
         dashboard_response = self.stagecraft_client.create_dashboard(self.data)
         self.create_modules(dashboard_response.json()['id'])
 
