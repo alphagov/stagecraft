@@ -113,10 +113,10 @@ class Dashboard(models.Model):
         related_pages_dict = {}
         transaction_link = self.get_transaction_link()
         if transaction_link:
-            related_pages_dict['transaction_link'] = (
+            related_pages_dict['transaction'] = (
                 transaction_link.serialize())
 
-        related_pages_dict['other_links'] = [
+        related_pages_dict['other'] = [
             link.serialize() for link
             in self.get_other_links()
         ]
