@@ -34,7 +34,7 @@ class Node(MPTTModel):
         if self.abbreviation is not None:
             node['abbreviation'] = self.abbreviation
         else:
-            node['abbreviation'] = self.name
+            node['abbreviation'] = ''
 
         if resolve_parent:
             if self.parent is not None:
@@ -49,6 +49,6 @@ class Node(MPTTModel):
         if self.abbreviation is not None:
             node['abbr'] = self.abbreviation
         else:
-            node['abbr'] = self.name
+            node['abbr'] = ''
         node['title'] = self.name
         return node
