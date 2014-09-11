@@ -96,8 +96,10 @@ class Dashboard():
         self.create_links()
         self.data['improve-dashboard-message'] = self.data.get(
             'relatedPages', {}).get('improve-dashboard-message', False)
+        modules = self.data['modules']
+        del(self.data['modules'])
         dashboard_response = self.stagecraft_client.create_dashboard(self.data)
-        self.create_modules(dashboard_response.json()['id'])
+        self.create_modules(dashboard_response.json()['id'], modules)
 
     def create_links(self):
         if 'relatedPages' in self.data:
@@ -118,8 +120,8 @@ class Dashboard():
             {'title': title, 'url': url, 'type': link_type}
         )
 
-    def create_modules(self, dashboard_id):
-        for order, module in enumerate(self.data['modules'], start=1):
+    def create_modules(self, dashboard_id, modules):
+        for order, module in enumerate(modules, start=1):
             module_type_id = self.get_module_type_id(module['module-type'])
             options = self.get_options_for_module(module)
             logger.debug(module['slug'])
