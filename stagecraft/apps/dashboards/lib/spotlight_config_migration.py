@@ -117,7 +117,7 @@ class Dashboard():
         )
 
     def create_modules(self, dashboard_id):
-        for module in self.data['modules']:
+        for order, module in enumerate(self.data['modules'], start=1):
             module_type_id = self.get_module_type_id(module['module-type'])
             options = self.get_options_for_module(module)
             logger.debug(module['slug'])
@@ -128,6 +128,7 @@ class Dashboard():
                 'description': module.get('description', ''),
                 'info': module.get('info', []),
                 'options': options,
+                'order': order,
             }
             if 'data-source' in module:
                 data_source = module['data-source']
