@@ -12,6 +12,7 @@ from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
 from stagecraft.libs.authorization.tests.test_http import (
     govuk_signon_mock, with_govuk_signon)
+from stagecraft.libs.views.utils import JsonEncoder
 
 
 class DashboardViewsListTestCase(TestCase):
