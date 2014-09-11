@@ -54,4 +54,6 @@ urlpatterns = patterns(
     url(r'^module-type$', module_views.root_types),
     url(r'^dashboard/(?P<dashboard_id>{})/module$'.format(uuid_regexp),
         module_views.modules_on_dashboard),
+    url(r'^dashboard/(?P<dashboard_id>{})$'.format(uuid_regexp),
+        dashboard_views.dashboard, name='dashboard'),
 )
