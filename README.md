@@ -1,6 +1,7 @@
 # Stagecraft
 
 [![Build Status](https://travis-ci.org/alphagov/stagecraft.png?branch=master)](https://travis-ci.org/alphagov/stagecraft?branch=master)
+[![Code Health](https://landscape.io/github/alphagov/stagecraft/master/landscape.png)](https://landscape.io/github/alphagov/stagecraft/master)
 
 Application for managing performance platform.
 
