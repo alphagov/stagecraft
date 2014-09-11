@@ -2,6 +2,7 @@ import json
 
 from django.test import TestCase
 from hamcrest import assert_that, equal_to, is_, none, has_property, contains
+from django_nose.tools import assert_redirects
 from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
@@ -11,7 +12,7 @@ from stagecraft.apps.dashboards.models.dashboard import (
 from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
 from stagecraft.libs.authorization.tests.test_http import (
-    govuk_signon_mock, with_govuk_signon)
+    with_govuk_signon)
 from stagecraft.libs.views.utils import JsonEncoder
 
 
@@ -72,6 +73,19 @@ class DashboardViewsListTestCase(TestCase):
         slug = 'my_first_slug/some_url_fragment/another/another'
         returned_dashboard = recursively_fetch_dashboard(slug)
         assert_that(returned_dashboard, is_(none()))
+
+    @patch(
+        'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
+    def test_public_dashboards_with_forward_slash_redirects(
+            self,
+            spotlightify_patch):
+        resp = self.client.get(
+            '/public/dashboards/', {'slug': 'my_first_slug'})
+        assert_redirects(
+            resp,
+            'http://testserver/public/dashboards?slug=my_first_slug',
+            status_code=301,
+            target_status_code=404)
 
 
 class DashboardViewsUpdateTestCase(TestCase):
