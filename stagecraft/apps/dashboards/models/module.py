@@ -1,5 +1,4 @@
 import copy
-import logging
 import jsonschema
 
 from django.core.validators import RegexValidator
@@ -71,6 +70,8 @@ class Module(models.Model):
 
     options = JSONField()
     query_parameters = JSONField(null=True)
+
+    order = models.IntegerField()
 
     def validate_options(self):
         jsonschema.validate(self.options, self.type.schema)

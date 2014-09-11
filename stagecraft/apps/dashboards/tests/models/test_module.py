@@ -80,6 +80,7 @@ class ModuleTestCase(TestCase):
             type=self.module_type,
             dashboard=self.dashboard_a,
             data_set=self.data_set,
+            order=1,
             options={
                 'foo': 'bar',
             },
@@ -109,6 +110,7 @@ class ModuleTestCase(TestCase):
             slug='a-module',
             type=self.module_type,
             dashboard=self.dashboard_a,
+            order=1,
             options={
                 'foo': 'bar',
             },
@@ -131,6 +133,7 @@ class ModuleTestCase(TestCase):
         module = Module.objects.create(
             slug='a-module',
             type=self.module_type,
+            order=1,
             dashboard=self.dashboard_a)
 
         serialization = module.serialize()
@@ -152,6 +155,7 @@ class ModuleTestCase(TestCase):
         module = Module.objects.create(
             slug='a-module',
             type=self.module_type,
+            order=1,
             data_set=self.data_set,
             dashboard=self.dashboard_a,
             query_parameters={"foo": "bar"})
@@ -180,6 +184,7 @@ class ModuleTestCase(TestCase):
             slug='a-module',
             type=self.module_type,
             data_set=self.data_set,
+            order=1,
             dashboard=self.dashboard_a)
 
         serialization = module.serialize()
@@ -205,7 +210,8 @@ class ModuleTestCase(TestCase):
                 Module.objects.create(
                     slug='a-module',
                     type=self.module_type,
-                    dashboard=dashboard_model
+                    dashboard=dashboard_model,
+                    order=1,
                 )
 
         create_module(self.dashboard_a)

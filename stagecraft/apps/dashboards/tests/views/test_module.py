@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 from hamcrest import (
-    assert_that, equal_to, is_, none,
+    assert_that, equal_to, is_,
     has_entry, has_item, has_key, is_not
 )
 
@@ -74,17 +74,20 @@ class ModuleViewsTestCase(TestCase):
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-1',
-            options={})
+            options={},
+            order=1)
         module2 = Module.objects.create(
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-2',
-            options={})
+            options={},
+            order=2)
         module3 = Module.objects.create(
             type=self.module_type,
             dashboard=dashboard2,
             slug='module-3',
-            options={})
+            options={},
+            order=1)
 
         resp = self.client.get(
             '/dashboard/{}/module'.format(self.dashboard.id))
@@ -121,6 +124,7 @@ class ModuleViewsTestCase(TestCase):
                 'options': {
                     'thing': 'a value',
                 },
+                'order': 1,
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -203,6 +207,7 @@ class ModuleViewsTestCase(TestCase):
                 'options': {
                     'thing': 'a value',
                 },
+                'order': 1,
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -225,6 +230,7 @@ class ModuleViewsTestCase(TestCase):
                 'query_parameters': {
                     'sort_by': 'thing:desc',
                 },
+                'order': 1,
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')

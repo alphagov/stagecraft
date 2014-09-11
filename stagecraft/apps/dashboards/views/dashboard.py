@@ -16,6 +16,7 @@ from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.utils import to_json
+from .module import add_module_to_dashboard
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,13 @@ def dashboard(user, request, dashboard_id=None):
         for link_data in data['links']:
             dashboard.link_set.create(link_type=link_data.pop('type'),
                                       **link_data)
+
+    if 'modules' in data:
+        for module_data in data['modules']:
+            if 'id' in module_data:
+                raise NotImplemented("Not yet implemented updates")
+            else:
+                add_module_to_dashboard(dashboard, module_data)
 
     return HttpResponse(to_json(dashboard.serialize()),
                         content_type='application/json')
