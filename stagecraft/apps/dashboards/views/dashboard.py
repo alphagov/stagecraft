@@ -6,8 +6,10 @@ from django.db import transaction, IntegrityError
 from django.http import (HttpResponse,
                          HttpResponseBadRequest,
                          HttpResponseNotFound)
+from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
 from stagecraft.apps.organisation.models import Node
@@ -60,12 +62,17 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
 
 
 @csrf_exempt
+@require_http_methods(['POST', 'PUT'])
 @permission_required('dashboard')
 @never_cache
-def dashboard(user, request):
+def dashboard(user, request, dashboard_id=None):
     data = json.loads(request.body)
 
-    dashboard = Dashboard()
+    # create a dashboard if we don't already have a dashboard ID
+    if dashboard_id is None and request.method == 'POST':
+        dashboard = Dashboard()
+    else:
+        dashboard = get_object_or_404(Dashboard, id=dashboard_id)
 
     if data.get('organisation'):
         if not is_uuid(data['organisation']):

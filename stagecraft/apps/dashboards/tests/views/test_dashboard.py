@@ -74,7 +74,42 @@ class DashboardViewsListTestCase(TestCase):
         assert_that(returned_dashboard, is_(none()))
 
 
+class DashboardViewsUpdateTestCase(TestCase):
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_change_title_of_dashboard_changes_title_of_dashboard(self):
+        dashboard = DashboardFactory()
+        dashboard_data = dashboard.serialize()
+
+        dashboard_data['title'] = 'foo'
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            Dashboard.objects.get(id=dashboard.id).title, equal_to('foo')
+        )
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_putting_to_nonexistant_dashboard_returns_404(self):
+        dashboard = DashboardFactory()
+        dashboard_data = dashboard.serialize()
+
+        resp = self.client.put(
+            '/dashboard/nonsense',
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
+
+
 class DashboardViewsCreateTestCase(TestCase):
+
     def _get_dashboard_payload(self, **kwargs):
         data = {
             "slug": "foo",
@@ -188,6 +223,7 @@ class DashboardViewsCreateTestCase(TestCase):
             content_type="application/json",
             HTTP_AUTHORIZATION='Bearer correct-token')
 
+        assert_that(resp.status_code, equal_to(200))
         assert_that(second_resp.status_code, equal_to(400))
         assert_that(Dashboard.objects.count(), equal_to(1))
 
