@@ -49,6 +49,7 @@ class Dashboard(models.Model):
         'Performance',
         'Policy dashboard',
         'Public sector purchasing dashboard',
+        'Topic Explorer',
     ]
 
     dashboard_type = models.CharField(
