@@ -17,12 +17,10 @@ from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.utils import to_json
 
-# this needs to go somewhere EVEN MORE COMMON
-
 logger = logging.getLogger(__name__)
 
 
-def dashboards(request):
+def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
     dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
