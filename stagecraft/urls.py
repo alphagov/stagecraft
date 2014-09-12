@@ -46,9 +46,12 @@ urlpatterns = patterns(
     url(r'^_status/data-sets$', datasets_views.health_check),
     url(r'^_status$', status_views.status),
     url(r'^dashboard$', dashboard_views.dashboard, name='dashboard'),
-    url(r'^public/dashboards$', dashboard_views.dashboards, name='dashboards'),
+    url(
+        r'^public/dashboards$',
+        dashboard_views.dashboards_for_spotlight,
+        name='dashboards_for_spotlight'),
     url(r'^public/dashboards/$', RedirectView.as_view(
-        pattern_name='dashboards',
+        pattern_name='dashboards_for_spotlight',
         permanent=True,
         query_string=True)),
     url(r'^module-type$', module_views.root_types),
