@@ -10,6 +10,8 @@ from ....organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
     LinkFactory,
+    ModuleFactory,
+    ModuleTypeFactory,
     DepartmentFactory,
     AgencyFactory,
     AgencyWithDepartmentFactory)
@@ -31,6 +33,7 @@ class DashboardTestCase(TransactionTestCase):
             dashboard=self.dashboard,
             slug='a-module',
             options={},
+            order=1,
         )
 
         module_type.save()
@@ -168,6 +171,19 @@ class DashboardTestCase(TransactionTestCase):
         }
 
         assert_that(data['links'], contains(expected_link))
+
+    def test_serialize_contains_modules(self):
+        module_type = ModuleTypeFactory()
+        ModuleFactory(type=module_type, dashboard=self.dashboard,
+                      order=2, slug='slug2')
+        ModuleFactory(type=module_type, dashboard=self.dashboard,
+                      order=1, slug='slug1')
+        data = self.dashboard.serialize()
+
+        assert_that(data['modules'],
+                    contains(
+                        has_entry('slug', 'slug1'),
+                        has_entry('slug', 'slug2')))
 
     def test_agency_returns_none_when_no_organisation(self):
         assert_that(self.dashboard.agency(), is_(none()))

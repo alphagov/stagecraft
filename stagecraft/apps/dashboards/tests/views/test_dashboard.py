@@ -1,18 +1,20 @@
 import json
 
 from django.test import TestCase
-from hamcrest import assert_that, equal_to, is_, none, has_property, contains
+from hamcrest import (
+    assert_that, equal_to, is_, none, has_property, contains, has_entry)
 from django_nose.tools import assert_redirects
 from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
-    DashboardFactory, DepartmentFactory)
+    DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory)
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
 from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
 from stagecraft.libs.authorization.tests.test_http import (
     with_govuk_signon)
+from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.utils import JsonEncoder
 
 
@@ -86,6 +88,29 @@ class DashboardViewsListTestCase(TestCase):
             'http://testserver/public/dashboards?slug=my_first_slug',
             status_code=301,
             target_status_code=404)
+
+    def test_modules_are_ordered_correctly(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            order=2, slug='slug2')
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            order=1, slug='slug1')
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            order=3, slug='slug3')
+
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'my-first-slug'})
+
+        data = json.loads(resp.content)
+        assert_that(data['modules'],
+                    contains(
+                        has_entry('slug', 'slug1'),
+                        has_entry('slug', 'slug2'),
+                        has_entry('slug', 'slug3')))
 
 
 class DashboardViewsUpdateTestCase(TestCase):
@@ -222,6 +247,37 @@ class DashboardViewsCreateTestCase(TestCase):
         assert_that(dashboard.link_set.all(),
                     contains(has_property('title',
                                           equal_to('External link'))))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_ok_with_modules(self):
+        module_type = ModuleTypeFactory()
+
+        def make_module(slug, title, order):
+            return {
+                'slug': slug,
+                'title': title,
+                'type_id': module_type.id,
+                'description': '',
+                'info': [],
+                'options': {},
+                'order': order,
+            }
+
+        data = self._get_dashboard_payload()
+        data['modules'] = [
+            make_module('foo', 'The Foo', 1),
+            make_module('bar', 'The Bar', 3),
+            make_module('monkey', 'The the', 2),
+        ]
+
+        resp = self.client.post(
+            '/dashboard', to_json(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        dashboard = Dashboard.objects.first()
+        assert_that(dashboard.module_set.count(), equal_to(3))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_create_dashboard_with_reused_slug_is_bad_request(self):

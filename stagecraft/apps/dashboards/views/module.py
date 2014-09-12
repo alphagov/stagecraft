@@ -18,7 +18,8 @@ def json_response(obj):
     )
 
 
-required_keys = ['type_id', 'slug', 'title', 'description', 'info', 'options']
+required_keys = set(['type_id', 'slug', 'title', 'description', 'info',
+                     'options', 'order'])
 
 
 @csrf_exempt
@@ -31,7 +32,7 @@ def modules_on_dashboard(request, dashboard_id):
     if request.method == 'GET':
         return list_modules_on_dashboard(request, dashboard)
     elif request.method == 'POST':
-        return add_module_to_dashboard(request, dashboard)
+        return add_module_to_dashboard_view(request, dashboard)
     else:
         return HttpResponse('', status=405)
 
@@ -43,26 +44,16 @@ def list_modules_on_dashboard(request, dashboard):
     return json_response(serialized)
 
 
-@permission_required('dashboard')
-def add_module_to_dashboard(user, request, dashboard):
-    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
-        return HttpResponse('bad content type', status=415)
-
-    try:
-        module_settings = json.loads(request.body)
-    except ValueError:
-        return HttpResponse('bad json', status=400)
-
-    if any(key not in module_settings for key in required_keys):
-        return HttpResponse(
-            'missing keys from: {}'.format(', '.join(required_keys)),
-            status=400
-        )
+def add_module_to_dashboard(dashboard, module_settings):
+    missing_keys = required_keys - set(module_settings.keys())
+    if len(missing_keys) > 0:
+        raise ValueError(
+            'missing keys: {}'.format(', '.join(missing_keys)))
 
     try:
         module_type = ModuleType.objects.get(id=module_settings['type_id'])
     except ModuleType.DoesNotExist:
-        return HttpResponse('module type was not found', status=400)
+        raise ValueError('module type was not found')
 
     module = Module(
         dashboard=dashboard,
@@ -73,20 +64,20 @@ def add_module_to_dashboard(user, request, dashboard):
         description=module_settings['description'],
         info=module_settings['info'],
         options=module_settings['options'],
+        order=module_settings['order'],
     )
 
     try:
         module.validate_options()
     except ValidationError as err:
-        return HttpResponse(
-            'options field failed validation: {}'.format(err.message),
-            status=400)
+        raise ValueError(
+            'options field failed validation: {}'.format(err.message))
 
     if 'data_set_id' in module_settings:
         try:
             data_set = DataSet.objects.get(id=module_settings['data_set_id'])
         except DataSet.DoesNotExist:
-            return HttpResponse('data set does not exist', status=400)
+            raise ValueError('data set does not exist')
 
         module.data_set = data_set
         module.query_parameters = module_settings.get('query_parameters', {})
@@ -94,13 +85,30 @@ def add_module_to_dashboard(user, request, dashboard):
         try:
             module.validate_query_parameters()
         except ValidationError as err:
-            return HttpResponse(
-                'Query parameters not valid: {}'.format(err.message),
-                status=400)
+            raise ValueError(
+                'Query parameters not valid: {}'.format(err.message))
     elif 'query_parameters' in module_settings:
-        return HttpResponse('query_parameters but no data set', status=400)
+        raise ValueError('query_parameters but no data set')
 
     module.save()
+
+    return module
+
+
+@permission_required('dashboard')
+def add_module_to_dashboard_view(user, request, dashboard):
+    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
+        return HttpResponse('bad content type', status=415)
+
+    try:
+        module_settings = json.loads(request.body)
+    except ValueError:
+        return HttpResponse('bad json', status=400)
+
+    try:
+        module = add_module_to_dashboard(dashboard, module_settings)
+    except ValueError as e:
+        return HttpResponse(e.message, status=400)
 
     return json_response(module.serialize())
 

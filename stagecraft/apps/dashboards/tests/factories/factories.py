@@ -1,5 +1,5 @@
 import factory
-from ...models import Dashboard, Link
+from ...models import Dashboard, Link, ModuleType, Module
 from ....organisation.models import Node, NodeType
 
 
@@ -20,6 +20,27 @@ class LinkFactory(factory.DjangoModelFactory):
     title = 'Link title'
     link_type = 'transaction'
     dashboard = factory.SubFactory(DashboardFactory)
+
+
+class ModuleTypeFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = ModuleType
+
+    name = factory.Sequence(lambda n: 'name %s' % n)
+    schema = {}
+
+
+class ModuleFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Module
+
+    type = factory.SubFactory(ModuleTypeFactory)
+    dashboard = factory.SubFactory(DashboardFactory)
+    slug = factory.Sequence(lambda n: 'slug{}'.format(n))
+    title = 'title'
+    info = []
+    options = {}
+    order = factory.Sequence(lambda n: n)
 
 
 class NodeTypeFactory(factory.DjangoModelFactory):

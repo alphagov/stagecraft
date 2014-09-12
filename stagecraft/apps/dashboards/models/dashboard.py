@@ -127,8 +127,9 @@ class Dashboard(models.Model):
 
     def spotlightify(self):
         base_dict = self.spotlightify_base_dict()
-        base_dict['modules'] = [m.spotlightify()
-                                for m in self.module_set.all()]
+        base_dict['modules'] = [
+            m.spotlightify()
+            for m in self.module_set.all().order_by('order')]
         base_dict['relatedPages'] = self.related_pages_dict()
         if self.department():
             base_dict['department'] = self.department().spotlightify()
@@ -147,6 +148,9 @@ class Dashboard(models.Model):
 
         serialized['links'] = [link.serialize()
                                for link in self.link_set.all()]
+
+        serialized['modules'] = [
+            m.serialize() for m in self.module_set.all().order_by('order')]
 
         return serialized
 
