@@ -44,6 +44,23 @@ def list_nodes(request):
 
 @permission_required('organisation')
 def add_node(user, request):
+    """ Add a node
+
+    Request format
+
+    {
+        "name": "required string",
+        "type_id": "required string",
+        "abbreviation": "optional string",
+        "parent_id": "optional uuuid"
+    }
+
+
+    Arguments:
+        user: a signon user
+        request: a django request object containing json of the form specified
+
+    """
     try:
         node_settings = json.loads(request.body)
     except ValueError:
