@@ -103,12 +103,12 @@ class DashboardTestCase(TransactionTestCase):
                 'page-type': 'dashboard',
                 'relatedPages': has_entries({
                     'improve-dashboard-message': True,
-                    'transaction_link':
+                    'transaction':
                     has_entries({
                         'url': 'http://www.gov.uk',
                         'title': 'transaction',
                         }),
-                    'other_links':
+                    'other':
                     has_items(
                         has_entries({
                             'url': 'http://www.gov.uk',
