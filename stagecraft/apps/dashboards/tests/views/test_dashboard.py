@@ -302,7 +302,7 @@ class DashboardViewsCreateTestCase(TestCase):
         data = {
             'slug': 'my-dashboard',
             'title': 'My dashboard',
-            'strapline': 'Invalid text',
+            'strapline': 'Invalid',
         }
 
         resp = self.client.post(
@@ -310,8 +310,9 @@ class DashboardViewsCreateTestCase(TestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION='Bearer correct-token')
         response_dictionary = json.loads(resp.content)
+        expected_message = "strapline: Value u'Invalid' is not a valid choice."
 
         assert_that(resp.status_code, equal_to(400))
         assert_that(response_dictionary['status'], equal_to('error'))
-        assert_that(response_dictionary['message']['strapline'][0],
-                    equal_to("Value u'Invalid text' is not a valid choice."))
+        assert_that(response_dictionary['message'],
+                    equal_to(expected_message))

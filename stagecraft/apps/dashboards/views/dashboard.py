@@ -98,9 +98,13 @@ def dashboard(user, request, dashboard_id=None):
     try:
         dashboard.full_clean()
     except ValidationError as error_details:
+        errors = error_details.message_dict
+        error_list = ['{0}: {1}'.format(field, ', '.join(errors[field]))
+                      for field in errors]
+        formatted_errors = ', '.join(error_list)
         error = {
             'status': 'error',
-            'message': error_details.message_dict,
+            'message': formatted_errors,
         }
         return HttpResponseBadRequest(to_json(error))
 
