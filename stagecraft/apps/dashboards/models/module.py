@@ -4,7 +4,7 @@ import jsonschema
 from django.core.validators import RegexValidator
 from django.db import models
 
-from dbarray import CharArrayField
+from dbarray import TextArrayField
 from jsonfield import JSONField
 from jsonschema.validators import validator_for
 from uuidfield import UUIDField
@@ -66,7 +66,7 @@ class Module(models.Model):
 
     title = models.CharField(max_length=60)
     description = models.CharField(max_length=200)
-    info = CharArrayField(max_length=255)
+    info = TextArrayField()
 
     options = JSONField()
     query_parameters = JSONField(null=True)
