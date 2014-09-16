@@ -134,6 +134,70 @@ class DashboardViewsListTestCase(TestCase):
         data = json.loads(resp.content)
         assert_that(data, has_entry('status', 'error'))
 
+    def test_dashboard_with_tab_slug_only_returns_tab(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-want',
+            info=['module-info'],
+            title='module-title',
+            options=json.dumps({
+                'tabs': [
+                    {
+                        'slug': 'tab-we-want',
+                        'title': 'tab-title'
+                    },
+                    {
+                        'slug': 'tab-we-dont-want',
+                    }
+                ]
+            }))
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-dont-want')
+        resp = self.client.get(
+            '/public/dashboards',
+            {'slug': 'my-first-slug/module-we-want/module-we-want-tab-we-want'}
+        )
+        data = json.loads(resp.content)
+        assert_that(data['modules'],
+                    contains(
+                        has_entries({'slug': 'tab-we-want',
+                                     'info': contains('module-info'),
+                                     'title': 'module-title - tab-title'
+                                     })))
+        assert_that(data, has_entry('page-type', 'module'))
+
+    def test_dashboard_with_nonexistent_tab_slug_returns_nothing(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module',
+            info=['module-info'],
+            title='module-title',
+            options=json.dumps({
+                'tabs': [
+                    {
+                        'slug': 'tab-we-want',
+                        'title': 'tab-title'
+                    },
+                    {
+                        'slug': 'tab-we-dont-want',
+                    }
+                ]
+            }))
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-dont-want')
+        resp = self.client.get(
+            '/public/dashboards',
+            {'slug': 'my-first-slug/module/module-non-existent-tab'}
+        )
+        data = json.loads(resp.content)
+        assert_that(data, has_entry('status', 'error'))
+
 
 class DashboardViewsGetTestCase(TestCase):
 

@@ -56,19 +56,45 @@ def error_response(dashboard_slug):
 def get_modules_or_tabs(request_slug, dashboard):
     # first part will always be empty as we never end the dashboard slug with
     # a slash
-    json = dashboard.spotlightify()
+    dashboard_json = dashboard.spotlightify()
     remaining_parts = request_slug.replace(dashboard.slug, '').split('/')[1:]
+    if len(remaining_parts) == 0:
+        return dashboard_json
+    if 'modules' not in dashboard_json:
+        return None
+    module = get_single_module_from_dashboard(
+        remaining_parts[0], dashboard_json)
+    if module is None:
+        return None
     if len(remaining_parts) == 1:
-        if 'modules' not in json:
+        dashboard_json['modules'] = [module]
+    elif len(remaining_parts) == 2:
+        tab_slug = remaining_parts[1].replace(remaining_parts[0] + '-', '')
+        tab = get_single_tab_from_module(tab_slug, module)
+        if tab is None:
             return None
-        new_modules = [module for module
-                       in json['modules']
-                       if module['slug'] == remaining_parts[0]]
-        json['modules'] = new_modules
-        json['page-type'] = 'module'
-        if len(new_modules) == 0:
-            return None
-    return json
+        tab['info'] = module['info']
+        tab['title'] = module['title'] + ' - ' + tab['title']
+        dashboard_json['modules'] = [tab]
+    else:
+        return None
+    dashboard_json['page-type'] = 'module'
+    return dashboard_json
+
+
+def get_single_module_from_dashboard(module_slug, dashboard_json):
+    return find_first_item_matching_slug(
+        dashboard_json['modules'], module_slug)
+
+
+def get_single_tab_from_module(tab_slug, module_json):
+    return find_first_item_matching_slug(module_json['tabs'], tab_slug)
+
+
+def find_first_item_matching_slug(item_list, slug):
+    for item in item_list:
+        if item['slug'] == slug:
+            return item
 
 
 def recursively_fetch_dashboard(dashboard_slug, count=3):
