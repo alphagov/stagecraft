@@ -3,7 +3,9 @@ import json
 
 from django.test import TestCase
 from hamcrest import (
-    assert_that, equal_to, is_, none, has_property, contains, has_entry, has_entries)
+    assert_that, equal_to, is_, none, has_property,
+    contains, has_entry, has_entries
+)
 from django_nose.tools import assert_redirects
 from mock import patch
 
@@ -78,7 +80,8 @@ class DashboardViewsListTestCase(TestCase):
         assert_that(returned_dashboard, is_(none()))
 
     @patch(
-        'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
+        'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify'
+    )
     def test_public_dashboards_with_forward_slash_redirects(
             self,
             spotlightify_patch):
@@ -122,7 +125,8 @@ class DashboardViewsGetTestCase(TestCase):
             '/dashboard/', HTTP_AUTHORIZATION='Bearer correct-token'
         )
         second_response = self.client.get(
-            '/dashboard/non-existant-m8', HTTP_AUTHORIZATION='Bearer correct-token'
+            '/dashboard/non-existant-m8',
+            HTTP_AUTHORIZATION='Bearer correct-token'
         )
 
         assert_that(resp.status_code, equal_to(404))
