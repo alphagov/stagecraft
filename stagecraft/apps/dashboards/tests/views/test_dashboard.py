@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
 from hamcrest import (
-    assert_that, equal_to, is_, none, has_property, contains, has_entry)
+    assert_that, equal_to, is_, none, has_property, contains, has_entry, has_entries)
 from django_nose.tools import assert_redirects
 from mock import patch
 
@@ -111,6 +112,55 @@ class DashboardViewsListTestCase(TestCase):
                         has_entry('slug', 'slug1'),
                         has_entry('slug', 'slug2'),
                         has_entry('slug', 'slug3')))
+
+
+class DashboardViewsGetTestCase(TestCase):
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_get_a_dashboard_with_incorrect_id_or_no_id_returns_404(self):
+        resp = self.client.get(
+            '/dashboard/', HTTP_AUTHORIZATION='Bearer correct-token'
+        )
+        second_response = self.client.get(
+            '/dashboard/non-existant-m8', HTTP_AUTHORIZATION='Bearer correct-token'
+        )
+
+        assert_that(resp.status_code, equal_to(404))
+        assert_that(second_response.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_get_an_existing_dashboard_returns_a_dashboard(self):
+        dashboard = DashboardFactory()
+
+        resp = self.client.get(
+            '/dashboard/{}'.format(dashboard.id),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            json.loads(resp.content),
+            has_entries(
+                {
+                    "description_extra": "",
+                    "strapline": "Dashboard",
+                    "description": "",
+                    "links": [],
+                    "title": "title",
+                    "tagline": "",
+                    "organisation": None,
+                    "modules": [],
+                    "dashboard_type": "transaction",
+                    "slug": "slug1",
+                    "improve_dashboard_message": True,
+                    "customer_type": "",
+                    "costs": "",
+                    "page_type": "dashboard",
+                    "published": True,
+                    "business_model": "",
+                    "other_notes": ""
+                }
+            )
+        )
 
 
 class DashboardViewsUpdateTestCase(TestCase):
