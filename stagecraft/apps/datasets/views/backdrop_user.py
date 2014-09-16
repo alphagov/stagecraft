@@ -7,7 +7,7 @@ from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import BackdropUser
 from stagecraft.libs.authorization.http import permission_required
-from stagecraft.libs.views.utils import to_json
+from stagecraft.libs.views.utils import to_json, create_error
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,11 @@ def detail(user, request, email):
             'message': "No user with email address '{}' exists".format(email)
         }
         logger.warn(error)
+
+        error["errors"] = [
+            create_error(request, 404, detail=error['message'])
+        ]
+
         return HttpResponseNotFound(to_json(error))
 
     json_str = to_json(backdrop_user.serialize())
