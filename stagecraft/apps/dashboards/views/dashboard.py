@@ -26,14 +26,11 @@ def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
     dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
-        error = {
-            'status': 'error',
-            'message': "No dashboard with slug '{}' exists".format(
-                dashboard_slug)
-        }
-        logger.warn(error)
-        return HttpResponseNotFound(to_json(error))
-    json_str = to_json(dashboard.spotlightify())
+        return error_response(dashboard_slug)
+    dashboard_json = get_modules_or_tabs(dashboard_slug, dashboard)
+    if not dashboard_json:
+        return error_response(dashboard_slug)
+    json_str = to_json(dashboard_json)
 
     response = HttpResponse(json_str, content_type='application/json')
 
@@ -43,6 +40,35 @@ def dashboards_for_spotlight(request):
         response['Cache-Control'] = 'no-cache'
 
     return response
+
+
+def error_response(dashboard_slug):
+    error = {
+        'status': 'error',
+        'message': "No dashboard with slug '{}' exists".format(
+            dashboard_slug)
+    }
+    logger.warn(error)
+    return HttpResponseNotFound(to_json(error),
+                                content_type='application/json')
+
+
+def get_modules_or_tabs(request_slug, dashboard):
+    # first part will always be empty as we never end the dashboard slug with
+    # a slash
+    json = dashboard.spotlightify()
+    remaining_parts = request_slug.replace(dashboard.slug, '').split('/')[1:]
+    if len(remaining_parts) == 1:
+        if 'modules' not in json:
+            return None
+        new_modules = [module for module
+                       in json['modules']
+                       if module['slug'] == remaining_parts[0]]
+        json['modules'] = new_modules
+        json['page-type'] = 'module'
+        if len(new_modules) == 0:
+            return None
+    return json
 
 
 def recursively_fetch_dashboard(dashboard_slug, count=3):

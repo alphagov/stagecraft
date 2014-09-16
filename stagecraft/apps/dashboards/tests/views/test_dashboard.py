@@ -23,21 +23,12 @@ from stagecraft.libs.views.utils import JsonEncoder
 
 class DashboardViewsListTestCase(TestCase):
 
-    @patch(
-        'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify')
-    def test_get_dashboards_with_slug_query_param_returns_dashboard_json(
-            self,
-            spotlightify_patch):
+    def test_get_dashboards_with_slug_query_param_returns_dashboard_json(self):
         DashboardFactory(slug='my_first_slug')
-        spotlightify_response = {
-            'this': {
-                'response': 'is',
-                'nonsense': 1234}
-        }
-        spotlightify_patch.return_value = spotlightify_response
         resp = self.client.get(
-            '/public/dashboards', {'slug': 'my_first_slug/this'})
-        assert_that(json.loads(resp.content), equal_to(spotlightify_response))
+            '/public/dashboards', {'slug': 'my_first_slug'})
+        assert_that(json.loads(resp.content), has_entry('slug',
+                                                        'my_first_slug'))
         assert_that(resp['Cache-Control'], equal_to('max-age=300'))
 
     def test_get_dashboards_only_caches_when_published(self):
@@ -115,6 +106,33 @@ class DashboardViewsListTestCase(TestCase):
                         has_entry('slug', 'slug1'),
                         has_entry('slug', 'slug2'),
                         has_entry('slug', 'slug3')))
+
+    def test_dashboard_with_module_slug_only_returns_module(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-want')
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-dont-want')
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'my-first-slug/module-we-want'})
+        data = json.loads(resp.content)
+        assert_that(data['modules'],
+                    contains(has_entry('slug', 'module-we-want')))
+        assert_that(data, has_entry('page-type', 'module'))
+
+    def test_dashboard_with_non_existing_module_slug_returns_nothing(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-want')
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'my-first-slug/nonexisting-module'})
+        data = json.loads(resp.content)
+        assert_that(data, has_entry('status', 'error'))
 
 
 class DashboardViewsGetTestCase(TestCase):
