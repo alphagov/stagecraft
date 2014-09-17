@@ -55,16 +55,32 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
         if len(slug_parts) > 1:
             slug_parts.pop()
             dashboard = recursively_fetch_dashboard(
-                '/'.join(slug_parts), count=count-1)
+                '/'.join(slug_parts), count=count - 1)
 
     return dashboard
 
 
 @csrf_exempt
-@require_http_methods(['POST', 'PUT'])
+@require_http_methods(['GET'])
+@permission_required('dashboard')
+def get_dashboard(user, request, dashboard_id=None):
+    dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+
+    return HttpResponse(
+        to_json(dashboard.serialize()),
+        content_type='application/json'
+    )
+
+
+@csrf_exempt
+@require_http_methods(['POST', 'PUT', 'GET'])
 @permission_required('dashboard')
 @never_cache
 def dashboard(user, request, dashboard_id=None):
+
+    if request.method == 'GET':
+        return get_dashboard(request, dashboard_id)
+
     data = json.loads(request.body)
 
     # create a dashboard if we don't already have a dashboard ID
