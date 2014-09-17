@@ -127,7 +127,7 @@ class Dashboard(models.Model):
         )
         return related_pages_dict
 
-    def spotlightify(self):
+    def spotlightify(self, request_slug=None):
         base_dict = self.spotlightify_base_dict()
         base_dict['modules'] = [
             m.spotlightify()
@@ -137,7 +137,7 @@ class Dashboard(models.Model):
             base_dict['department'] = self.department().spotlightify()
         if self.agency():
             base_dict['agency'] = self.agency().spotlightify()
-        return base_dict
+        return get_modules_or_tabs(request_slug, base_dict)
 
     def serialize(self):
         serialized = {}
@@ -233,3 +233,49 @@ class Link(models.Model):
 
     class Meta:
         app_label = 'dashboards'
+
+
+def get_modules_or_tabs(request_slug, dashboard_json):
+    # first part will always be empty as we never end the dashboard slug with
+    # a slash
+    if request_slug is None:
+        return dashboard_json
+    remaining_parts = request_slug.replace(
+        dashboard_json['slug'], '').split('/')[1:]
+    if len(remaining_parts) == 0:
+        return dashboard_json
+    if 'modules' not in dashboard_json:
+        return None
+    module = get_single_module_from_dashboard(
+        remaining_parts[0], dashboard_json)
+    if module is None:
+        return None
+    if len(remaining_parts) == 1:
+        dashboard_json['modules'] = [module]
+    elif len(remaining_parts) == 2:
+        tab_slug = remaining_parts[1].replace(remaining_parts[0] + '-', '')
+        tab = get_single_tab_from_module(tab_slug, module)
+        if tab is None:
+            return None
+        tab['info'] = module['info']
+        tab['title'] = module['title'] + ' - ' + tab['title']
+        dashboard_json['modules'] = [tab]
+    else:
+        return None
+    dashboard_json['page-type'] = 'module'
+    return dashboard_json
+
+
+def get_single_module_from_dashboard(module_slug, dashboard_json):
+    return find_first_item_matching_slug(
+        dashboard_json['modules'], module_slug)
+
+
+def get_single_tab_from_module(tab_slug, module_json):
+    return find_first_item_matching_slug(module_json['tabs'], tab_slug)
+
+
+def find_first_item_matching_slug(item_list, slug):
+    for item in item_list:
+        if item['slug'] == slug:
+            return item

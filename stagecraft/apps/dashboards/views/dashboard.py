@@ -26,14 +26,11 @@ def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
     dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
-        error = {
-            'status': 'error',
-            'message': "No dashboard with slug '{}' exists".format(
-                dashboard_slug)
-        }
-        logger.warn(error)
-        return HttpResponseNotFound(to_json(error))
-    json_str = to_json(dashboard.spotlightify())
+        return error_response(dashboard_slug)
+    dashboard_json = dashboard.spotlightify(dashboard_slug)
+    if not dashboard_json:
+        return error_response(dashboard_slug)
+    json_str = to_json(dashboard_json)
 
     response = HttpResponse(json_str, content_type='application/json')
 
@@ -43,6 +40,17 @@ def dashboards_for_spotlight(request):
         response['Cache-Control'] = 'no-cache'
 
     return response
+
+
+def error_response(dashboard_slug):
+    error = {
+        'status': 'error',
+        'message': "No dashboard with slug '{}' exists".format(
+            dashboard_slug)
+    }
+    logger.warn(error)
+    return HttpResponseNotFound(to_json(error),
+                                content_type='application/json')
 
 
 def recursively_fetch_dashboard(dashboard_slug, count=3):
