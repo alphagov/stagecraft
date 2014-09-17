@@ -51,7 +51,7 @@ class Module(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
-    data_set = models.ForeignKey(DataSet, null=True)
+    data_set = models.ForeignKey(DataSet, null=True, blank=True)
 
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
@@ -66,10 +66,10 @@ class Module(models.Model):
 
     title = models.CharField(max_length=60)
     description = models.CharField(max_length=200)
-    info = TextArrayField()
+    info = TextArrayField(blank=True)
 
-    options = JSONField()
-    query_parameters = JSONField(null=True)
+    options = JSONField(blank=True)
+    query_parameters = JSONField(null=True, blank=True)
 
     order = models.IntegerField()
 

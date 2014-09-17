@@ -7,7 +7,7 @@ from django.http import (HttpResponse,
                          HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.shortcuts import get_object_or_404
-from django.views.decorators.cache import cache_control, never_cache
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -140,11 +140,19 @@ def dashboard(user, request, dashboard_id=None):
                                       **link_data)
 
     if 'modules' in data:
-        for module_data in data['modules']:
+        for i, module_data in enumerate(data['modules'], start=1):
             if 'id' in module_data:
                 raise NotImplemented("Not yet implemented updates")
             else:
-                add_module_to_dashboard(dashboard, module_data)
+                try:
+                    add_module_to_dashboard(dashboard, module_data)
+                except ValueError as e:
+                    error = {
+                        'status': 'error',
+                        'message': 'Failed to create module {}: {}'.format(
+                            i, e.message),
+                    }
+                    return HttpResponse(to_json(error), status=400)
 
     return HttpResponse(to_json(dashboard.serialize()),
                         content_type='application/json')

@@ -324,11 +324,30 @@ class ModuleViewsTestCase(TestCase):
                 'options': {
                     'thing': 'a value',
                 },
+                'order': 1,
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/not-a-type')
 
         assert_that(resp.status_code, is_(equal_to(415)))
+
+    def test_add_a_module_fails_with_invalid_slug(self):
+        """Verifies that model validations are being run"""
+        resp = self.client.post(
+            '/dashboard/{}/module'.format(self.dashboard.id),
+            data=json.dumps({
+                'slug': 'bad slug',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {'thing': 'a value'},
+                'order': 1,
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, equal_to(400))
 
 
 class ModuleTypeViewsTestCase(TestCase):

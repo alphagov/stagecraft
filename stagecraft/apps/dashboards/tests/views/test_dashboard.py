@@ -311,7 +311,7 @@ class DashboardViewsCreateTestCase(TestCase):
                 'slug': slug,
                 'title': title,
                 'type_id': module_type.id,
-                'description': '',
+                'description': 'a description',
                 'info': [],
                 'options': {},
                 'order': order,
@@ -332,6 +332,28 @@ class DashboardViewsCreateTestCase(TestCase):
         assert_that(resp.status_code, equal_to(200))
         dashboard = Dashboard.objects.first()
         assert_that(dashboard.module_set.count(), equal_to(3))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_fails_with_invalid_module(self):
+        module_type = ModuleTypeFactory()
+        module = {
+            'slug': 'bad slug',
+            'title': 'bad slug',
+            'type_id': module_type.id,
+            'description': '',
+            'info': [],
+            'options': {},
+            'order': 1,
+        }
+        data = self._get_dashboard_payload()
+        data['modules'] = [module]
+
+        resp = self.client.post(
+            '/dashboard', to_json(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_create_dashboard_with_reused_slug_is_bad_request(self):

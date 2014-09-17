@@ -4,6 +4,7 @@ import json
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonschema.exceptions import SchemaError, ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.authorization.http import permission_required
@@ -92,6 +93,16 @@ def add_module_to_dashboard(dashboard, module_settings):
                 'Query parameters not valid: {}'.format(err.message))
     elif 'query_parameters' in module_settings:
         raise ValueError('query_parameters but no data set')
+
+    try:
+        module.full_clean()
+    except DjangoValidationError as err:
+        messages = [
+            '{}: {}'.format(k, ' '.join(v))
+            for k, v in err.message_dict.items()
+        ]
+        message = "\n".join(messages)
+        raise ValueError(message)
 
     module.save()
 
