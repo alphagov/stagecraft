@@ -356,6 +356,29 @@ class DashboardViewsCreateTestCase(TestCase):
         assert_that(resp.status_code, equal_to(400))
 
     @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_failure_rolls_back_transaction(self):
+        module_type = ModuleTypeFactory()
+        module = {
+            'slug': 'bad slug',
+            'title': 'bad slug',
+            'type_id': module_type.id,
+            'description': '',
+            'info': [],
+            'options': {},
+            'order': 1,
+        }
+        data = self._get_dashboard_payload()
+        data['modules'] = [module]
+
+        resp = self.client.post(
+            '/dashboard', to_json(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+        assert_that(Dashboard.objects.count(), equal_to(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
     def test_create_dashboard_with_reused_slug_is_bad_request(self):
         data = self._get_dashboard_payload()
 

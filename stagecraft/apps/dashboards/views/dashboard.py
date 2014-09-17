@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.core.exceptions import ValidationError
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError
 from django.http import (HttpResponse,
                          HttpResponseBadRequest,
                          HttpResponseNotFound)
@@ -16,6 +16,7 @@ from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.utils import to_json
+from stagecraft.libs.views.transaction import atomic_view
 from .module import add_module_to_dashboard
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ def get_dashboard(user, request, dashboard_id=None):
 @require_http_methods(['POST', 'PUT', 'GET'])
 @permission_required('dashboard')
 @never_cache
+@atomic_view
 def dashboard(user, request, dashboard_id=None):
 
     if request.method == 'GET':
@@ -125,8 +127,7 @@ def dashboard(user, request, dashboard_id=None):
         return HttpResponseBadRequest(to_json(error))
 
     try:
-        with transaction.atomic():
-            dashboard.save()
+        dashboard.save()
     except IntegrityError as e:
         error = {
             'status': 'error',
