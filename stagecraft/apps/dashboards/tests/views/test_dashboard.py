@@ -142,7 +142,7 @@ class DashboardViewsListTestCase(TestCase):
             slug='module-we-want',
             info=['module-info'],
             title='module-title',
-            options=json.dumps({
+            options={
                 'tabs': [
                     {
                         'slug': 'tab-we-want',
@@ -152,7 +152,7 @@ class DashboardViewsListTestCase(TestCase):
                         'slug': 'tab-we-dont-want',
                     }
                 ]
-            }))
+            })
         ModuleFactory(
             type=module_type, dashboard=dashboard,
             slug='module-we-dont-want')
@@ -177,7 +177,7 @@ class DashboardViewsListTestCase(TestCase):
             slug='module',
             info=['module-info'],
             title='module-title',
-            options=json.dumps({
+            options={
                 'tabs': [
                     {
                         'slug': 'tab-we-want',
@@ -187,7 +187,7 @@ class DashboardViewsListTestCase(TestCase):
                         'slug': 'tab-we-dont-want',
                     }
                 ]
-            }))
+            })
         ModuleFactory(
             type=module_type, dashboard=dashboard,
             slug='module-we-dont-want')
