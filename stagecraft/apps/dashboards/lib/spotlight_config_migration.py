@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 class Dashboard():
 
-    def __init__(self, url):
+    def __init__(self, url, token):
         self.url = url
         self.type_id_map = {}
-        self.stagecraft_client = StagecraftClient(url)
+        self.stagecraft_client = StagecraftClient(url, token)
         self.logger = logging.getLogger(__name__)
 
     def set_data(self, **kwargs):

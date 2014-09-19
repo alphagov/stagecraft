@@ -4,22 +4,36 @@ from stagecraft.apps.dashboards.lib.spotlight_config_migration import (
 import os
 import logging
 import sys
+import argparse
+from django.conf import settings
+
+SPOTLIGHT_CONFIG_JSON_DEFAULT = (
+    '../spotlight/app/support/stagecraft_stub/responses'
+)
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
-    if len(sys.argv) == 2:
-        path = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-p", "--path",
+        help="Path to spotlight json files. Defaults to {}".format(
+            SPOTLIGHT_CONFIG_JSON_DEFAULT))
+    parser.add_argument("-t", "--token", help="Auth token for stagecraft")
+    args = parser.parse_args()
+    if args.path:
+        path = args.path
     else:
-        print('Please specify a path containing the spotlight json files')
-        path = os.path.join(
-            os.path.dirname(__file__),
-            '../spotlight/app/support/stagecraft_stub/responses')
+        path = os.path.join(os.path.dirname(__file__),
+                            SPOTLIGHT_CONFIG_JSON_DEFAULT)
     for filename, json in spotlight_json(path):
         logger.debug('Creating dashboard for {}'.format(filename))
         dashboard = Dashboard(
-            'http://stagecraft.development.performance.service.gov.uk')
+            'http://stagecraft{}'.format(settings.ENV_HOSTNAME),
+            args.token
+        )
         if not isinstance(json, dict):
             logger.warning(
                 'skipping dashboard {} as it is not a valid dictionary'.format(
