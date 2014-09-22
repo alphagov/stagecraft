@@ -43,6 +43,8 @@ DEVELOPMENT_USERS = {
     }
 }
 
+MIGRATION_SIGNON_TOKEN = 'development-oauth-access-token'
+
 VARNISH_CACHES = [
     ('http://development-1', 7999)
 ]

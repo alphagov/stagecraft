@@ -21,7 +21,6 @@ if __name__ == '__main__':
         "-p", "--path",
         help="Path to spotlight json files. Defaults to {}".format(
             SPOTLIGHT_CONFIG_JSON_DEFAULT))
-    parser.add_argument("-t", "--token", help="Auth token for stagecraft")
     args = parser.parse_args()
     if args.path:
         path = args.path
@@ -32,7 +31,7 @@ if __name__ == '__main__':
         logger.debug('Creating dashboard for {}'.format(filename))
         dashboard = Dashboard(
             'http://stagecraft{}'.format(settings.ENV_HOSTNAME),
-            args.token
+            settings.MIGRATION_SIGNON_TOKEN
         )
         if not isinstance(json, dict):
             logger.warning(
