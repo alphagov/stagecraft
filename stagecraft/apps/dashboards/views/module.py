@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonschema.exceptions import SchemaError, ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.views.decorators.cache import never_cache
 
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.authorization.http import permission_required
@@ -24,6 +25,7 @@ required_keys = set(['type_id', 'slug', 'title', 'description', 'info',
 
 
 @csrf_exempt
+@never_cache
 def modules_on_dashboard(request, dashboard_id):
     try:
         dashboard = Dashboard.objects.get(id=dashboard_id)
@@ -128,6 +130,7 @@ def add_module_to_dashboard_view(user, request, dashboard):
 
 
 @csrf_exempt
+@never_cache
 def root_types(request):
     if request.method == 'GET':
         return list_types(request)
