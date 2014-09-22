@@ -65,7 +65,7 @@ class Module(models.Model):
     )
 
     title = models.CharField(max_length=60)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, blank=True)
     info = TextArrayField(blank=True)
 
     options = JSONField(blank=True)
