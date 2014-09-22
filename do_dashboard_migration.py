@@ -48,6 +48,9 @@ if __name__ == '__main__':
             logger.warning(
                 'skipping dashboard {} that only specifies agency and not'
                 'department'.format(dashboard))
+        elif filename == 'no-realistic-dashboard.json':
+            logger.warning(
+                'skipping no realistic dashboard')
         else:
             dashboard.set_data(**json)
             dashboard.send()
