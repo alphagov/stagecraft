@@ -30,7 +30,7 @@ if __name__ == '__main__':
     for filename, json in spotlight_json(path):
         logger.debug('Creating dashboard for {}'.format(filename))
         dashboard = Dashboard(
-            'http://stagecraft{}'.format(settings.ENV_HOSTNAME),
+            'https://stagecraft{}'.format(settings.ENV_HOSTNAME),
             settings.MIGRATION_SIGNON_TOKEN
         )
         if not isinstance(json, dict):
