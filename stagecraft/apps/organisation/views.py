@@ -3,6 +3,7 @@ import json
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
+from django.views.decorators.cache import never_cache
 
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
@@ -17,6 +18,7 @@ def json_response(obj):
 
 
 @csrf_exempt
+@never_cache
 def root_nodes(request):
     if request.method == 'GET':
         return list_nodes(request)
@@ -116,6 +118,7 @@ def node_ancestors(request, node_id):
 
 
 @csrf_exempt
+@never_cache
 def root_types(request):
     if request.method == 'GET':
         return list_types(request)
