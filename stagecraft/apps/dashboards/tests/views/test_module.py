@@ -1,4 +1,3 @@
-
 import json
 
 from django.test import TestCase
@@ -189,11 +188,33 @@ class ModuleViewsTestCase(TestCase):
                 'options': {
                     'thing': 'a value',
                 },
+                'order': 1,
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
 
         assert_that(resp.status_code, is_(equal_to(400)))
+
+    def test_add_a_module_with_an_empty_data_set(self):
+        resp = self.client.post(
+            '/dashboard/{}/module'.format(self.dashboard.id),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'data_group': '',
+                'data_type': '',
+                'title': 'Some module',
+                'description': 'a description',
+                'info': [],
+                'options': {
+                    'thing': 'a value',
+                },
+                'order': 1,
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(200)))
 
     def test_add_a_module_with_a_data_set(self):
         resp = self.client.post(

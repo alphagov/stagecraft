@@ -74,7 +74,7 @@ def add_module_to_dashboard(dashboard, module_settings):
         raise ValueError(
             'options field failed validation: {}'.format(err.message))
 
-    if 'data_group' in module_settings and 'data_type' in module_settings:
+    if module_settings.get('data_group') and module_settings.get('data_type'):
         try:
             data_set = DataSet.objects.get(
                 data_group__name=module_settings['data_group'],
