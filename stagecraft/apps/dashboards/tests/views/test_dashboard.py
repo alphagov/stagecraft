@@ -23,6 +23,32 @@ from stagecraft.libs.views.utils import JsonEncoder
 
 class DashboardViewsListTestCase(TestCase):
 
+    @patch(
+        "stagecraft.apps.dashboards.models."
+        "dashboard.Dashboard.list_for_spotlight")
+    def test_get_dashboards_without_slug_returns_minimal_dashboards_json(
+            self,
+            patch_list_for_spotlight):
+        returned_data = [
+            {'i am in a list': 'this is a list'},
+            {'more things in a list': 'yes'}]
+        patch_list_for_spotlight.return_value = returned_data
+        resp = self.client.get(
+            '/public/dashboards', {})
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            len(json.loads(resp.content)),
+            equal_to(2)
+        )
+        assert_that(
+            json.loads(resp.content)[0],
+            has_entries(returned_data[0])
+        )
+        assert_that(
+            json.loads(resp.content)[1],
+            has_entries(returned_data[1])
+        )
+
     def test_get_dashboards_with_slug_query_param_returns_dashboard_json(self):
         DashboardFactory(slug='my_first_slug')
         resp = self.client.get(

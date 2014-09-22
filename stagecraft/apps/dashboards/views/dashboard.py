@@ -24,6 +24,21 @@ logger = logging.getLogger(__name__)
 
 def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
+    if not dashboard_slug:
+        return dashboard_list_for_spotlight()
+    else:
+        return single_dashboard_for_spotlight(dashboard_slug)
+
+
+def dashboard_list_for_spotlight():
+    dashboard_json = Dashboard.list_for_spotlight()
+    json_str = to_json(dashboard_json)
+    response = HttpResponse(json_str, content_type='application/json')
+    response['Cache-Control'] = 'max-age=300'
+    return response
+
+
+def single_dashboard_for_spotlight(dashboard_slug):
     dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
         return error_response(dashboard_slug)
