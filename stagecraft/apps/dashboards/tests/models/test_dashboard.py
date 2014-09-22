@@ -5,12 +5,12 @@ from hamcrest import (
     starts_with, contains, has_item
 )
 
-from ...models import Link, Module, ModuleType
+from ...models import Link, Module, ModuleType, Dashboard
 from ....organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
-    LinkFactory,
     ModuleFactory,
+    LinkFactory,
     ModuleTypeFactory,
     DepartmentFactory,
     AgencyFactory,
@@ -21,6 +21,34 @@ class DashboardTestCase(TransactionTestCase):
 
     def setUp(self):
         self.dashboard = DashboardFactory()
+
+    def test_class_level_list_for_spotlight_returns_minimal_json_array(self):
+        dashboard_two = DashboardFactory()
+        dashboard_two.organisation = AgencyWithDepartmentFactory()
+        dashboard_two.validate_and_save()
+        unpublished_dashboard = DashboardFactory(published=False)
+        list_for_spotlight = Dashboard.list_for_spotlight()
+        assert_that(len(list_for_spotlight), equal_to(2))
+        assert_that(list_for_spotlight[1],
+                    has_entries({
+                        'slug': starts_with('slug'),
+                        'title': 'title',
+                        'dashboard-type': 'transaction',
+                        'department': has_entries({
+                            'title': starts_with('department'),
+                            'abbr': starts_with('abbreviation')
+                        }),
+                        'agency': has_entries({
+                            'title': starts_with('agency'),
+                            'abbr': starts_with('abbreviation')
+                        })
+                    }))
+        assert_that(list_for_spotlight[0],
+                    has_entries({
+                        'slug': starts_with('slug'),
+                        'title': 'title',
+                        'dashboard-type': 'transaction'
+                    }))
 
     def test_spotlightify_no_modules(self):
         spotlight_dashboard = self.dashboard.spotlightify()
@@ -162,7 +190,7 @@ class DashboardTestCase(TransactionTestCase):
         assert_that(data['published'], is_(True))
 
     def test_serialize_serializes_dashboard_links(self):
-        link = LinkFactory(dashboard=self.dashboard)
+        LinkFactory(dashboard=self.dashboard)
         data = self.dashboard.serialize()
 
         expected_link = {
