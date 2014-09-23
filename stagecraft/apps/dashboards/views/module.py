@@ -93,7 +93,7 @@ def add_module_to_dashboard(dashboard, module_settings):
         except ValidationError as err:
             raise ValueError(
                 'Query parameters not valid: {}'.format(err.message))
-    elif 'query_parameters' in module_settings:
+    elif module_settings.get('query_parameters'):
         raise ValueError('query_parameters but no data set')
 
     try:

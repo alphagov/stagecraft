@@ -216,6 +216,28 @@ class ModuleViewsTestCase(TestCase):
 
         assert_that(resp.status_code, is_(equal_to(200)))
 
+    def test_add_a_module_with_an_empty_data_set_and_query_parameters(self):
+        resp = self.client.post(
+            '/dashboard/{}/module'.format(self.dashboard.id),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'data_group': '',
+                'data_type': '',
+                'title': 'Some module',
+                'description': 'a description',
+                'info': [],
+                'options': {
+                    'thing': 'a value',
+                },
+                'order': 1,
+                'query_parameters': {},
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+
     def test_add_a_module_with_a_data_set(self):
         resp = self.client.post(
             '/dashboard/{}/module'.format(self.dashboard.id),
