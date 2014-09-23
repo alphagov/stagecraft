@@ -21,7 +21,8 @@ SECRET_KEY = '^10-$qwyu##ivl7f48^mit5e8a-8q#6ceb5i5&zk86)$^(^rmn'
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-APP_HOSTNAME = 'stagecraft.perfplat.dev'
+APP_HOSTNAME = 'stagecraft.development.performance.service.gov.uk'
+ENV_HOSTNAME = '.development.performance.service.gov.uk'
 
 SIGNON_URL = 'http://signon.dev.gov.uk'
 USE_DEVELOPMENT_USERS = True
@@ -41,6 +42,8 @@ DEVELOPMENT_USERS = {
         "uid": "00000000-0000-0000-0000-000000000000"
     }
 }
+
+MIGRATION_SIGNON_TOKEN = 'development-oauth-access-token'
 
 VARNISH_CACHES = [
     ('http://development-1', 7999)
