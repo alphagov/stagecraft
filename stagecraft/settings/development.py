@@ -17,7 +17,6 @@ import os
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '^10-$qwyu##ivl7f48^mit5e8a-8q#6ceb5i5&zk86)$^(^rmn'
-DEVELOPMENT = True
 
 DEBUG = True
 TEMPLATE_DEBUG = True

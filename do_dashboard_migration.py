@@ -30,8 +30,7 @@ if __name__ == '__main__':
     for filename, json in spotlight_json(path):
         logger.debug('Creating dashboard for {}'.format(filename))
         # http in development
-        we_are_in_development_lol = getattr(settings, 'DEVELOPMENT', False)
-        if we_are_in_development_lol:
+        if settings.ENV_HOSTNAME == '.development.performance.service.gov.uk':
             base_url = 'http://stagecraft'
         else:
             base_url = 'https://stagecraft'
