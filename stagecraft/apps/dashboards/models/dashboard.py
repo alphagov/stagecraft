@@ -117,7 +117,7 @@ class Dashboard(models.Model):
 
         def spotlightify_for_list(item):
             return item.spotlightify_for_list()
-        return map(spotlightify_for_list, dashboards)
+        return {'items': map(spotlightify_for_list, dashboards)}
 
     def spotlightify_for_list(self):
         base_dict = self.list_base_dict()

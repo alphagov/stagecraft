@@ -28,8 +28,8 @@ class DashboardTestCase(TransactionTestCase):
         dashboard_two.validate_and_save()
         unpublished_dashboard = DashboardFactory(published=False)
         list_for_spotlight = Dashboard.list_for_spotlight()
-        assert_that(len(list_for_spotlight), equal_to(2))
-        assert_that(list_for_spotlight[1],
+        assert_that(len(list_for_spotlight['items']), equal_to(2))
+        assert_that(list_for_spotlight['items'][1],
                     has_entries({
                         'slug': starts_with('slug'),
                         'title': 'title',
@@ -43,7 +43,7 @@ class DashboardTestCase(TransactionTestCase):
                             'abbr': starts_with('abbreviation')
                         })
                     }))
-        assert_that(list_for_spotlight[0],
+        assert_that(list_for_spotlight['items'][0],
                     has_entries({
                         'slug': starts_with('slug'),
                         'title': 'title',
