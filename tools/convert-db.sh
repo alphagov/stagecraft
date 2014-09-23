@@ -23,11 +23,5 @@ psql -c "ALTER USER stagecraft WITH PASSWORD 'securem8'"
 psql -c "ALTER USER stagecraft WITH CREATEDB"
 EOF
 
+# Restart collectd
 sudo service collectd start
-
-# psql -c 'DROP FUNCTION streaming_slave_check();'
-# pg_dump --encoding=SQL_ASCII --oids --clean stagecraft -f '/tmp/stagecraft.utf8.sql'
-# psql -c 'drop database stagecraft;'
-# /usr/lib/postgresql/9.3/bin/createdb --port='5432' --owner='postgres' --template=template0 --encoding 'SQL_ASCII' --locale=en_GB.UTF-8  'stagecraft'
-# psql -f '/tmp/stagecraft.utf8.sql' stagecraft
-# psql -c "ALTER USER stagecraft WITH PASSWORD 'securem8'"
