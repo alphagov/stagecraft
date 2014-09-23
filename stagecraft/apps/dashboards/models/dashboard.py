@@ -105,9 +105,37 @@ class Dashboard(models.Model):
         'title'
     ]
 
+    list_base_fields = [
+        'slug',
+        'title',
+        'dashboard_type'
+    ]
+
+    @classmethod
+    def list_for_spotlight(cls):
+        dashboards = Dashboard.objects.filter(published=True)
+
+        def spotlightify_for_list(item):
+            return item.spotlightify_for_list()
+        return map(spotlightify_for_list, dashboards)
+
+    def spotlightify_for_list(self):
+        base_dict = self.list_base_dict()
+        if self.department():
+            base_dict['department'] = self.department().spotlightify()
+        if self.agency():
+            base_dict['agency'] = self.agency().spotlightify()
+        return base_dict
+
     def spotlightify_base_dict(self):
         base_dict = {}
         for field in self.spotlightify_base_fields:
+            base_dict[field.replace('_', '-')] = getattr(self, field)
+        return base_dict
+
+    def list_base_dict(self):
+        base_dict = {}
+        for field in self.list_base_fields:
             base_dict[field.replace('_', '-')] = getattr(self, field)
         return base_dict
 
