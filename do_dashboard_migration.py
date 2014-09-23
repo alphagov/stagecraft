@@ -29,8 +29,13 @@ if __name__ == '__main__':
                             SPOTLIGHT_CONFIG_JSON_DEFAULT)
     for filename, json in spotlight_json(path):
         logger.debug('Creating dashboard for {}'.format(filename))
+        # http in development
+        if settings.ENV_HOSTNAME == '.development.performance.service.gov.uk':
+            base_url = 'http://stagecraft'
+        else:
+            base_url = 'https://stagecraft'
         dashboard = Dashboard(
-            'https://stagecraft{}'.format(settings.ENV_HOSTNAME),
+            base_url + '{}'.format(settings.ENV_HOSTNAME),
             settings.MIGRATION_SIGNON_TOKEN
         )
         if not isinstance(json, dict):
