@@ -22,6 +22,9 @@ gunzip -c $1 | psql stagecraft
 psql -c "ALTER USER stagecraft WITH PASSWORD 'securem8'"
 psql -c "ALTER USER stagecraft WITH CREATEDB"
 EOF
+
+sudo service collectd start
+
 # psql -c 'DROP FUNCTION streaming_slave_check();'
 # pg_dump --encoding=SQL_ASCII --oids --clean stagecraft -f '/tmp/stagecraft.utf8.sql'
 # psql -c 'drop database stagecraft;'
