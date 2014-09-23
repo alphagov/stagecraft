@@ -8,6 +8,7 @@ psql -c 'CREATE SCHEMA public;' stagecraft
 psql -c 'ALTER SCHEMA public OWNER TO stagecraft;' stagecraft
 psql -f '$1' stagecraft
 psql -c "ALTER USER stagecraft WITH PASSWORD 'securem8'"
+psql -c "ALTER USER stagecraft WITH CREATEDB"
 EOF
 # psql -c 'DROP FUNCTION streaming_slave_check();'
 # pg_dump --encoding=SQL_ASCII --oids --clean stagecraft -f '/tmp/stagecraft.utf8.sql'
