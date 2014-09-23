@@ -13,8 +13,11 @@ SPOTLIGHT_CONFIG_JSON_DEFAULT = (
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger(__name__)
+    # force django to bootstrap logging so we can override it
+    env = settings.ENV_HOSTNAME
+    logger = logging.getLogger('')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
 
     parser = argparse.ArgumentParser()
     parser.add_argument(

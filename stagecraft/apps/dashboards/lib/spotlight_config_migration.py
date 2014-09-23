@@ -21,7 +21,6 @@ class Dashboard():
         self.url = url
         self.type_id_map = {}
         self.stagecraft_client = StagecraftClient(url, token)
-        self.logger = logging.getLogger(__name__)
 
     def set_data(self, **kwargs):
         self.data = kwargs
@@ -63,12 +62,12 @@ class Dashboard():
                     post_data['parent_id'] = parent_id
                 post_resp = self.stagecraft_client.create_organisation(
                     post_data)
-                self.logger.debug(
+                logger.debug(
                     'response from creating org type {} - {}'.format(
                         organisation_type, post_resp.json()))
                 org_id = post_resp.json()['id']
             elif len(resp.json()) > 1:
-                self.logger.warning(
+                logger.warning(
                     'multiple organisations found for dashboard{}'.format(
                         self.data['slug']
                     ))
