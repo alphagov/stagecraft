@@ -1,7 +1,9 @@
 import json
 import logging
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.http import (HttpResponse,
                          HttpResponseBadRequest,
@@ -82,6 +84,27 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
                 '/'.join(slug_parts), count=count - 1)
 
     return dashboard
+
+
+@csrf_exempt
+@require_http_methods(['GET'])
+@permission_required('dashboard')
+def list_dashboards(user, request):
+    parsed_dashboards = []
+
+    for item in Dashboard.objects.all():
+        parsed_dashboards.append({
+            'id': item.id,
+            'title': item.title,
+            'url': '{0}{1}'.format(
+                settings.APP_ROOT,
+                reverse('dashboard', kwargs={'dashboard_id': item.id})),
+            'public-url': '{0}/performance/{1}'.format(
+                settings.GOVUK_ROOT, item.slug),
+            'published': item.published
+        })
+
+    return HttpResponse(to_json({'dashboards': parsed_dashboards}))
 
 
 @csrf_exempt

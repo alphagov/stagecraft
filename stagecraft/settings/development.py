@@ -24,6 +24,9 @@ TEMPLATE_DEBUG = True
 APP_HOSTNAME = 'stagecraft.development.performance.service.gov.uk'
 ENV_HOSTNAME = '.development.performance.service.gov.uk'
 
+APP_ROOT = 'http://{0}'.format(APP_HOSTNAME)
+GOVUK_ROOT = 'http://spotlight.development.performance.service.gov.uk'
+
 SIGNON_URL = 'http://signon.dev.gov.uk'
 USE_DEVELOPMENT_USERS = True
 DEVELOPMENT_USERS = {

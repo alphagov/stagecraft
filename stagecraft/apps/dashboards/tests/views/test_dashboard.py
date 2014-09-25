@@ -4,7 +4,7 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_, none, has_property,
-    contains, has_entry, has_entries
+    contains, has_entry, has_entries, has_key, starts_with
 )
 from django_nose.tools import assert_redirects
 from mock import patch
@@ -22,6 +22,27 @@ from stagecraft.libs.views.utils import JsonEncoder
 
 
 class DashboardViewsListTestCase(TestCase):
+
+    def test_list_dashboards_lists_dashboards(self):
+        DashboardFactory(slug='dashboard', title='Dashboard', published=True)
+        resp = self.client.get(
+            '/dashboards',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        response_object = json.loads(resp.content)['dashboards']
+
+        public_url = ('http://spotlight.development.performance.service'
+                      '.gov.uk/performance/dashboard')
+        internal_url = ('http://stagecraft.development.performance.service'
+                        '.gov.uk/dashboard/')
+        base_expectation = {
+            'title': 'Dashboard',
+            'public-url': public_url,
+            'published': True,
+        }
+
+        assert_that(response_object[0], has_entries(base_expectation))
+        assert_that(response_object[0], has_key('id'))
+        assert_that(response_object[0]['url'], starts_with(internal_url))
 
     @patch(
         "stagecraft.apps.dashboards.models."
