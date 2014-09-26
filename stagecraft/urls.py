@@ -58,8 +58,8 @@ urlpatterns = patterns(
         permanent=True,
         query_string=True)),
     url(r'^module-type$', module_views.root_types),
-    url(r'^dashboard/(?P<dashboard_id>{})/module$'.format(uuid_regexp),
+    url(r'^dashboard/(?P<slug>[-a-z0-9]+)/module$',
         module_views.modules_on_dashboard),
-    url(r'^dashboard/(?P<dashboard_id>{})$'.format(uuid_regexp),
+    url(r'^dashboard/(?P<slug>[-a-z0-9]+)$',
         dashboard_views.dashboard, name='dashboard'),
 )
