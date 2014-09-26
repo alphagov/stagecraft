@@ -98,7 +98,7 @@ def list_dashboards(user, request):
             'title': item.title,
             'url': '{0}{1}'.format(
                 settings.APP_ROOT,
-                reverse('dashboard', kwargs={'dashboard_id': item.id})),
+                reverse('dashboard', kwargs={'slug': item.slug})),
             'public-url': '{0}/performance/{1}'.format(
                 settings.GOVUK_ROOT, item.slug),
             'published': item.published
@@ -110,8 +110,8 @@ def list_dashboards(user, request):
 @csrf_exempt
 @require_http_methods(['GET'])
 @permission_required('dashboard')
-def get_dashboard(user, request, dashboard_id=None):
-    dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+def get_dashboard(user, request, slug=None):
+    dashboard = get_object_or_404(Dashboard, slug=slug)
 
     return HttpResponse(
         to_json(dashboard.serialize()),
@@ -124,18 +124,18 @@ def get_dashboard(user, request, dashboard_id=None):
 @permission_required('dashboard')
 @never_cache
 @atomic_view
-def dashboard(user, request, dashboard_id=None):
+def dashboard(user, request, slug=None):
 
     if request.method == 'GET':
-        return get_dashboard(request, dashboard_id)
+        return get_dashboard(request, slug)
 
     data = json.loads(request.body)
 
-    # create a dashboard if we don't already have a dashboard ID
-    if dashboard_id is None and request.method == 'POST':
+    # create a dashboard if we don't already have a dashboard slug
+    if slug is None and request.method == 'POST':
         dashboard = Dashboard()
     else:
-        dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+        dashboard = get_object_or_404(Dashboard, slug=slug)
 
     if data.get('organisation'):
         if not is_uuid(data['organisation']):

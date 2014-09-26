@@ -266,7 +266,7 @@ class DashboardViewsGetTestCase(TestCase):
         dashboard = DashboardFactory()
 
         resp = self.client.get(
-            '/dashboard/{}'.format(dashboard.id),
+            '/dashboard/{}'.format(dashboard.slug),
             HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, equal_to(200))
@@ -306,7 +306,7 @@ class DashboardViewsUpdateTestCase(TestCase):
         dashboard_data['title'] = 'foo'
 
         resp = self.client.put(
-            '/dashboard/{}'.format(dashboard.id),
+            '/dashboard/{}'.format(dashboard.slug),
             json.dumps(dashboard_data, cls=JsonEncoder),
             content_type="application/json",
             HTTP_AUTHORIZATION='Bearer correct-token')
