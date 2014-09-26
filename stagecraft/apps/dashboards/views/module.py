@@ -58,17 +58,24 @@ def add_module_to_dashboard(dashboard, module_settings):
     except ModuleType.DoesNotExist:
         raise ValueError('module type was not found')
 
-    module = Module(
-        dashboard=dashboard,
-        type=module_type,
+    if 'id' in module_settings:
+        try:
+            module = Module.objects.get(id=module_settings['id'])
+        except Module.DoesNotExist as e:
+            raise ValueError('module with id {} not found'.format(
+                module_data['id']))
+    else:
+        module = Module(
+        )
 
-        slug=module_settings['slug'],
-        title=module_settings['title'],
-        description=module_settings['description'],
-        info=module_settings['info'],
-        options=module_settings['options'],
-        order=module_settings['order'],
-    )
+    module.dashboard = dashboard
+    module.type = module_type
+    module.slug = module_settings['slug']
+    module.title = module_settings['title']
+    module.description = module_settings['description']
+    module.info = module_settings['info']
+    module.options = module_settings['options']
+    module.order = module_settings['order']
 
     try:
         module.validate_options()

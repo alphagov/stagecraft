@@ -16,7 +16,7 @@ jsonschema==2.3.0
 psycopg2==2.5.2
 
 # For performing data operations that require speaking to backdrop
-performanceplatform-client==0.0.8
+performanceplatform-client==0.2.4
 
 # For writing stats out about our code
 statsd==3.0.1

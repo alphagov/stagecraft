@@ -4,21 +4,25 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_, none, has_property,
-    contains, has_entry, has_entries, has_key, starts_with
+    contains, has_entry, has_entries, has_key, starts_with, has_length
 )
 from django_nose.tools import assert_redirects
 from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
-    DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory)
+    DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory,
+    DataGroupFactory, DataTypeFactory, DataSetFactory
+)
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
+from stagecraft.apps.dashboards.models.module import Module
 from stagecraft.apps.dashboards.views.dashboard import(
     recursively_fetch_dashboard)
 from stagecraft.libs.authorization.tests.test_http import (
     with_govuk_signon)
 from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.utils import JsonEncoder
+from nose.tools import nottest
 
 
 class DashboardViewsListTestCase(TestCase):
@@ -337,6 +341,110 @@ class DashboardViewsUpdateTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_updating_module_attributes(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        module = ModuleFactory(
+            dashboard=dashboard,
+            title='module-title',
+            data_set=DataSetFactory()
+        )
+        new_data_set = DataSetFactory(
+            data_group__name='new-group-title',
+            data_type__name='new-type-title'
+        )
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'][0]['title'] = 'new module title'
+        dashboard_data['modules'][0]['data_group'] = 'new-group-title'
+        dashboard_data['modules'][0]['data_type'] = 'new-type-title'
+        dashboard_data['modules'][0]['order'] = 1
+        dashboard_data['modules'][0]['type_id'] = module.type_id
+        dashboard_data['modules'][0]['query_parameters'] = {
+            'sort_by': 'thing:desc',
+        }
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        module_from_db = Module.objects.get(id=module.id)
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            module_from_db.title,
+            equal_to('new module title')
+        )
+        assert_that(
+            module_from_db.data_set_id,
+            equal_to(new_data_set.id)
+        )
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_updating_module_with_nonexistent_dataset(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        module = ModuleFactory(
+            dashboard=dashboard,
+            title='module-title',
+        )
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'][0]['title'] = 'new module title'
+        dashboard_data['modules'][0]['data_group'] = 'non-existent-group'
+        dashboard_data['modules'][0]['data_type'] = 'non-existent-type'
+        dashboard_data['modules'][0]['order'] = 1
+        dashboard_data['modules'][0]['type_id'] = module.type_id
+        dashboard_data['modules'][0]['query_parameters'] = {
+            'sort_by': 'thing:desc',
+        }
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_update_non_existent_module_doesnt_work(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'] = [
+            {
+                'id': '623b6e9c-507f-4c5c-8937-7ea81a349cfa',
+                'title': 'non-existent-title'
+            }
+        ]
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+
+    @nottest
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_removing_module(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        module = ModuleFactory(
+            title='module to remove', dashboard=dashboard)
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'] = [
+        ]
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(json.loads(
+            resp.content), has_entry('modules', has_length(0)))
+        assert_that(Module.objects.get(id=module.id), has_length(0))
 
 
 class DashboardViewsCreateTestCase(TestCase):

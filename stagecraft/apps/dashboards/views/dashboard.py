@@ -20,6 +20,7 @@ from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.transaction import atomic_view
 from .module import add_module_to_dashboard
+from ..models.module import Module
 
 logger = logging.getLogger(__name__)
 
@@ -220,20 +221,17 @@ def dashboard(user, request, slug=None):
 
     if 'modules' in data:
         for i, module_data in enumerate(data['modules'], start=1):
-            if 'id' in module_data:
-                raise NotImplemented("Not yet implemented updates")
-            else:
-                try:
-                    add_module_to_dashboard(dashboard, module_data)
-                except ValueError as e:
-                    error = {
-                        'status': 'error',
-                        'message': 'Failed to create module {}: {}'.format(
-                            i, e.message),
-                        'errors': [create_error(request, 400,
-                                                detail=e.message)]
-                    }
-                    return HttpResponse(to_json(error), status=400)
+            try:
+                add_module_to_dashboard(dashboard, module_data)
+            except ValueError as e:
+                error = {
+                    'status': 'error',
+                    'message': 'Failed to create module {}: {}'.format(
+                        i, e.message),
+                    'errors': [create_error(request, 400,
+                                            detail=e.message)]
+                }
+                return HttpResponse(to_json(error), status=400)
 
     return HttpResponse(to_json(dashboard.serialize()),
                         content_type='application/json')
