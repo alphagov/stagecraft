@@ -24,6 +24,7 @@ from .module import add_module_to_dashboard
 logger = logging.getLogger(__name__)
 
 
+# Spotlight stuff
 def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
     if not dashboard_slug:
@@ -86,6 +87,7 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
     return dashboard
 
 
+# Admin app stuff
 @csrf_exempt
 @require_http_methods(['GET'])
 @permission_required('dashboard')
@@ -120,22 +122,61 @@ def get_dashboard(user, request, dashboard_id=None):
 
 
 @csrf_exempt
+@require_http_methods(['PUT'])
+@permission_required('dashboard')
+@never_cache
+@atomic_view
+def update_dashboard(user, request, dashboard_id=None):
+    dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+    return update_or_setup_dashboard_and_respond(request, dashboard)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+@permission_required('dashboard')
+@never_cache
+@atomic_view
+def create_dashboard(user, request):
+    dashboard = Dashboard()
+    return update_or_setup_dashboard_and_respond(request, dashboard)
+
+
+@csrf_exempt
 @require_http_methods(['POST', 'PUT', 'GET'])
 @permission_required('dashboard')
 @never_cache
 @atomic_view
 def dashboard(user, request, dashboard_id=None):
-
     if request.method == 'GET':
         return get_dashboard(request, dashboard_id)
+    if request.method == 'POST':
+        return create_dashboard(request)
+    if request.method == 'PUT':
+        return update_dashboard(request, dashboard_id)
 
+
+def update_or_setup_dashboard_and_respond(request, dashboard):
+    dashboard, response = set_dashboard_fields_or_error_response(
+        request, dashboard)
+    if response:
+        return response
+    dashboard, response = validate_dashboard_or_error_response(dashboard)
+    if response:
+        return response
+    dashboard, response = save_dashboard_or_error_response(dashboard)
+    if response:
+        return response
+    dashboard = add_dashboard_links(request, dashboard)
+    dashboard, response = set_dashboard_modules_or_error_response(
+        request, dashboard)
+    if response:
+        return response
+    return HttpResponse(to_json(dashboard.serialize()),
+                        content_type='application/json')
+
+
+def set_dashboard_fields_or_error_response(request, dashboard):
     data = json.loads(request.body)
-
-    # create a dashboard if we don't already have a dashboard ID
-    if dashboard_id is None and request.method == 'POST':
-        dashboard = Dashboard()
-    else:
-        dashboard = get_object_or_404(Dashboard, id=dashboard_id)
 
     if data.get('organisation'):
         if not is_uuid(data['organisation']):
@@ -143,7 +184,7 @@ def dashboard(user, request, dashboard_id=None):
                 'status': 'error',
                 'message': 'Organisation must be a valid UUID',
             }
-            return HttpResponseBadRequest(to_json(error))
+            return dashboard, HttpResponseBadRequest(to_json(error))
 
         try:
             organisation = Node.objects.get(id=data['organisation'])
@@ -153,12 +194,15 @@ def dashboard(user, request, dashboard_id=None):
                 'status': 'error',
                 'message': 'Organisation does not exist',
             }
-            return HttpResponseBadRequest(to_json(error))
+            return dashboard, HttpResponseBadRequest(to_json(error))
 
     for key, value in data.iteritems():
         if key not in ['organisation', 'links']:
             setattr(dashboard, key.replace('-', '_'), value)
+    return dashboard, None
 
+
+def validate_dashboard_or_error_response(dashboard):
     try:
         dashboard.full_clean()
     except ValidationError as error_details:
@@ -170,8 +214,11 @@ def dashboard(user, request, dashboard_id=None):
             'status': 'error',
             'message': formatted_errors,
         }
-        return HttpResponseBadRequest(to_json(error))
+        return dashboard, HttpResponseBadRequest(to_json(error))
+    return dashboard, None
 
+
+def save_dashboard_or_error_response(dashboard):
     try:
         dashboard.save()
     except IntegrityError as e:
@@ -179,13 +226,21 @@ def dashboard(user, request, dashboard_id=None):
             'status': 'error',
             'message': '{0}'.format(e.message),
         }
-        return HttpResponseBadRequest(to_json(error))
+        return dashboard, HttpResponseBadRequest(to_json(error))
+    return dashboard, None
 
+
+def add_dashboard_links(request, dashboard):
+    data = json.loads(request.body)
     if 'links' in data:
         for link_data in data['links']:
             dashboard.link_set.create(link_type=link_data.pop('type'),
                                       **link_data)
+    return dashboard
 
+
+def set_dashboard_modules_or_error_response(request, dashboard):
+    data = json.loads(request.body)
     if 'modules' in data:
         for i, module_data in enumerate(data['modules'], start=1):
             if 'id' in module_data:
@@ -199,7 +254,5 @@ def dashboard(user, request, dashboard_id=None):
                         'message': 'Failed to create module {}: {}'.format(
                             i, e.message),
                     }
-                    return HttpResponse(to_json(error), status=400)
-
-    return HttpResponse(to_json(dashboard.serialize()),
-                        content_type='application/json')
+                    return dashboard, HttpResponse(to_json(error), status=400)
+    return dashboard, None
