@@ -96,7 +96,7 @@ class Dashboard():
         modules = self.data['modules']
         del(self.data['modules'])
         dashboard_response = self.stagecraft_client.create_dashboard(self.data)
-        self.create_modules(dashboard_response.json()['id'], modules)
+        self.create_modules(dashboard_response.json()['slug'], modules)
 
     def create_links(self):
         if 'relatedPages' in self.data:
