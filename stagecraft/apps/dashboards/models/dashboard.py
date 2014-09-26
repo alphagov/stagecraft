@@ -256,7 +256,8 @@ class Link(models.Model):
     def serialize(self):
         return {
             'title': self.title,
-            'url': self.url,
+            'type': self.link_type,
+            'url': self.url
         }
 
     class Meta:
