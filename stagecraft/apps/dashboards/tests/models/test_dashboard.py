@@ -195,6 +195,7 @@ class DashboardTestCase(TransactionTestCase):
 
         expected_link = {
             'url': u'https://www.gov.uk/link-1',
+            'type': u'transaction',
             'title': u'Link title'
         }
 
