@@ -100,7 +100,16 @@ class DashboardViewsListTestCase(TestCase):
         assert_that(json.loads(resp.content), equal_to(
             {
                 u'status': u'error',
-                u'message': u"No dashboard with slug 'my_first_slug' exists"}))
+                u'message': u"No dashboard with slug 'my_first_slug' exists",
+                u'errors': [{
+                    u'status': u'404',
+                    u'title': u'',
+                    u'code': u'',
+                    u'detail': u"No dashboard with slug " +
+                               u"'my_first_slug' exists",
+                    u'id': u''},
+                ]
+            }))
         assert_that(resp.status_code, equal_to(404))
 
     def test_recursively_fetch_dashboard_recurses_down_the_slug_fragments(

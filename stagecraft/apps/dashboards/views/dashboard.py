@@ -24,12 +24,34 @@ from .module import add_module_to_dashboard
 logger = logging.getLogger(__name__)
 
 
+def create_error(request, status, code='', title='', detail=''):
+    """creates a JSON API error - http://jsonapi.org/format/#errors
+
+    "status" - The HTTP status code applicable to this problem,
+               expressed as a string value.
+    "code" - An application-specific error code, expressed as a
+             string value.
+    "title" - A short, human-readable summary of the problem. It
+              SHOULD NOT change from occurrence to occurrence of
+              the problem, except for purposes of localization.
+    "detail" - A human-readable explanation specific to this
+               occurrence of the problem.
+    """
+    return {
+        'id': request.META.get('HTTP_REQUEST_ID', ''),
+        'status': str(status),
+        'code': code,
+        'title': title,
+        'detail': detail,
+    }
+
+
 def dashboards_for_spotlight(request):
     dashboard_slug = request.GET.get('slug')
     if not dashboard_slug:
         return dashboard_list_for_spotlight()
     else:
-        return single_dashboard_for_spotlight(dashboard_slug)
+        return single_dashboard_for_spotlight(request, dashboard_slug)
 
 
 def dashboard_list_for_spotlight():
@@ -40,13 +62,13 @@ def dashboard_list_for_spotlight():
     return response
 
 
-def single_dashboard_for_spotlight(dashboard_slug):
+def single_dashboard_for_spotlight(request, dashboard_slug):
     dashboard = recursively_fetch_dashboard(dashboard_slug)
     if not dashboard:
-        return error_response(dashboard_slug)
+        return error_response(request, dashboard_slug)
     dashboard_json = dashboard.spotlightify(dashboard_slug)
     if not dashboard_json:
-        return error_response(dashboard_slug)
+        return error_response(request, dashboard_slug)
     json_str = to_json(dashboard_json)
 
     response = HttpResponse(json_str, content_type='application/json')
@@ -59,13 +81,14 @@ def single_dashboard_for_spotlight(dashboard_slug):
     return response
 
 
-def error_response(dashboard_slug):
+def error_response(request, dashboard_slug):
     error = {
         'status': 'error',
         'message': "No dashboard with slug '{}' exists".format(
             dashboard_slug)
     }
     logger.warn(error)
+    error["errors"] = [create_error(request, 404, detail=error['message'])]
     return HttpResponseNotFound(to_json(error),
                                 content_type='application/json')
 
@@ -142,6 +165,8 @@ def dashboard(user, request, slug=None):
             error = {
                 'status': 'error',
                 'message': 'Organisation must be a valid UUID',
+                'errors': [create_error(request, 400,
+                           detail='Organisation must be a valid UUID')],
             }
             return HttpResponseBadRequest(to_json(error))
 
@@ -152,6 +177,8 @@ def dashboard(user, request, slug=None):
             error = {
                 'status': 'error',
                 'message': 'Organisation does not exist',
+                'errors': [create_error(request, 404,
+                           detail='Organisation does not exist')]
             }
             return HttpResponseBadRequest(to_json(error))
 
@@ -169,6 +196,9 @@ def dashboard(user, request, slug=None):
         error = {
             'status': 'error',
             'message': formatted_errors,
+            'errors': [create_error(request, 400, title='validation error',
+                                    detail=e)
+                       for e in error_list]
         }
         return HttpResponseBadRequest(to_json(error))
 
@@ -178,6 +208,8 @@ def dashboard(user, request, slug=None):
         error = {
             'status': 'error',
             'message': '{0}'.format(e.message),
+            'errors': [create_error(request, 400, title='integrity error',
+                                    detail=e.message)]
         }
         return HttpResponseBadRequest(to_json(error))
 
@@ -198,6 +230,8 @@ def dashboard(user, request, slug=None):
                         'status': 'error',
                         'message': 'Failed to create module {}: {}'.format(
                             i, e.message),
+                        'errors': [create_error(request, 400,
+                                                detail=e.message)]
                     }
                     return HttpResponse(to_json(error), status=400)
 
