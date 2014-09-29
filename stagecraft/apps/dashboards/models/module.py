@@ -118,9 +118,8 @@ class Module(models.Model):
         }
 
         if self.data_set is not None:
-            out['data_set'] = {
-                'id': self.data_set.id,
-            }
+            out['data_group'] = self.data_set.data_group.name
+            out['data_type'] = self.data_set.data_type.name
         else:
             out['data_set'] = None
 
