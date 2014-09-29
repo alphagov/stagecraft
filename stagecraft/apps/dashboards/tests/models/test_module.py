@@ -174,8 +174,13 @@ class ModuleTestCase(TestCase):
             serialization['query_parameters'],
             has_entry('foo', 'bar'))
         assert_that(
-            serialization['data_set']['id'],
-            equal_to(self.data_set.id))
+            serialization, has_entry(
+                'data_group',
+                equal_to(self.data_set.data_group.name)))
+        assert_that(
+            serialization, has_entry(
+                'data_type',
+                equal_to(self.data_set.data_type.name)))
 
         module.delete()
 
@@ -199,8 +204,14 @@ class ModuleTestCase(TestCase):
 
         assert_that(serialization['query_parameters'], equal_to(None))
         assert_that(
-            serialization['data_set']['id'],
-            equal_to(self.data_set.id))
+            serialization,
+            has_entry(
+                'data_group', equal_to(self.data_set.data_group.name)))
+
+        assert_that(
+            serialization,
+            has_entry(
+                'data_type', equal_to(self.data_set.data_type.name)))
 
         module.delete()
 
