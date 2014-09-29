@@ -147,6 +147,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['logfile', 'json_log'],
+            'level': 'INFO',
+            'propagate': True,  # also handle in parent handler
+        },
         'django.request': {
             'handlers': ['console', 'logfile', 'json_log'],
             'level': 'INFO',
