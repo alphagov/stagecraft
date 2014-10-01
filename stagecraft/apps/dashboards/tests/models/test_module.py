@@ -32,7 +32,7 @@ class ModuleTypeTestCase(TestCase):
     def test_schema_validation(self):
         module_type = ModuleType(
             name='foo',
-            schema={"type": "some made up type"}
+            schema={'properties': 'true'}
         )
         assert_that(
             calling(module_type.validate_schema),

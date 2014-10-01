@@ -1,5 +1,6 @@
 import copy
 import jsonschema
+from jsonschema import Draft3Validator
 
 from django.core.validators import RegexValidator
 from django.db import models
@@ -35,8 +36,9 @@ class ModuleType(models.Model):
     class Meta:
         app_label = 'dashboards'
 
+    #should run on normal validate
     def validate_schema(self):
-        validator_for(self.schema).check_schema(self.schema)
+        validator_for(self.schema, Draft3Validator).check_schema(self.schema)
         return True
 
     def serialize(self):
@@ -73,10 +75,12 @@ class Module(models.Model):
 
     order = models.IntegerField()
 
+    #should run on normal validate
     def validate_options(self):
         jsonschema.validate(self.options, self.type.schema)
         return True
 
+    #should run on normal validate
     def validate_query_parameters(self):
         jsonschema.validate(self.query_parameters, query_param_schema)
         return True
