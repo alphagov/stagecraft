@@ -11,7 +11,7 @@ from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory,
-    DataGroupFactory, DataTypeFactory, DataSetFactory
+    DataGroupFactory, DataTypeFactory, DataSetFactory, LinkFactory
 )
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
@@ -445,6 +445,26 @@ class DashboardViewsUpdateTestCase(TestCase):
         assert_that(json.loads(
             resp.content), has_entry('modules', has_length(0)))
         assert_that(Module.objects.get(id=module.id), has_length(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_update_existing_link(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        link = LinkFactory(dashboard=dashboard)
+        dashboard_data = dashboard.serialize()
+        dashboard_data['links'][0]['url'] = 'https://gov.uk/new-link'
+        dashboard_data['links'][0]['title'] = 'new link title'
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        transaction_links = dashboard.link_set.filter(link_type='transaction')
+        assert_that(transaction_links, has_length(1))
+        link = transaction_links[0]
+        assert_that(link.title, equal_to('new link title'))
+        assert_that(link.url, equal_to('https://gov.uk/new-link'))
 
 
 class DashboardViewsCreateTestCase(TestCase):
