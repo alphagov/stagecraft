@@ -191,11 +191,11 @@ class DashboardTestCase(TransactionTestCase):
         assert_that(data['published'], is_(True))
 
     def test_serialize_serializes_dashboard_links(self):
-        LinkFactory(dashboard=self.dashboard)
+        LinkFactory(dashboard=self.dashboard, url='https://www.gov.uk/url')
         data = self.dashboard.serialize()
 
         expected_link = {
-            'url': u'https://www.gov.uk/link-1',
+            'url': u'https://www.gov.uk/url',
             'type': u'transaction',
             'title': u'Link title'
         }
