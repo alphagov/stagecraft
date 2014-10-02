@@ -216,8 +216,15 @@ def dashboard(user, request, dashboard_id=None):
 
     if 'links' in data:
         for link_data in data['links']:
-            dashboard.link_set.create(link_type=link_data.pop('type'),
-                                      **link_data)
+            if link_data['type'] == 'transaction':
+                link, _ = dashboard.link_set.get_or_create(
+                    link_type='transaction')
+                link.url = link_data['url']
+                link.title = link_data['title']
+                link.save()
+            else:
+                dashboard.link_set.create(link_type=link_data.pop('type'),
+                                          **link_data)
 
     if 'modules' in data:
         for i, module_data in enumerate(data['modules'], start=1):
