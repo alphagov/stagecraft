@@ -157,6 +157,24 @@ class ModuleViewsTestCase(TestCase):
 
         assert_that(resp.status_code, is_(equal_to(400)))
 
+    def test_add_a_module_with_empty_type(self):
+        resp = self.client.post(
+            '/dashboard/{}/module'.format(self.dashboard.id),
+            data=json.dumps({
+                'slug': 'a-module',
+                'title': 'Some module',
+                'type_id': '',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {
+                    'thing': 'a value',
+                },
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(400)))
+
     def test_add_a_module_to_a_non_existant_dashboard(self):
         resp = self.client.post(
             '/dashboard/391213f0-336f-11e4-8c21-0800200c9a66/module',
