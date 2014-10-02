@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from jsonschema.exceptions import SchemaError, ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.views.decorators.cache import never_cache
+from django.db import DataError
 
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.authorization.http import permission_required
@@ -55,7 +56,7 @@ def add_module_to_dashboard(dashboard, module_settings):
 
     try:
         module_type = ModuleType.objects.get(id=module_settings['type_id'])
-    except ModuleType.DoesNotExist:
+    except(ModuleType.DoesNotExist, DataError):
         raise ValueError('module type was not found')
 
     if module_settings.get('id'):
