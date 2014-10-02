@@ -27,9 +27,9 @@ required_keys = set(['type_id', 'slug', 'title', 'description', 'info',
 
 @csrf_exempt
 @never_cache
-def modules_on_dashboard(request, dashboard_id):
+def modules_on_dashboard(request, slug):
     try:
-        dashboard = Dashboard.objects.get(id=dashboard_id)
+        dashboard = Dashboard.objects.get(slug=slug)
     except Dashboard.DoesNotExist:
         return HttpResponse('dashboard does not exist', status=404)
 

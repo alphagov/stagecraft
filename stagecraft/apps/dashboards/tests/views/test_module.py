@@ -40,7 +40,7 @@ class ModuleViewsTestCase(TestCase):
         cls.dashboard = Dashboard.objects.create(
             published=True,
             title='A service',
-            slug='some/slug',
+            slug='some-slug',
         )
 
     @classmethod
@@ -55,10 +55,10 @@ class ModuleViewsTestCase(TestCase):
 
     def test_modules_on_dashboard_only_get_post(self):
         delete_resp = self.client.delete(
-            '/dashboard/{}/module'.format(str(self.dashboard.id)),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         put_resp = self.client.put(
-            '/dashboard/{}/module'.format(str(self.dashboard.id)),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_that(delete_resp.status_code, equal_to(405))
@@ -68,7 +68,7 @@ class ModuleViewsTestCase(TestCase):
         dashboard2 = Dashboard.objects.create(
             published=True,
             title='A service',
-            slug='some/slug2',
+            slug='some-slug2',
         )
         module1 = Module.objects.create(
             type=self.module_type,
@@ -90,7 +90,7 @@ class ModuleViewsTestCase(TestCase):
             order=1)
 
         resp = self.client.get(
-            '/dashboard/{}/module'.format(self.dashboard.id))
+            '/dashboard/{}/module'.format(self.dashboard.slug))
 
         assert_that(resp.status_code, is_(equal_to(200)))
 
@@ -114,7 +114,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_to_a_dashboard(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -142,7 +142,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_no_type(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'title': 'Some module',
@@ -195,7 +195,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_a_data_set_that_doesnt_exist(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -216,7 +216,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_an_empty_data_set(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -237,7 +237,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_an_empty_data_set_and_query_parameters(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -259,7 +259,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_a_data_set(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -280,7 +280,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_a_data_set_and_a_query(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -306,7 +306,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_with_a_query_but_no_data_set(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -327,7 +327,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_to_a_dashboard_that_options_violates_schema(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -344,7 +344,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_to_a_dashboard_queryparams_violates_schema(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -367,7 +367,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_to_a_dashboard_bad_json(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data='not json',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -376,7 +376,7 @@ class ModuleViewsTestCase(TestCase):
 
     def test_add_a_module_fails_with_bad_content_type(self):
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'a-module',
                 'type_id': str(self.module_type.id),
@@ -396,7 +396,7 @@ class ModuleViewsTestCase(TestCase):
     def test_add_a_module_fails_with_invalid_slug(self):
         """Verifies that model validations are being run"""
         resp = self.client.post(
-            '/dashboard/{}/module'.format(self.dashboard.id),
+            '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
                 'slug': 'bad slug',
                 'slug': 'a module',
