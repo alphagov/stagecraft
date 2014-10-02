@@ -58,7 +58,7 @@ def add_module_to_dashboard(dashboard, module_settings):
     except ModuleType.DoesNotExist:
         raise ValueError('module type was not found')
 
-    if 'id' in module_settings:
+    if module_settings.get('id'):
         try:
             module = Module.objects.get(id=module_settings['id'])
         except Module.DoesNotExist as e:

@@ -3,12 +3,13 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_,
-    has_entry, has_item, has_key, is_not
+    has_entry, has_item, has_key, is_not, has_length
 )
 
 from stagecraft.apps.datasets.models import DataGroup, DataType, DataSet
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from ...models import Dashboard, Module, ModuleType
+from ...views.module import add_module_to_dashboard
 
 
 class ModuleViewsTestCase(TestCase):
@@ -392,6 +393,24 @@ class ModuleViewsTestCase(TestCase):
             content_type='application/json')
 
         assert_that(resp.status_code, equal_to(400))
+
+    def test_add_a_module_wih_an_empty_id(self):
+        """Verifies that model validations are being run"""
+        add_module_to_dashboard(
+            self.dashboard,
+            {
+                'id': '',
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {'thing': 'a value'},
+                'order': 1,
+            }
+        )
+        dashboard = Dashboard.objects.get(id=self.dashboard.id)
+        assert_that(dashboard.module_set.all(), has_length(1))
 
 
 class ModuleTypeViewsTestCase(TestCase):
