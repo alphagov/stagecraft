@@ -64,6 +64,57 @@ class ModuleViewsTestCase(TestCase):
         assert_that(delete_resp.status_code, equal_to(405))
         assert_that(put_resp.status_code, equal_to(405))
 
+    def test_list_modules_by_uuid_or_slug(self):
+        dashboard2 = Dashboard.objects.create(
+            published=True,
+            title='A service',
+            slug='some-slug2',
+        )
+        module1 = Module.objects.create(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        module2 = Module.objects.create(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-2',
+            options={},
+            order=2)
+
+        resp = self.client.get(
+            '/dashboard/{}/module'.format(self.dashboard.slug))
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), is_(equal_to(2)))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module1.id))))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module2.id))))
+
+        resp2 = self.client.get(
+            '/dashboard/{}/module'.format(self.dashboard.id))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), is_(equal_to(2)))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module1.id))))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(module2.id))))
+
+        module1.delete()
+        module2.delete()
+        dashboard2.delete()
+
     def test_list_modules_on_dashboard(self):
         dashboard2 = Dashboard.objects.create(
             published=True,
