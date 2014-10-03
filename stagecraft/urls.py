@@ -58,8 +58,16 @@ urlpatterns = patterns(
         permanent=True,
         query_string=True)),
     url(r'^module-type$', module_views.root_types),
-    url(r'^dashboard/(?P<dashboard_id>{})/module$'.format(uuid_regexp),
+
+    # Dashboard by UUID
+    url(r'^dashboard/(?P<identifier>{})/module$'.format(uuid_regexp),
         module_views.modules_on_dashboard),
-    url(r'^dashboard/(?P<dashboard_id>{})$'.format(uuid_regexp),
+    url(r'^dashboard/(?P<identifier>{})$'.format(uuid_regexp),
+        dashboard_views.dashboard, name='dashboard'),
+
+    # Or Slug
+    url(r'^dashboard/(?P<identifier>[-a-z0-9]+)/module$',
+        module_views.modules_on_dashboard),
+    url(r'^dashboard/(?P<identifier>[-a-z0-9]+)$',
         dashboard_views.dashboard, name='dashboard'),
 )

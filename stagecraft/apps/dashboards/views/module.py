@@ -10,6 +10,7 @@ from django.db import DataError
 
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.validation.validation import is_uuid
 
 from ..models import Dashboard, Module, ModuleType
 
@@ -27,9 +28,13 @@ required_keys = set(['type_id', 'slug', 'title', 'description', 'info',
 
 @csrf_exempt
 @never_cache
-def modules_on_dashboard(request, dashboard_id):
+def modules_on_dashboard(request, identifier):
+
     try:
-        dashboard = Dashboard.objects.get(id=dashboard_id)
+        if is_uuid(identifier):
+            dashboard = Dashboard.objects.get(id=identifier)
+        else:
+            dashboard = Dashboard.objects.get(slug=identifier)
     except Dashboard.DoesNotExist:
         return HttpResponse('dashboard does not exist', status=404)
 
