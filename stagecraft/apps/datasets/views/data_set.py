@@ -1,4 +1,4 @@
-from stagecraft.libs.views.utils import to_json, long_cache
+from stagecraft.libs.views.utils import to_json, long_cache, create_error
 from stagecraft.libs.authorization.http import permission_required
 import logging
 
@@ -29,6 +29,9 @@ def detail(user, request, name):
         error = {'status': 'error',
                  'message': "No Data Set named '{}' exists".format(name)}
         logger.warn(error)
+
+        error["errors"] = [create_error(request, 404, detail=error['message'])]
+
         return HttpResponseNotFound(to_json(error))
 
     json_str = to_json(data_set.serialize())
@@ -79,6 +82,11 @@ def list(user, request, data_group=None, data_type=None):
                  'message': 'Unrecognised parameter(s) ({}) were provided'
                             .format(str(unrecognised_text))}
         logger.error(error)
+
+        error["errors"] = [
+            create_error(request, 400, detail=error['message'])
+        ]
+
         return HttpResponseBadRequest(to_json(error))
 
     try:

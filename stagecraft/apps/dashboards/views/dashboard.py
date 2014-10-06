@@ -17,34 +17,12 @@ from stagecraft.apps.dashboards.models.dashboard import Dashboard
 from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
-from stagecraft.libs.views.utils import to_json
+from stagecraft.libs.views.utils import to_json, create_error
 from stagecraft.libs.views.transaction import atomic_view
 from .module import add_module_to_dashboard
 from ..models.module import Module
 
 logger = logging.getLogger(__name__)
-
-
-def create_error(request, status, code='', title='', detail=''):
-    """creates a JSON API error - http://jsonapi.org/format/#errors
-
-    "status" - The HTTP status code applicable to this problem,
-               expressed as a string value.
-    "code" - An application-specific error code, expressed as a
-             string value.
-    "title" - A short, human-readable summary of the problem. It
-              SHOULD NOT change from occurrence to occurrence of
-              the problem, except for purposes of localization.
-    "detail" - A human-readable explanation specific to this
-               occurrence of the problem.
-    """
-    return {
-        'id': request.META.get('HTTP_REQUEST_ID', ''),
-        'status': str(status),
-        'code': code,
-        'title': title,
-        'detail': detail,
-    }
 
 
 def dashboards_for_spotlight(request):

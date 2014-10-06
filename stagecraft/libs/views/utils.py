@@ -27,3 +27,25 @@ def long_cache(a_view):
 
 def to_json(what):
     return json.dumps(what, indent=1, cls=JsonEncoder)
+
+
+def create_error(request, status, code='', title='', detail=''):
+    """creates a JSON API error - http://jsonapi.org/format/#errors
+
+    "status" - The HTTP status code applicable to this problem,
+               expressed as a string value.
+    "code" - An application-specific error code, expressed as a
+             string value.
+    "title" - A short, human-readable summary of the problem. It
+              SHOULD NOT change from occurrence to occurrence of
+              the problem, except for purposes of localization.
+    "detail" - A human-readable explanation specific to this
+               occurrence of the problem.
+    """
+    return {
+        'id': request.META.get('HTTP_REQUEST_ID', ''),
+        'status': str(status),
+        'code': code,
+        'title': title,
+        'detail': detail,
+    }
