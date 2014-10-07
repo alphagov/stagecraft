@@ -425,7 +425,6 @@ class DashboardViewsUpdateTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(400))
 
-    @nottest
     @with_govuk_signon(permissions=['dashboard'])
     def test_removing_module(self):
         dashboard = DashboardFactory(title='test dashboard')
@@ -444,7 +443,7 @@ class DashboardViewsUpdateTestCase(TestCase):
         assert_that(resp.status_code, equal_to(200))
         assert_that(json.loads(
             resp.content), has_entry('modules', has_length(0)))
-        assert_that(Module.objects.get(id=module.id), has_length(0))
+        assert_that(Module.objects.filter(id=module.id), has_length(0))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_update_existing_link(self):

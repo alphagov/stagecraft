@@ -225,9 +225,12 @@ def dashboard(user, request, identifier=None):
                                           **link_data)
 
     if 'modules' in data:
+        module_ids = set([m.id for m in dashboard.module_set.all()])
+
         for i, module_data in enumerate(data['modules'], start=1):
             try:
-                add_module_to_dashboard(dashboard, module_data)
+                module = add_module_to_dashboard(dashboard, module_data)
+                module_ids.discard(module.id)
             except ValueError as e:
                 error = {
                     'status': 'error',
@@ -237,6 +240,8 @@ def dashboard(user, request, identifier=None):
                                             detail=e.message)]
                 }
                 return HttpResponse(to_json(error), status=400)
+
+        Module.objects.filter(id__in=module_ids).delete()
 
     return HttpResponse(to_json(dashboard.serialize()),
                         content_type='application/json')
