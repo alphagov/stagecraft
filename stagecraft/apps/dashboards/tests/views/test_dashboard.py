@@ -48,6 +48,17 @@ class DashboardViewsListTestCase(TestCase):
         assert_that(response_object[0], has_key('id'))
         assert_that(response_object[0]['url'], starts_with(internal_url))
 
+    def test_list_dashboards_list_alphabetically(self):
+        DashboardFactory(slug='dashboard-1', title='Alpha')
+        DashboardFactory(slug='dashboard-2', title='Beta')
+        resp = self.client.get(
+            '/dashboards',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        response_object = json.loads(resp.content)['dashboards']
+
+        assert_that(response_object[0]['title'], is_('Alpha'))
+        assert_that(response_object[1]['title'], is_('Beta'))
+
     @patch(
         "stagecraft.apps.dashboards.models."
         "dashboard.Dashboard.list_for_spotlight")
