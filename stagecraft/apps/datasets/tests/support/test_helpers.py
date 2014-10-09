@@ -54,10 +54,15 @@ class IsErrorResponse(BaseMatcher):
             data = json.loads(response.content.decode("utf-8"))
             if data.get('status') != 'error':
                 return False
-            # it should not fail with out a message
+            # it should not fail without a message
             if not data.get('message'):
                 return False
             if self.message and not data.get('message') == self.message:
+                return False
+            # it should not fail without an errors list
+            if not data.get('errors'):
+                return False
+            if not isinstance(data.get('errors'), list):
                 return False
             return True
         except ValueError:

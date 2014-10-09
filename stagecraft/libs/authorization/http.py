@@ -3,6 +3,7 @@ import requests
 
 from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
+from stagecraft.libs.views.utils import create_error
 from django.conf import settings
 from django.http import (HttpResponseForbidden, HttpResponse)
 from django_statsd.clients import statsd
@@ -56,20 +57,24 @@ def check_permission(access_token, permission_requested):
     return (user, has_permission)
 
 
-def unauthorized(message):
-    response = HttpResponse(to_json({
+def unauthorized(request, message):
+    doc = {
         'status': 'error',
-        'message': 'Unauthorizd: {}'.format(message),
-    }), status=401)
+        'message': 'Unauthorized: {}'.format(message),
+    }
+    doc["errors"] = [create_error(request, 401, detail=doc["message"])]
+    response = HttpResponse(to_json(doc), status=401)
     response['WWW-Authenticate'] = 'Bearer'
     return response
 
 
-def forbidden(message):
-    return HttpResponseForbidden(to_json({
+def forbidden(request, message):
+    doc = {
         'status': 'error',
-        'message': 'Forbidden: {}'.format(message)
-    }))
+        'message': 'Forbidden: {}'.format(message),
+    }
+    doc["errors"] = [create_error(request, 403, detail=doc["message"])]
+    return HttpResponseForbidden(to_json(doc))
 
 
 def permission_required(permission):
@@ -78,14 +83,14 @@ def permission_required(permission):
 
             access_token = extract_bearer_token(request)
             if access_token is None:
-                return unauthorized('no access token given.')
+                return unauthorized(request, 'no access token given.')
 
             (user, has_permission) = check_permission(access_token, permission)
 
             if user is None:
-                return unauthorized('invalid access token.')
+                return unauthorized(request, 'invalid access token.')
             elif not has_permission:
-                return forbidden('user lacks permission.')
+                return forbidden(request, 'user lacks permission.')
             else:
                 return a_view(user, request, *args, **kwargs)
         return _wrapped_view
