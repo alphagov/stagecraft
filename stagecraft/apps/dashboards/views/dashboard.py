@@ -94,7 +94,7 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
 def list_dashboards(user, request):
     parsed_dashboards = []
 
-    for item in Dashboard.objects.all():
+    for item in Dashboard.objects.all().order_by('title'):
         parsed_dashboards.append({
             'id': item.id,
             'title': item.title,
