@@ -31,9 +31,10 @@ class ModuleViewsTestCase(TestCase):
                 'properties': {
                     'thing': {
                         'type': 'string',
-                    },
+                        'required': True
+                    }
                 },
-                'required': ['thing'],
+                '$schema': "http://json-schema.org/draft-03/schema#"
             }
         )
 
@@ -596,7 +597,7 @@ class ModuleTypeViewsTestCase(TestCase):
             '/module-type',
             data=json.dumps({
                 'name': 'a-type',
-                'schema': {'type': 'some wrong type'},
+                'schema': {'properties': 'true'},
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
