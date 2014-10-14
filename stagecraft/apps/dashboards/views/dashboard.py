@@ -9,7 +9,7 @@ from django.http import (HttpResponse,
                          HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.shortcuts import get_object_or_404
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -88,6 +88,7 @@ def recursively_fetch_dashboard(dashboard_slug, count=3):
     return dashboard
 
 
+@cache_control(max_age=60)
 @csrf_exempt
 @require_http_methods(['GET'])
 @permission_required('dashboard')
