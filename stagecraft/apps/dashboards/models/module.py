@@ -176,7 +176,7 @@ query_param_schema = {
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": ":(sum|mean|set)$"
+                "pattern": ":(sum|mean|set|count)$"
             }
         },
         "filter_by": {
