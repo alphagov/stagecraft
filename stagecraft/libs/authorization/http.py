@@ -32,7 +32,8 @@ def _get_user(access_token):
 @statsd.timer('get_user.signon')
 def _get_user_from_signon(access_token):
     response = requests.get(
-        '{0}/user.json'.format(settings.SIGNON_URL),
+        '{0}/user.json?client_id={1}'.format(
+            settings.SIGNON_URL, settings.SIGNON_CLIENT_ID),
         headers={'Authorization': 'Bearer {0}'.format(access_token)}
     )
     if response.status_code == 200:
