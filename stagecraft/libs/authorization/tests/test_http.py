@@ -3,6 +3,7 @@ from functools import wraps
 
 from hamcrest import assert_that, equal_to, none
 from httmock import urlmatch, HTTMock
+from mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -78,6 +79,19 @@ class CheckPermissionTestCase(TestCase):
                 'correct-token', 'signin')
         assert_that(user['name'], equal_to('Foobar'))
         assert_that(has_permission, equal_to(True))
+
+    @patch('requests.get')
+    def test_signon_with_client_id(self, get_patch):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission(
+                'correct-token', 'signin')
+        get_patch.assert_called_with(
+            'http://signon.dev.gov.uk/user.json?client_id=clientid',
+            headers={
+                'Authorization': 'Bearer correct-token',
+            })
 
     def test_user_without_permission_from_signon_returns_none_and_false(self):
         settings.USE_DEVELOPMENT_USERS = False

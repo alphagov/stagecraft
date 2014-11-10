@@ -28,6 +28,7 @@ APP_ROOT = 'http://{0}'.format(APP_HOSTNAME)
 GOVUK_ROOT = 'http://spotlight.development.performance.service.gov.uk'
 
 SIGNON_URL = 'http://signon.dev.gov.uk'
+SIGNON_CLIENT_ID = 'clientid'
 USE_DEVELOPMENT_USERS = True
 DEVELOPMENT_USERS = {
     'development-oauth-access-token':
