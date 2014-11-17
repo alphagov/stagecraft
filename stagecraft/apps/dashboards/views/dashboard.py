@@ -240,7 +240,7 @@ def dashboard(user, request, identifier=None):
                     'errors': [create_error(request, 400,
                                             detail=e.message)]
                 }
-                return HttpResponse(to_json(error), status=400)
+                return HttpResponseBadRequest(to_json(error))
 
         Module.objects.filter(id__in=module_ids).delete()
 
