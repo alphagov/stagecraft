@@ -64,7 +64,7 @@ class Dashboard(models.Model):
     description = models.CharField(max_length=500, blank=True)
     description_extra = models.CharField(max_length=400, blank=True)
     costs = models.CharField(max_length=1500, blank=True)
-    other_notes = models.CharField(max_length=700, blank=True)
+    other_notes = models.CharField(max_length=1000, blank=True)
     customer_type = models.CharField(
         max_length=20,
         choices=list_to_tuple_pairs(customer_types),
