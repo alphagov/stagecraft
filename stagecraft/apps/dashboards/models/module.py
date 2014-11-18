@@ -54,6 +54,7 @@ class Module(models.Model):
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
     data_set = models.ForeignKey(DataSet, null=True, blank=True)
+    parent = models.ForeignKey("self", null=True, blank=True)
 
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
