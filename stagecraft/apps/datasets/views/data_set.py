@@ -39,6 +39,27 @@ def detail(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
+@permission_required('dashboard')
+@never_cache
+def dashboard(user, request, name):
+    try:
+        data_set = DataSet.objects.get(name=name)
+    except DataSet.DoesNotExist:
+        error = {'status': 'error',
+                 'message': "No Data Set named '{}' exists".format(name)}
+        logger.warn(error)
+
+        error["errors"] = [create_error(request, 404, detail=error['message'])]
+
+        return HttpResponseNotFound(to_json(error))
+
+    modules = data_set.module_set.distinct('dashboard')
+    dashboards = [m.dashboard for m in modules]
+
+    json_str = to_json([d.serialize() for d in dashboards])
+    return HttpResponse(json_str, content_type='application/json')
+
+
 @permission_required('admin')
 @long_cache
 @vary_on_headers('Authorization')

@@ -10,8 +10,13 @@ from django.conf import settings
 from django.test import TestCase
 from django_nose.tools import assert_redirects
 
+from stagecraft.apps.datasets.models.data_set import DataSet
+
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
+from stagecraft.apps.dashboards.tests.factories.factories import (
+    DashboardFactory, ModuleTypeFactory, ModuleFactory
+)
 from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
@@ -515,6 +520,38 @@ class DataSetsViewsTestCase(TestCase):
             '/data-sets/nonexistant-dataset',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 404)
+
+    def test_dashboards_by_dataset_no_dataset(self):
+        resp = self.client.get(
+            '/data-sets/nonexistant-dataset/dashboard',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 404)
+
+    def test_dashboards_by_dataset_no_dashboards(self):
+        resp = self.client.get(
+            '/data-sets/set1/dashboard',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(resp.status_code, 200)
+        assert_equal(json.loads(resp.content.decode('utf-8')), [])
+
+    def test_dashboards_by_dataset_some_dashboards(self):
+        data_set = DataSet.objects.get(name='set1')
+        dashboard = DashboardFactory()
+        module_type = ModuleTypeFactory()
+        module = ModuleFactory(
+            type=module_type,
+            dashboard=dashboard,
+            data_set=data_set)
+
+        resp = self.client.get(
+            '/data-sets/set1/dashboard',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+
+        assert_equal(resp.status_code, 200)
+
+        json_resp = json.loads(resp.content.decode('utf-8'))
+        assert_equal(len(json_resp), 1)
+        assert_equal(json_resp[0]['id'], str(dashboard.id))
 
 
 class HealthCheckTestCase(TestCase):
