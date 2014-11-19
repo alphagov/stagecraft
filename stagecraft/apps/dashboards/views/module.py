@@ -22,7 +22,7 @@ def json_response(obj):
     )
 
 
-required_keys = set(['type_id', 'slug', 'title', 'description', 'info',
+REQUIRED_KEYS = set(['type_id', 'slug', 'title', 'description', 'info',
                      'options', 'order'])
 
 
@@ -54,7 +54,7 @@ def list_modules_on_dashboard(request, dashboard):
 
 
 def add_module_to_dashboard(dashboard, module_settings):
-    missing_keys = required_keys - set(module_settings.keys())
+    missing_keys = REQUIRED_KEYS - set(module_settings.keys())
     if len(missing_keys) > 0:
         raise ValueError(
             'missing keys: {}'.format(', '.join(missing_keys)))
