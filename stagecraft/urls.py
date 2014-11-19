@@ -37,6 +37,13 @@ urlpatterns = patterns(
         pattern_name='data-sets-users',
         permanent=True
         )),
+    url(r'^data-sets/(?P<name>[\w-]+)/dashboard$',
+        datasets_views.dashboard,
+        name='data-sets-dashboard'),
+    url(r'^data-sets/(?P<name>[\w-]+)/dashboard/$',
+        RedirectView.as_view(
+            pattern_name='data-sets-dashboard',
+            permanent=True)),
     url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
         backdrop_user_views.detail),
     url(r'^organisation/node$', organisation_views.root_nodes),
