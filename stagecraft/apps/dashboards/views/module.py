@@ -69,7 +69,7 @@ def add_module_to_dashboard(dashboard, module_settings):
             module = Module.objects.get(id=module_settings['id'])
         except Module.DoesNotExist as e:
             raise ValueError('module with id {} not found'.format(
-                module_data['id']))
+                module_settings['id']))
     else:
         module = Module(
         )

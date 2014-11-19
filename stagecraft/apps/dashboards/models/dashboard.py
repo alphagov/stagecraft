@@ -187,10 +187,15 @@ class Dashboard(models.Model):
         serialized['links'] = [link.serialize()
                                for link in self.link_set.all()]
 
-        serialized['modules'] = [
-            m.serialize() for m in self.module_set.all().order_by('order')]
+        serialized['modules'] = self.serialized_modules()
 
         return serialized
+
+    def serialized_modules(self):
+        serialized_modules = []
+        for module in self.module_set.filter(parent=None).order_by('order'):
+            serialized_modules.append(module.serialize())
+        return serialized_modules
 
     def update_transaction_link(self, title, url):
         transaction_link = self.get_transaction_link()

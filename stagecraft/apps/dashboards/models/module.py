@@ -145,6 +145,20 @@ class Module(models.Model):
         else:
             out['data_set'] = None
 
+        if self.parent is not None:
+            out['parent'] = {
+                'id': str(self.parent.id)
+            }
+        else:
+            out['parent'] = None
+
+        if self.module_set.exists():
+            out['modules'] = []
+            for module in self.module_set.all().order_by('order'):
+                out['modules'].append(module.serialize())
+        else:
+            out['modules'] = None
+
         return out
 
     class Meta:

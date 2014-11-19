@@ -3,7 +3,8 @@ from django.db import transaction, IntegrityError
 from django.test import TestCase, TransactionTestCase
 from jsonschema.exceptions import ValidationError, SchemaError
 from hamcrest import (
-    assert_that, equal_to, calling, raises, is_not, has_entry, has_key
+    assert_that, equal_to, calling, raises, is_not, has_entry, has_key,
+    contains
 )
 
 from stagecraft.apps.datasets.models import DataGroup, DataType, DataSet
@@ -56,7 +57,7 @@ class ModuleTestCase(TestCase):
             data_group=cls.data_group,
             data_type=cls.data_type,
         )
-        cls.module_type = ModuleType.objects.create(name='graph')
+        cls.module_type = ModuleType.objects.create(name='graph', schema={})
         cls.dashboard_a = Dashboard.objects.create(
             slug='a-dashboard',
             published=False)
@@ -214,6 +215,65 @@ class ModuleTestCase(TestCase):
                 'data_type', equal_to(self.data_set.data_type.name)))
 
         module.delete()
+
+    def test_serialize_with_no_nested_modules(self):
+        module = Module.objects.create(
+            slug='a-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=1,
+            dashboard=self.dashboard_a)
+
+        serialization = module.serialize()
+
+        assert_that(serialization['modules'], equal_to(None))
+        assert_that(serialization['parent'], equal_to(None))
+
+    def test_serialize_with_nested_modules(self):
+        parent = Module.objects.create(
+            slug='a-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=1,
+            dashboard=self.dashboard_a)
+        other_child = parent.module_set.create(
+            slug='d-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=4,
+            dashboard=self.dashboard_a)
+        child = parent.module_set.create(
+            slug='b-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=2,
+            dashboard=self.dashboard_a)
+        child_of_child = child.module_set.create(
+            slug='c-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=3,
+            dashboard=self.dashboard_a)
+
+        serialization = parent.serialize()
+
+        assert_that(
+            serialization,
+            has_entry('modules',
+                      contains(child.serialize(), other_child.serialize())))
+        assert_that(
+            serialization['modules'][0]['parent'],
+            has_entry('id', str(parent.id)))
+
+        parent.delete()
+        child.delete()
+        child_of_child.delete()
+        other_child.delete()
 
     def test_cannot_have_two_equal_slugs_on_one_dashboard(self):
         def create_module(dashboard_model):

@@ -202,18 +202,25 @@ class DashboardTestCase(TransactionTestCase):
 
         assert_that(data['links'], contains(expected_link))
 
-    def test_serialize_contains_modules(self):
+    def test_serialize_contains_nested_modules(self):
         module_type = ModuleTypeFactory()
         ModuleFactory(type=module_type, dashboard=self.dashboard,
-                      order=2, slug='slug2')
-        ModuleFactory(type=module_type, dashboard=self.dashboard,
-                      order=1, slug='slug1')
+                      order=3, slug='slug3')
+        parent = ModuleFactory(type=module_type, dashboard=self.dashboard,
+                               order=1, slug='slug1')
+        ModuleFactory(parent=parent, type=module_type, order=2, slug='slug2')
         data = self.dashboard.serialize()
 
         assert_that(data['modules'],
                     contains(
                         has_entry('slug', 'slug1'),
-                        has_entry('slug', 'slug2')))
+                        has_entry('slug', 'slug3')))
+
+        assert_that(data['modules'][0]['modules'][0],
+                    has_entry('slug', 'slug2'))
+
+        assert_that(data['modules'],
+                    is_not(has_entry('slug', 'slug2')))
 
     def test_agency_returns_none_when_no_organisation(self):
         assert_that(self.dashboard.agency(), is_(none()))
