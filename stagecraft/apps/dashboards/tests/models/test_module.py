@@ -227,38 +227,26 @@ class ModuleTestCase(TestCase):
 
         serialization = module.serialize()
 
-        assert_that(serialization['modules'], equal_to(None))
+        assert_that(serialization['modules'], equal_to([]))
         assert_that(serialization['parent'], equal_to(None))
 
     def test_serialize_with_nested_modules(self):
-        parent = Module.objects.create(
-            slug='a-module',
-            type=self.module_type,
-            options={},
-            query_parameters={},
-            order=1,
-            dashboard=self.dashboard_a)
-        other_child = parent.module_set.create(
-            slug='d-module',
-            type=self.module_type,
-            options={},
-            query_parameters={},
-            order=4,
-            dashboard=self.dashboard_a)
-        child = parent.module_set.create(
-            slug='b-module',
-            type=self.module_type,
-            options={},
-            query_parameters={},
-            order=2,
-            dashboard=self.dashboard_a)
-        child_of_child = child.module_set.create(
-            slug='c-module',
-            type=self.module_type,
-            options={},
-            query_parameters={},
-            order=3,
-            dashboard=self.dashboard_a)
+
+        def make_module(slug, order, parent=None):
+            return Module.objects.create(
+                slug=slug,
+                type=self.module_type,
+                options={},
+                query_parameters={},
+                order=order,
+                dashboard=self.dashboard_a,
+                parent=parent
+            )
+
+        parent = make_module(slug='a-module', order=1)
+        other_child = make_module(slug='d-module', order=4, parent=parent)
+        child = make_module(slug='b-module', order=2, parent=parent)
+        child_of_child = make_module(slug='c-module', order=3, parent=child)
 
         serialization = parent.serialize()
 

@@ -53,7 +53,7 @@ def list_modules_on_dashboard(request, dashboard):
     return json_response(serialized)
 
 
-def add_module_to_dashboard(dashboard, module_settings):
+def add_module_to_dashboard(dashboard, module_settings, parent_module=None):
     missing_keys = REQUIRED_KEYS - set(module_settings.keys())
     if len(missing_keys) > 0:
         raise ValueError(
@@ -82,6 +82,11 @@ def add_module_to_dashboard(dashboard, module_settings):
     module.info = module_settings['info']
     module.options = module_settings['options']
     module.order = module_settings['order']
+
+    if parent_module is not None:
+        module.parent = parent_module
+    else:
+        module.parent = None
 
     try:
         module.validate_options()

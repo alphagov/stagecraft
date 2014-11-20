@@ -143,6 +143,17 @@ def get_dashboard_by_uuid(user, request, dashboard_id=None):
 @atomic_view
 def dashboard(user, request, identifier=None):
 
+    def add_module_and_children_to_dashboard(dashboard,
+                                             module_data,
+                                             parent=None):
+        modules = []
+        module = add_module_to_dashboard(dashboard, module_data, parent)
+        modules.append(module)
+        for module_data in module_data['modules']:
+            modules.extend(add_module_and_children_to_dashboard(
+                dashboard, module_data, module))
+        return modules
+
     if request.method == 'GET':
         if is_uuid(identifier):
             return get_dashboard_by_uuid(request, identifier)
@@ -232,8 +243,10 @@ def dashboard(user, request, identifier=None):
 
         for i, module_data in enumerate(data['modules'], start=1):
             try:
-                module = add_module_to_dashboard(dashboard, module_data)
-                module_ids.discard(module.id)
+                modules = add_module_and_children_to_dashboard(
+                    dashboard, module_data)
+                for m in modules:
+                    module_ids.discard(m.id)
             except ValueError as e:
                 error = {
                     'status': 'error',

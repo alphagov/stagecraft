@@ -177,6 +177,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -260,6 +261,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -281,6 +283,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -302,6 +305,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
                 'query_parameters': {},
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
@@ -324,6 +328,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -348,6 +353,7 @@ class ModuleViewsTestCase(TestCase):
                     'sort_by': 'thing:desc',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -458,6 +464,7 @@ class ModuleViewsTestCase(TestCase):
                 'info': ['foo'],
                 'options': {'thing': 'a value'},
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -477,6 +484,7 @@ class ModuleViewsTestCase(TestCase):
                 'info': ['foo'],
                 'options': {'thing': 'a value'},
                 'order': 1,
+                'modules': [],
             }
         )
         dashboard = Dashboard.objects.get(id=self.dashboard.id)
