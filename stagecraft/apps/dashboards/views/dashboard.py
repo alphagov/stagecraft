@@ -241,7 +241,7 @@ def dashboard(user, request, identifier=None):
     if 'modules' in data:
         module_ids = set([m.id for m in dashboard.module_set.all()])
 
-        for i, module_data in enumerate(data['modules'], start=1):
+        for module_data in data['modules']:
             try:
                 modules = add_module_and_children_to_dashboard(
                     dashboard, module_data)
@@ -250,8 +250,7 @@ def dashboard(user, request, identifier=None):
             except ValueError as e:
                 error = {
                     'status': 'error',
-                    'message': 'Failed to create module {}: {}'.format(
-                        i, e.message),
+                    'message': e.message,
                     'errors': [create_error(request, 400,
                                             detail=e.message)]
                 }
