@@ -52,6 +52,8 @@ def single_dashboard_for_spotlight(request, dashboard_slug):
 
     response = HttpResponse(json_str, content_type='application/json')
 
+    response['Access-Control-Allow-Origin'] = '*'
+
     if dashboard.published:
         response['Cache-Control'] = 'max-age=300'
     else:
