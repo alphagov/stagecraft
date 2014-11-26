@@ -93,6 +93,13 @@ class DashboardViewsListTestCase(TestCase):
                                                         'my_first_slug'))
         assert_that(resp['Cache-Control'], equal_to('max-age=300'))
 
+    def test_public_dashboard_endpoint_has_cors_allowed(self):
+        DashboardFactory(slug='my-dashboard')
+
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'my-dashboard'})
+        assert_that(resp['Access-Control-Allow-Origin'], equal_to('*'))
+
     def test_get_dashboards_only_caches_when_published(self):
         DashboardFactory(slug='published_dashboard')
         DashboardFactory(slug='unpublished_dashboard', published=False)
