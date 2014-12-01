@@ -47,6 +47,13 @@ urlpatterns = patterns(
         RedirectView.as_view(
             pattern_name='data-sets-dashboard',
             permanent=True)),
+    url(r'^data-sets/(?P<name>[\w-]+)/transform$',
+        datasets_views.transform,
+        name='data-sets-transform'),
+    url(r'^data-sets/(?P<name>[\w-]+)/transform/$',
+        RedirectView.as_view(
+            pattern_name='data-sets-transform',
+            permanent=True)),
     url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
         backdrop_user_views.detail),
     url(r'^_status/data-sets$', datasets_views.health_check),

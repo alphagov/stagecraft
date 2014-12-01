@@ -9,7 +9,7 @@ class TransformTypeFactory(factory.DjangoModelFactory):
         model = TransformType
 
     name = factory.Sequence(lambda n: 'name %s' % n)
-    function = 'a.function'
+    function = factory.Sequence(lambda n: 'function.%s' % n)
     schema = {}
 
 

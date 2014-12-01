@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import json
 from nose.tools import assert_equal
 from hamcrest import assert_that, contains, has_entries, equal_to, \
-    has_entry
+    has_entry, is_, has_item
 from httmock import HTTMock
 
 from django.conf import settings
@@ -11,12 +11,15 @@ from django.test import TestCase
 from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.apps.transforms.models import Transform
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
 from stagecraft.apps.dashboards.tests.factories.factories import (
     DashboardFactory, ModuleTypeFactory, ModuleFactory
 )
+from stagecraft.apps.datasets.tests.factories import DataSetFactory
+from stagecraft.apps.transforms.tests.factories import TransformFactory
 from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
@@ -104,6 +107,32 @@ class DataSetsViewsTestCase(TestCase):
         }
 
     monitoring_schema = _get_monitoring_schema()
+
+    def test_list_transfroms_for_dataset(self):
+        data_set = DataSetFactory()
+        set_transform = TransformFactory(
+            input_group=data_set.data_group,
+            input_type=data_set.data_type,
+        )
+        type_transform = TransformFactory(
+            input_type=data_set.data_type,
+        )
+
+        resp = self.client.get(
+            '/data-sets/{}/transform'.format(data_set.name),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+
+        assert_that(resp.status_code, is_(200))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), is_(2))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(set_transform.id))))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(type_transform.id))))
 
     def test_list_vary_on_authorization_header(self):
         resp = self.client.get(

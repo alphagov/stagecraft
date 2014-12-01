@@ -8,6 +8,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.datasets.models import DataSet, BackdropUser
+from stagecraft.apps.transforms.models import Transform
+from stagecraft.apps.transforms.views import TransformView
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,35 @@ def detail(user, request, name):
     json_str = to_json(data_set.serialize())
 
     return HttpResponse(json_str, content_type='application/json')
+
+
+@permission_required('transforms')
+@never_cache
+def transform(user, request, name):
+    try:
+        data_set = DataSet.objects.get(name=name)
+    except DataSet.DoesNotExist:
+        error = {'status': 'error',
+                 'message': "No Data Set named '{}' exists".format(name)}
+        logger.warn(error)
+
+        error["errors"] = [create_error(request, 404, detail=error['message'])]
+
+        return HttpResponseNotFound(to_json(error))
+
+    data_set_transforms = Transform.objects.filter(
+        input_group=data_set.data_group,
+        input_type=data_set.data_type)
+    data_type_transforms = Transform.objects.filter(
+        input_type=data_set.data_type)
+
+    transforms = data_set_transforms | data_type_transforms
+
+    serialized_transforms = [TransformView.serialize(t) for t in transforms]
+
+    return HttpResponse(
+        to_json(serialized_transforms),
+        content_type='application/json')
 
 
 @permission_required('dashboard')
