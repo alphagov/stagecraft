@@ -1,159 +1,146 @@
 import json
+import logging
 
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.views.decorators.cache import never_cache
 
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
+from stagecraft.libs.views.resource import ResourceView
 from .models import Node, NodeType
 
 
-def json_response(obj):
-    return HttpResponse(
-        json.dumps(obj),
-        content_type='application/json'
-    )
+class NodeTypeView(ResourceView):
 
+    model = NodeType
 
-@csrf_exempt
-@never_cache
-def root_nodes(request):
-    if request.method == 'GET':
-        return list_nodes(request)
-    elif request.method == 'POST':
-        return add_node(request)
-    else:
-        return HttpResponse('', status=405)
-
-
-def list_nodes(request):
-    query_parameters = {
-        'name': request.GET.get('name', None),
-        'abbreviation': request.GET.get('abbreviation', None),
-    }
-    filter_args = {
-        "{}__iexact".format(k): v
-        for (k, v) in query_parameters.items() if v is not None
+    schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+        },
+        "required": ["name"],
+        "additionalProperties": False,
     }
 
-    nodes = Node.objects.filter(**filter_args)
-    serialized = [node.serialize() for node in nodes]
-
-    return json_response(serialized)
-
-
-@permission_required('organisation')
-def add_node(user, request):
-    """ Add a node
-
-    Request format
-
-    {
-        "name": "required string",
-        "type_id": "required string",
-        "abbreviation": "optional string",
-        "parent_id": "optional uuuid"
+    list_filters = {
+        'name': 'name__iexact',
     }
 
+    @method_decorator(never_cache)
+    def get(self, request, **kwargs):
+        return super(NodeTypeView, self).get(request, **kwargs)
 
-    Arguments:
-        user: a signon user
-        request: a django request object containing json of the form specified
+    @method_decorator(permission_required('organisation'))
+    def post(self, user, request, **kwargs):
+        return super(NodeTypeView, self).post(request, **kwargs)
 
-    """
-    try:
-        node_settings = json.loads(request.body)
-    except ValueError:
-        return HttpResponse('bad json', status=400)
+    def update_model(self, model, model_json):
+        model.name = model_json['name']
 
-    if 'name' not in node_settings or 'type_id' not in node_settings:
-        return HttpResponse('need name and type_id', status=400)
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'name': model.name
+        }
 
-    type_id = node_settings['type_id']
-    if not is_uuid(type_id):
-        return HttpResponse('type_id has to be a uuid', status=400)
 
-    try:
-        node_type = NodeType.objects.get(id=type_id)
-    except NodeType.DoesNotExist:
-        return HttpResponse('no NodeType found', status=400)
+class NodeView(ResourceView):
 
-    if 'parent_id' in node_settings:
-        parent_id = node_settings['parent_id']
-        if not is_uuid(parent_id):
-            return HttpResponse('parent_id has to be a uuid', status=400)
+    model = Node
 
+    schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "object",
+        "properties": {
+            "type_id": {
+                "type": "string",
+                "format": "uuid",
+            },
+            "parent_id": {
+                "type": "string",
+                "format": "uuid",
+            },
+            "name": {"type": "string"},
+            "abbreviation": {"type": "string"},
+        },
+        "required": ["type_id", "name"],
+        "additionalProperties": False,
+    }
+
+    list_filters = {
+        'name': 'name__iexact',
+        'abbreviation': 'abbreviation__iexact',
+    }
+
+    @method_decorator(never_cache)
+    def get(self, request, **kwargs):
+        return super(NodeView, self).get(request, **kwargs)
+
+    @method_decorator(permission_required('organisation'))
+    def post(self, user, request, **kwargs):
+        return super(NodeView, self).post(request, **kwargs)
+
+    def from_resource(self, request, identifier, model):
+        if identifier == 'ancestors':
+            include_self = request.GET.get('self', 'false') == 'true'
+            return model.get_ancestors(include_self=include_self)
+        else:
+            return None
+
+    def update_model(self, model, model_json):
         try:
-            parent_node = Node.objects.get(id=parent_id)
-        except Node.DoesNotExist:
-            return HttpResponse('parent not found', status=400)
-    else:
-        parent_node = None
+            node_type = NodeType.objects.get(id=model_json['type_id'])
+        except NodeType.DoesNotExist:
+            return HttpResponse('no NodeType found', status=400)
 
-    node = Node(
-        name=node_settings['name'],
-        abbreviation=node_settings.get('abbreviation', None),
-        typeOf=node_type,
-        parent=parent_node
-    )
-    node.save()
+        if 'parent_id' in model_json:
+            parent_id = model_json['parent_id']
+            if not is_uuid(parent_id):
+                return HttpResponse('parent_id has to be a uuid', status=400)
 
-    return json_response(node.serialize())
+            try:
+                parent_node = Node.objects.get(id=parent_id)
+            except Node.DoesNotExist:
+                return HttpResponse('parent not found', status=400)
+        else:
+            parent_node = None
 
+        model.name = model_json['name']
+        model.abbreviation = model_json.get('abbreviation', None)
+        model.typeOf = node_type
+        model.parent = parent_node
 
-@require_GET
-def node_ancestors(request, node_id):
-    try:
-        node = Node.objects.get(id=node_id)
-    except Node.DoesNotExist:
-        return HttpResponse('node not found', 404)
+    @staticmethod
+    def serialize(model, resolve_parent=True):
+        node = {
+            'id': str(model.id),
+            'type': NodeTypeView.serialize(model.typeOf),
+            'name': model.name,
+        }
 
-    include_self = request.GET.get('self', 'false') == 'true'
-    nodes = node.get_ancestors(include_self=include_self)
-    serialized = [node.serialize() for node in nodes]
+        if model.abbreviation is not None:
+            node['abbreviation'] = model.abbreviation
+        else:
+            node['abbreviation'] = model.name
 
-    return json_response(serialized)
+        if resolve_parent:
+            if model.parent is not None:
+                node['parent'] = NodeView.serialize(
+                    model.parent,
+                    resolve_parent=False
+                )
+            else:
+                node['parent'] = None
 
-
-@csrf_exempt
-@never_cache
-def root_types(request):
-    if request.method == 'GET':
-        return list_types(request)
-    elif request.method == 'POST':
-        return add_type(request)
-    else:
-        return HttpResponse('', status=405)
-
-
-def list_types(request):
-    query_parameters = {
-        'name': request.GET.get('name', None),
-    }
-    filter_args = {
-        "{}__iexact".format(k): v
-        for (k, v) in query_parameters.items() if v is not None
-    }
-
-    node_types = NodeType.objects.filter(**filter_args)
-    serialized = [node_type.serialize() for node_type in node_types]
-
-    return json_response(serialized)
+        return node
 
 
-@permission_required('organisation')
-def add_type(user, request):
-    try:
-        type_settings = json.loads(request.body)
-    except ValueError:
-        return HttpResponse('bad json', status=400)
-
-    if 'name' not in type_settings:
-        return HttpResponse('need name', status=400)
-
-    node_type = NodeType(name=type_settings['name'])
-    node_type.save()
-
-    return json_response(node_type.serialize())
+NodeView.sub_resources = {
+    'ancestors': NodeView(),
+}

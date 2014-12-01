@@ -2,6 +2,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
 
+from stagecraft.apps.organisation.views import NodeView
+
 
 def list_to_tuple_pairs(elements):
     return tuple([(element, element) for element in elements])
@@ -178,6 +180,9 @@ class Dashboard(models.Model):
         for field in field_names:
             value = getattr(self, field)
             serialized[field] = value
+
+        if self.organisation:
+            serialized['organisation'] = NodeView.serialize(self.organisation)
 
         serialized['links'] = [link.serialize()
                                for link in self.link_set.all()]
