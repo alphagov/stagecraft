@@ -152,10 +152,8 @@ class Module(models.Model):
         else:
             out['parent'] = None
 
-        out['modules'] = []
-        if self.module_set.exists():
-            for module in self.module_set.all().order_by('order'):
-                out['modules'].append(module.serialize())
+        out['modules'] = [
+            m.serialize() for m in self.module_set.all().order_by('order')]
 
         return out
 
