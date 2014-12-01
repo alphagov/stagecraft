@@ -120,6 +120,16 @@ class Module(models.Model):
             if self.query_parameters is not None:
                 out['data-source']['query-params'] = self.query_parameters
 
+        if self.parent is not None:
+            out['parent'] = {
+                'id': str(self.parent.id)
+            }
+        else:
+            out['parent'] = None
+
+        out['modules'] = [
+            m.spotlightify() for m in self.module_set.all().order_by('order')]
+
         return out
 
     def serialize(self):

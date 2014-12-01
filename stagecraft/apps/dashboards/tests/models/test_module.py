@@ -75,6 +75,17 @@ class ModuleTestCase(TestCase):
         cls.dashboard_a.delete()
         cls.dashboard_b.delete()
 
+    def make_module(self, slug, order, parent=None):
+        return Module.objects.create(
+            slug=slug,
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=order,
+            dashboard=self.dashboard_a,
+            parent=parent
+        )
+
     def test_spotlightify(self):
         module = Module.objects.create(
             slug='a-module',
@@ -105,6 +116,30 @@ class ModuleTestCase(TestCase):
         assert_that(
             spotlight_module['data-source']['query-params']['sort_by'],
             equal_to('foo'))
+
+    def test_spotlightify_with_nested_modules(self):
+        parent = self.make_module(slug='a-module', order=1)
+        child = self.make_module(slug='b-module', order=2, parent=parent)
+        child_of_child = self.make_module(
+            slug='c-module', order=3, parent=child)
+        other_child = self.make_module(slug='d-module', order=4, parent=parent)
+
+        spotlightify = parent.spotlightify()
+
+        assert_that(
+            spotlightify,
+            has_entry('modules',
+                      contains(child.spotlightify(),
+                               other_child.spotlightify()))
+        )
+        assert_that(
+            spotlightify['modules'][0]['parent'],
+            has_entry('id', str(parent.id)))
+
+        parent.delete()
+        child.delete()
+        child_of_child.delete()
+        other_child.delete()
 
     def test_spotlightify_with_no_data_set(self):
         module = Module.objects.create(
@@ -231,22 +266,11 @@ class ModuleTestCase(TestCase):
         assert_that(serialization['parent'], equal_to(None))
 
     def test_serialize_with_nested_modules(self):
-
-        def make_module(slug, order, parent=None):
-            return Module.objects.create(
-                slug=slug,
-                type=self.module_type,
-                options={},
-                query_parameters={},
-                order=order,
-                dashboard=self.dashboard_a,
-                parent=parent
-            )
-
-        parent = make_module(slug='a-module', order=1)
-        other_child = make_module(slug='d-module', order=4, parent=parent)
-        child = make_module(slug='b-module', order=2, parent=parent)
-        child_of_child = make_module(slug='c-module', order=3, parent=child)
+        parent = self.make_module(slug='a-module', order=1)
+        child = self.make_module(slug='b-module', order=2, parent=parent)
+        child_of_child = self.make_module(
+            slug='c-module', order=3, parent=child)
+        other_child = self.make_module(slug='d-module', order=4, parent=parent)
 
         serialization = parent.serialize()
 
