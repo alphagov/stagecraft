@@ -11,7 +11,10 @@ from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory,
-    DataGroupFactory, DataTypeFactory, DataSetFactory, LinkFactory
+    LinkFactory
+)
+from stagecraft.apps.datasets.tests.factories import(
+    DataGroupFactory, DataTypeFactory, DataSetFactory
 )
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
@@ -314,7 +317,7 @@ class DashboardViewsGetTestCase(TestCase):
                     "organisation": None,
                     "modules": [],
                     "dashboard_type": "transaction",
-                    "slug": "slug1",
+                    "slug": dashboard.slug,
                     "improve_dashboard_message": True,
                     "customer_type": "",
                     "costs": "",

@@ -1,7 +1,7 @@
 import factory
+
 from ...models import Dashboard, Link, ModuleType, Module
-from ....organisation.models import Node, NodeType
-from ....datasets.models import DataSet, DataType, DataGroup
+from ....organisation.tests.factories import NodeFactory, NodeTypeFactory
 
 
 class DashboardFactory(factory.DjangoModelFactory):
@@ -44,25 +44,12 @@ class ModuleFactory(factory.DjangoModelFactory):
     order = factory.Sequence(lambda n: n)
 
 
-class NodeTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = NodeType
-
-
 class DepartmentTypeFactory(NodeTypeFactory):
     name = 'department'
 
 
 class AgencyTypeFactory(NodeTypeFactory):
     name = 'agency'
-
-
-class NodeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Node
-    name = factory.Sequence(lambda n: 'name-%s' % n)
-    abbreviation = factory.Sequence(lambda n: 'abbreviation-%s' % n)
-    typeOf = factory.SubFactory(NodeTypeFactory)
 
 
 class DepartmentFactory(NodeFactory):
@@ -77,23 +64,3 @@ class AgencyFactory(NodeFactory):
 
 class AgencyWithDepartmentFactory(AgencyFactory):
     parent = factory.SubFactory(DepartmentFactory)
-
-
-class DataGroupFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = DataGroup
-    name = factory.Sequence(lambda n: 'data-group-%s' % n)
-
-
-class DataTypeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = DataType
-    name = factory.Sequence(lambda n: 'data-type-%s' % n)
-
-
-class DataSetFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = DataSet
-
-    data_type = factory.SubFactory(DataTypeFactory)
-    data_group = factory.SubFactory(DataGroupFactory)
