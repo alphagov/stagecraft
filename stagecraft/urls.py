@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 
 import stagecraft.apps.organisation.views as organisation_views
+import stagecraft.apps.transforms.views as transforms_views
 
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
@@ -78,4 +79,6 @@ urlpatterns = patterns(
 
     resource_url('organisation/node', organisation_views.NodeView),
     resource_url('organisation/type', organisation_views.NodeTypeView),
+    resource_url('transform-type', transforms_views.TransformTypeView),
+    resource_url('transform', transforms_views.TransformView),
 )
