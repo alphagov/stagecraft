@@ -297,7 +297,7 @@ class DashboardViewsGetTestCase(TestCase):
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_get_an_existing_dashboard_returns_a_dashboard(self):
-        dashboard = DashboardFactory()
+        dashboard = DashboardFactory(slug='slug1')
 
         resp = self.client.get(
             '/dashboard/{}'.format(dashboard.slug),
