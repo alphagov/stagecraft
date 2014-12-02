@@ -56,7 +56,7 @@ class DashboardTestCase(TransactionTestCase):
 
     def test_spotlightify_with_a_module(self):
         module_type = ModuleTypeFactory(name='graph', schema={})
-        module = ModuleFactory(
+        ModuleFactory(
             type=module_type,
             dashboard=self.dashboard,
             slug='a-module',
@@ -69,9 +69,6 @@ class DashboardTestCase(TransactionTestCase):
         assert_that(
             spotlight_dashboard['modules'],
             has_item(has_entry('slug', 'a-module')))
-
-        module.delete()
-        module_type.delete()
 
     def test_transaction_link(self):
         self.dashboard.update_transaction_link('blah', 'http://www.gov.uk')

@@ -131,11 +131,6 @@ class ModuleTestCase(TestCase):
             spotlightify['modules'][0]['parent'],
             has_entry('id', str(parent.id)))
 
-        parent.delete()
-        child.delete()
-        child_of_child.delete()
-        other_child.delete()
-
     def test_spotlightify_with_no_data_set(self):
         module = ModuleFactory(
             slug='a-module',
@@ -180,8 +175,6 @@ class ModuleTestCase(TestCase):
         assert_that(serialization['query_parameters'], equal_to(None))
         assert_that(serialization['data_set'], equal_to(None))
 
-        module.delete()
-
     def test_serialize_with_dataset(self):
         module = ModuleFactory(
             slug='a-module',
@@ -213,8 +206,6 @@ class ModuleTestCase(TestCase):
                 'data_type',
                 equal_to(self.data_set.data_type.name)))
 
-        module.delete()
-
     def test_serialize_with_dataset_but_no_query_parameters(self):
         module = ModuleFactory(
             slug='a-module',
@@ -243,8 +234,6 @@ class ModuleTestCase(TestCase):
             serialization,
             has_entry(
                 'data_type', equal_to(self.data_set.data_type.name)))
-
-        module.delete()
 
     def test_serialize_with_no_nested_modules(self):
         module = ModuleFactory(
@@ -276,11 +265,6 @@ class ModuleTestCase(TestCase):
         assert_that(
             serialization['modules'][0]['parent'],
             has_entry('id', str(parent.id)))
-
-        parent.delete()
-        child.delete()
-        child_of_child.delete()
-        other_child.delete()
 
     def test_cannot_have_two_equal_slugs_on_one_dashboard(self):
         def create_module(dashboard_model):

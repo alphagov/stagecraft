@@ -73,7 +73,7 @@ class ModuleViewsTestCase(TestCase):
         assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_modules_by_uuid_or_slug(self):
-        dashboard2 = DashboardFactory(
+        DashboardFactory(
             published=True,
             title='A service',
             slug='some-slug2',
@@ -119,10 +119,6 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', str(module2.id))))
 
-        module1.delete()
-        module2.delete()
-        dashboard2.delete()
-
     def test_list_modules_on_dashboard(self):
         dashboard2 = DashboardFactory(
             published=True,
@@ -165,11 +161,6 @@ class ModuleViewsTestCase(TestCase):
         assert_that(
             resp_json,
             is_not(has_item(has_entry('id', str(module3.id)))))
-
-        module1.delete()
-        module2.delete()
-        module3.delete()
-        dashboard2.delete()
 
     def test_add_a_module_to_a_dashboard(self):
         resp = self.client.post(
