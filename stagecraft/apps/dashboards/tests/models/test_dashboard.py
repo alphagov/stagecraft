@@ -5,16 +5,15 @@ from hamcrest import (
     starts_with, contains, has_item
 )
 
-from ...models import Link, Module, ModuleType, Dashboard
-from ....organisation.models import Node, NodeType
+from ...models import Link, Dashboard
 from stagecraft.apps.dashboards.tests.factories.factories import(
-    DashboardFactory,
-    ModuleFactory,
-    LinkFactory,
-    ModuleTypeFactory,
-    DepartmentFactory,
     AgencyFactory,
-    AgencyWithDepartmentFactory)
+    AgencyWithDepartmentFactory,
+    DashboardFactory,
+    DepartmentFactory,
+    LinkFactory,
+    ModuleFactory,
+    ModuleTypeFactory)
 
 
 class DashboardTestCase(TransactionTestCase):
@@ -26,7 +25,7 @@ class DashboardTestCase(TransactionTestCase):
         dashboard_two = DashboardFactory()
         dashboard_two.organisation = AgencyWithDepartmentFactory()
         dashboard_two.validate_and_save()
-        unpublished_dashboard = DashboardFactory(published=False)
+        DashboardFactory(published=False)
         list_for_spotlight = Dashboard.list_for_spotlight()
         assert_that(list_for_spotlight['page-type'], equal_to('browse'))
         assert_that(len(list_for_spotlight['items']), equal_to(2))
@@ -56,17 +55,14 @@ class DashboardTestCase(TransactionTestCase):
         assert_that(spotlight_dashboard, has_entry('modules', []))
 
     def test_spotlightify_with_a_module(self):
-        module_type = ModuleType.objects.create(name='graph', schema={})
-        module = Module.objects.create(
+        module_type = ModuleTypeFactory(name='graph', schema={})
+        module = ModuleFactory(
             type=module_type,
             dashboard=self.dashboard,
             slug='a-module',
             options={},
             order=1,
         )
-
-        module_type.save()
-        module.save()
 
         spotlight_dashboard = self.dashboard.spotlightify()
         assert_that(len(spotlight_dashboard['modules']), equal_to(1))
@@ -227,7 +223,6 @@ class DashboardTestCase(TransactionTestCase):
 
     def test_agency_returns_none_when_organisation_is_a_department(self):
         self.dashboard.organisation = DepartmentFactory()
-        self.dashboard.save()
 
         assert_that(self.dashboard.agency(), is_(none()))
 
@@ -252,25 +247,3 @@ class DashboardTestCase(TransactionTestCase):
 
     def test_department_returns_none_when_organisation_is_none(self):
         assert_that(self.dashboard.department(), is_(none()))
-
-    def create_department(self):
-        department_type = NodeType.objects.create(
-            name='department'
-        )
-        department = Node.objects.create(
-            name='department-node',
-            typeOf=department_type
-        )
-        department.save()
-        return department
-
-    def create_agency(self):
-        agency_type = NodeType.objects.create(
-            name='agency'
-        )
-        agency = Node.objects.create(
-            name='agency-node',
-            typeOf=agency_type
-        )
-        agency.save()
-        return agency
