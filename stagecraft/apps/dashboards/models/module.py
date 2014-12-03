@@ -103,6 +103,12 @@ class Module(models.Model):
                 self.query_parameters['group_by'] = [group_by]
                 self.validate_query_parameters()
 
+    def _parent_id_as_dict(self):
+        if self.parent is not None:
+            return {'id': str(self.parent.id)}
+        else:
+            return None
+
     def spotlightify(self):
         out = copy.deepcopy(self.options)
         out['module-type'] = self.type.name
@@ -120,12 +126,7 @@ class Module(models.Model):
             if self.query_parameters is not None:
                 out['data-source']['query-params'] = self.query_parameters
 
-        if self.parent is not None:
-            out['parent'] = {
-                'id': str(self.parent.id)
-            }
-        else:
-            out['parent'] = None
+        out['parent'] = self._parent_id_as_dict()
 
         out['modules'] = [
             m.spotlightify() for m in self.module_set.all().order_by('order')]
@@ -155,12 +156,7 @@ class Module(models.Model):
         else:
             out['data_set'] = None
 
-        if self.parent is not None:
-            out['parent'] = {
-                'id': str(self.parent.id)
-            }
-        else:
-            out['parent'] = None
+        out['parent'] = self._parent_id_as_dict()
 
         out['modules'] = [
             m.serialize() for m in self.module_set.all().order_by('order')]
