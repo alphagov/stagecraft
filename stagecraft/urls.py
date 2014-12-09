@@ -3,12 +3,15 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 
 import stagecraft.apps.organisation.views as organisation_views
+import stagecraft.apps.transforms.views as transforms_views
 
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
 from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
 from stagecraft.apps.dashboards.views import dashboard as dashboard_views
 from stagecraft.apps.dashboards.views import module as module_views
+
+from stagecraft.libs.views.resource import resource_url
 from stagecraft.libs.status import views as status_views
 
 admin.autodiscover()
@@ -44,12 +47,15 @@ urlpatterns = patterns(
         RedirectView.as_view(
             pattern_name='data-sets-dashboard',
             permanent=True)),
+    url(r'^data-sets/(?P<name>[\w-]+)/transform$',
+        datasets_views.transform,
+        name='data-sets-transform'),
+    url(r'^data-sets/(?P<name>[\w-]+)/transform/$',
+        RedirectView.as_view(
+            pattern_name='data-sets-transform',
+            permanent=True)),
     url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
         backdrop_user_views.detail),
-    url(r'^organisation/node$', organisation_views.root_nodes),
-    url(r'^organisation/node/(?P<node_id>{})/ancestors$'.format(uuid_regexp),
-        organisation_views.node_ancestors),
-    url(r'^organisation/type$', organisation_views.root_types),
     url(r'^_status/data-sets$', datasets_views.health_check),
     url(r'^_status$', status_views.status),
 
@@ -77,4 +83,9 @@ urlpatterns = patterns(
         module_views.modules_on_dashboard),
     url(r'^dashboard/(?P<identifier>[-a-z0-9]+)$',
         dashboard_views.dashboard, name='dashboard'),
+
+    resource_url('organisation/node', organisation_views.NodeView),
+    resource_url('organisation/type', organisation_views.NodeTypeView),
+    resource_url('transform-type', transforms_views.TransformTypeView),
+    resource_url('transform', transforms_views.TransformView),
 )

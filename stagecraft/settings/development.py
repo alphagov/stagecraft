@@ -42,6 +42,7 @@ DEVELOPMENT_USERS = {
             "admin",
             "organisation",
             "dashboard",
+            "transforms",
         ],
         "uid": "00000000-0000-0000-0000-000000000000"
     }

@@ -2,4 +2,3 @@
 
 -r production.txt
 -r _testing.txt
-factory-boy==2.4.1

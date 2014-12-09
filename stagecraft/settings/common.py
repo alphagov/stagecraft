@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'stagecraft.apps.datasets',
     'stagecraft.apps.dashboards',
     'stagecraft.apps.organisation',
+    'stagecraft.apps.transforms',
 )
 
 MIDDLEWARE_CLASSES = (
