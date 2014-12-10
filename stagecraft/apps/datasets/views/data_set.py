@@ -41,9 +41,8 @@ def detail(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@permission_required('transforms')
 @never_cache
-def transform(user, request, name):
+def transform(request, name):
     try:
         data_set = DataSet.objects.get(name=name)
     except DataSet.DoesNotExist:
