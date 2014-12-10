@@ -97,6 +97,14 @@ need to add a firewall rule: ``sudo ufw allow in 3204``
 
 You should now be able to access the [admin control panel](http://stagecraft.perfplat.dev:3204/admin/) (note the trailing slash)
 
+# Running tests
+
+A convenience script for running tests is included. Remember to prefix this with the appropriate settings environment variable, e.g.:
+
+```
+DJANGO_SETTINGS_MODULE=stagecraft.settings.development ./run_tests.sh
+```
+
 # More on reversions
 
 **NOTE: Reversions are not compatible with schema changes. Without special migrations, revisions saved before schema changes will be lost after these changes**
