@@ -86,16 +86,13 @@ To run the development server:
 python manage.py runserver 0.0.0.0:3204
 ```
 
-or do it the "bowl" way:
+or use the Pinfile in `https://github.com/alphagov/pp-puppet/tree/master/development`:
 
 ```
-./start-app.sh
+bowl stagecraft
 ```
 
-**NOTE** If you're using pp-development, until we do the puppet story you'll
-need to add a firewall rule: ``sudo ufw allow in 3204``
-
-You should now be able to access the [admin control panel](http://stagecraft.perfplat.dev:3204/admin/) (note the trailing slash)
+You should now be able to access the admin control panel at http://stagecraft.development.performance.service.gov.uk/admin/.
 
 # Running tests
 
