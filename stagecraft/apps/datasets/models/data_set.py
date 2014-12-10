@@ -165,11 +165,11 @@ class DataSet(models.Model):
         updated. If this is left blank the data-set will not be monitored.<br/>
         Commonly used values are:<br/>
         - <strong>360</strong> (every 5 minutes)<br/>
-        - <strong>4500</strong> (hourly)<br/>
-        - <strong>90000</strong> (daily)<br/>
-        - <strong>648000</strong> (weekly)<br/>
-        - <strong>2764800</strong> (monthly)<br/>
-        - <strong>8467200</strong> (quarterly)<br/>
+        - <strong>9000</strong> (for hourly data)<br/>
+        - <strong>180000</strong> (for daily data)<br/>
+        - <strong>1300000</strong> (for weekly data)<br/>
+        - <strong>5200000</strong> (for monthly data)<br/>
+        - <strong>15600000</strong> (for quarterly data)<br/>
         You can choose your own value if the ones above don't work for your
         case.
         """
