@@ -9,6 +9,7 @@ from jsonfield import JSONField
 from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataGroup, DataType
+from stagecraft.apps.dashboards.models.module import query_param_schema
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class Transform(models.Model):
     )
     input_type = models.ForeignKey(DataType, related_name='+')
 
+    query_parameters = JSONField(blank=True)
     options = JSONField(blank=True)
 
     output_group = models.ForeignKey(
@@ -62,6 +64,11 @@ class Transform(models.Model):
     output_type = models.ForeignKey(DataType, related_name='+')
 
     def validate(self):
+        try:
+            jsonschema.validate(self.query_parameters, query_param_schema)
+        except ValidationError as err:
+            return 'query parameters are invalid: {}'.format(err)
+
         try:
             jsonschema.validate(self.options, self.type.schema)
         except ValidationError as err:

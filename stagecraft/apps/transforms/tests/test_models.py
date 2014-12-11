@@ -23,6 +23,7 @@ class TransformTest(unittest.TestCase):
 
         transform = Transform()
         transform.type = transform_type
+        transform.query_parameters = {}
         transform.options = {
             "foo": 1,
         }
@@ -35,6 +36,23 @@ class TransformTest(unittest.TestCase):
         transform.options = {
             "foo": "bar",
         }
+
+        assert_that(transform.validate(), is_(None))
+
+    def test_query_validation(self):
+        transform_type = TransformTypeFactory()
+        transform = Transform()
+        transform.type = transform_type
+        transform.query_parameters = {
+            'start_at': 1,  # it should be a string
+        }
+
+        assert_that(
+            transform.validate(),
+            contains_string('query parameters are invalid')
+        )
+
+        transform.query_parameters['start_at'] = '2014-09-11'
 
         assert_that(transform.validate(), is_(None))
 
