@@ -20,4 +20,5 @@ class TransformFactory(factory.DjangoModelFactory):
     type = factory.SubFactory(TransformTypeFactory)
     input_type = factory.SubFactory(DataTypeFactory)
     output_type = factory.SubFactory(DataTypeFactory)
+    query_parameters = {}
     options = {}

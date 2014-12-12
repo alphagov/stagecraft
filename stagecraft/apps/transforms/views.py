@@ -106,6 +106,9 @@ class TransformView(ResourceView):
                 "required": ["data-type"],
                 "additionalProperties": False,
             },
+            "query-parameters": {
+                "type": "object",
+            },
             "options": {
                 "type": "object",
             },
@@ -125,7 +128,10 @@ class TransformView(ResourceView):
                 "additionalProperties": False,
             },
         },
-        "required": ["type_id", "input", "options", "output"],
+        "required": [
+            "type_id", "input", "query-parameters",
+            "options", "output"
+        ],
         "additionalProperties": False,
     }
 
@@ -162,6 +168,7 @@ class TransformView(ResourceView):
         model.type = transform_type
         model.input_group = input_group
         model.input_type = input_type
+        model.query_parameters = model_json['query-parameters']
         model.options = model_json['options']
         model.output_group = output_group
         model.output_type = output_type
@@ -179,6 +186,7 @@ class TransformView(ResourceView):
             'input': {
                 'data-type': model.input_type.name,
             },
+            'query-parameters': model.query_parameters,
             'options': model.options,
             'output': {
                 'data-type': model.output_type.name,

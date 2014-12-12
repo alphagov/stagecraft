@@ -154,7 +154,7 @@ class ResourceView(View):
         if hasattr(model, 'validate'):
             err = model.validate()
             if err:
-                return HttpResponse(err, err=400)
+                return HttpResponse(err, status=400)
 
         try:
             model.full_clean()

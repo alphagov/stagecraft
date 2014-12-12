@@ -66,6 +66,7 @@ class TransformViewTestCase(TestCase):
                 "data-type": input_data_type.name,
                 "data-group": input_data_group.name,
             },
+            "query-parameters": {},
             "options": {},
             "output": {
                 "data-type": output_data_type.name,
