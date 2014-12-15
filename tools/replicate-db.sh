@@ -55,7 +55,10 @@ ssh $SOURCE_HOST "sudo su postgres -c \"rm /tmp/${FILENAME}\""
 if [ -z "$DESTINATION_HOST" ]
 then
     pushd ../../pp-puppet
-    vagrant ssh development-1 -c "cd /var/apps/stagecraft/tools && sudo service collectd stop && sudo su postgres -c \"gunzip -c ${FILENAME} | psql\" -- -t && sudo service collectd start"
+    vagrant ssh development-1 -c "cd /var/apps/stagecraft/tools && sudo service collectd stop"
+    vagrant ssh development-1 -c "sudo su postgres -c \"psql -c \\\"DROP DATABASE stagecraft;\\\"\" -- -t"
+    vagrant ssh development-1 -c "cd /var/apps/stagecraft/tools && sudo su postgres -c \"gunzip -c ${FILENAME} | psql\" -- -t"
+    vagrant ssh development-1 -c "cd /var/apps/stagecraft/tools && sudo service collectd start"
     vagrant ssh development-1 -c "sudo su postgres -c \"psql -c \\\"ALTER ROLE stagecraft WITH PASSWORD 'securem8'\\\"\" -- -t"
     popd
 else
