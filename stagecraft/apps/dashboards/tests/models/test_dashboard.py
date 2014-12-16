@@ -70,6 +70,30 @@ class DashboardTestCase(TransactionTestCase):
             spotlight_dashboard['modules'],
             has_item(has_entry('slug', 'a-module')))
 
+    def test_spotlightify_with_a_nested_module(self):
+        section_type = ModuleTypeFactory(name='section')
+        graph_type = ModuleTypeFactory(name='graph')
+        parent = ModuleFactory(
+            type=section_type,
+            slug='a-module',
+            order=1,
+            dashboard=self.dashboard
+        )
+        ModuleFactory(
+            type=graph_type,
+            slug='b-module',
+            order=2,
+            dashboard=self.dashboard,
+            parent=parent)
+
+        spotlightify = self.dashboard.spotlightify()
+
+        assert_that(
+            spotlightify,
+            has_entry('modules', contains(parent.spotlightify()))
+        )
+        assert_that(len(spotlightify['modules']), equal_to(1))
+
     def test_transaction_link(self):
         self.dashboard.update_transaction_link('blah', 'http://www.gov.uk')
         self.dashboard.update_transaction_link('blah2', 'http://www.gov.uk')

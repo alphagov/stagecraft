@@ -164,7 +164,7 @@ class Dashboard(models.Model):
         base_dict = self.spotlightify_base_dict()
         base_dict['modules'] = [
             m.spotlightify()
-            for m in self.module_set.all().order_by('order')]
+            for m in self.module_set.filter(parent=None).order_by('order')]
         base_dict['relatedPages'] = self.related_pages_dict()
         if self.department():
             base_dict['department'] = self.department().spotlightify()
