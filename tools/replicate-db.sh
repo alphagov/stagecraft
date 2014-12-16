@@ -3,7 +3,7 @@
 set -euo pipefail
 
 #
-# Replicate backdrop mongo db from a source host to a target host.
+# Replicate stagecraft postgresql db from a source host to a target host.
 # Useful to import data from the preview environment to the development
 # one.
 #
@@ -65,4 +65,4 @@ else
     echo "Remote restore has not been implemented yet."
 fi
 
-#rm $FILENAME
+rm $FILENAME
