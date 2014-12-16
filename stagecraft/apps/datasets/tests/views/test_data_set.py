@@ -8,10 +8,8 @@ from httmock import HTTMock
 
 from django.conf import settings
 from django.test import TestCase
-from django_nose.tools import assert_redirects
 
 from stagecraft.apps.datasets.models.data_set import DataSet
-from stagecraft.apps.transforms.models import Transform
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_error_response, has_header, has_status)
@@ -393,13 +391,20 @@ class DataSetsViewsTestCase(TestCase):
             ).content,
         )
 
-    def test_list_with_trailing_slash_redirects_correctly(self):
-        response = self.client.get(
-            '/data-sets/?data-type=aaa',
-            HTTP_AUTHORIZATION=('Bearer development-oauth-access-token'),
-            follow=True)
-        assert_redirects(response, '/data-sets?data-type=aaa',
-                         status_code=301, target_status_code=200)
+    def test_list_with_trailing_slash_still_routed(self):
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['signin', 'dataset'],
+            email='some.user@digital.cabinet-office.gov.uk')
+        with HTTMock(signon):
+            resp = self.client.get(
+                '/data-sets/?data-type=type1',
+                HTTP_AUTHORIZATION=('Bearer correct-token'),
+                follow=True)
+            assert_equal(resp.status_code, 200)
+            response_object = json.loads(resp.content.decode('utf-8'))
+
+            assert_equal(len(response_object), 2)
 
     def test_list_filtering_works_with_slash_before_query(self):
         assert_equal(
@@ -600,7 +605,7 @@ class DataSetsViewsTestCase(TestCase):
         data_set = DataSet.objects.get(name='set1')
         dashboard = DashboardFactory()
         module_type = ModuleTypeFactory()
-        module = ModuleFactory(
+        ModuleFactory(
             type=module_type,
             dashboard=dashboard,
             data_set=data_set)

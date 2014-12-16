@@ -6,6 +6,7 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
+from django.utils.decorators import method_decorator
 
 from stagecraft.apps.datasets.models import DataSet, BackdropUser
 from stagecraft.apps.transforms.models import Transform
@@ -13,32 +14,81 @@ from stagecraft.apps.transforms.views import TransformView
 
 logger = logging.getLogger(__name__)
 
+from stagecraft.libs.views.resource import ResourceView
 
-@permission_required('signin')
-@never_cache
-@vary_on_headers('Authorization')
-def detail(user, request, name):
-    try:
-        data_set = DataSet.objects.get(name=name)
-        user_is_not_admin = 'admin' not in user['permissions']
-        user_is_not_assigned = data_set.backdropuser_set.filter(
-            email=user['email']).count() == 0
-        if user_is_not_admin and user_is_not_assigned:
-            logger.warn("Unauthorized access to '{}' by '{}'".format(
-                name, user['email']))
-            raise DataSet.DoesNotExist()
-    except DataSet.DoesNotExist:
-        error = {'status': 'error',
-                 'message': "No Data Set named '{}' exists".format(name)}
-        logger.warn(error)
 
-        error["errors"] = [create_error(request, 404, detail=error['message'])]
+class DataSetView(ResourceView):
+    model = DataSet
+    list_filters = {
+        'data-group': 'data_group__name',
+        'data_group': 'data_group__name',
+        'data-type': 'data_type__name',
+        'data_type': 'data_type__name',
+    }
+    id_field = 'name'
 
-        return HttpResponseNotFound(to_json(error))
+    @method_decorator(permission_required('signin'))
+    @method_decorator(never_cache)
+    @method_decorator(vary_on_headers('Authorization'))
+    def get(self, user, request, **kwargs):
+        name = kwargs.get(self.id_field, None)
+        if name is not None:
+            try:
+                data_set = DataSet.objects.get(name=name)
+                user_is_not_admin = 'admin' not in user['permissions']
+                user_is_not_assigned = data_set.backdropuser_set.filter(
+                    email=user['email']).count() == 0
+                if user_is_not_admin and user_is_not_assigned:
+                    logger.warn("Unauthorized access to '{}' by '{}'".format(
+                        name, user['email']))
+                    raise DataSet.DoesNotExist()
+            except DataSet.DoesNotExist:
+                error = {'status': 'error',
+                         'message': "No Data Set named '{}' exists".
+                         format(name)}
+                logger.warn(error)
 
-    json_str = to_json(data_set.serialize())
+                error["errors"] = [
+                    create_error(request, 404, detail=error['message'])]
 
-    return HttpResponse(json_str, content_type='application/json')
+                return HttpResponseNotFound(to_json(error))
+        else:
+            return self.list(user, request)
+
+        json_str = to_json(data_set.serialize())
+
+        return HttpResponse(json_str, content_type='application/json')
+
+    def list(self, user, request):
+        # 400 if any query string keys were not in allowed set
+        if not set(request.GET).issubset(self.list_filters):
+            unrecognised = set(request.GET).difference(self.list_filters)
+            unrecognised_text = ', '.join(
+                "'{}'".format(i) for i in unrecognised)
+            error = {'status': 'error',
+                     'message': 'Unrecognised parameter(s) ({}) were provided'
+                                .format(str(unrecognised_text))}
+            logger.error(error)
+
+            error["errors"] = [
+                create_error(request, 400, detail=error['message'])
+            ]
+
+            return HttpResponseBadRequest(to_json(error))
+
+        try:
+            filter_kwargs = {}
+            if 'admin' not in user['permissions']:
+                filter_kwargs['backdropuser'] = BackdropUser.objects.filter(
+                    email=user['email'])
+
+            data_sets = super(DataSetView, self).list(
+                request, additional_filters=filter_kwargs).order_by('pk')
+            json_str = to_json([ds.serialize() for ds in data_sets])
+        except BackdropUser.DoesNotExist:
+            json_str = '[]'
+
+        return HttpResponse(json_str, content_type='application/json')
 
 
 @never_cache
@@ -106,51 +156,6 @@ def users(user, request, dataset_name):
         )
     else:
         json_str = to_json([])
-
-    return HttpResponse(json_str, content_type='application/json')
-
-
-@permission_required('signin')
-@never_cache
-@vary_on_headers('Authorization')
-def list(user, request, data_group=None, data_type=None):
-    def get_filter_kwargs(key_map, query_params):
-        """Return Django filter kwargs from query parameters"""
-        return {key_map[k]: v for k, v in query_params if k in key_map}
-
-    # map filter parameter names to query string keys
-    key_map = {
-        'data-group': 'data_group__name',
-        'data_group': 'data_group__name',
-        'data-type': 'data_type__name',
-        'data_type': 'data_type__name',
-    }
-
-    # 400 if any query string keys were not in allowed set
-    if not set(request.GET).issubset(key_map):
-        unrecognised = set(request.GET).difference(key_map)
-        unrecognised_text = ', '.join("'{}'".format(i) for i in unrecognised)
-        error = {'status': 'error',
-                 'message': 'Unrecognised parameter(s) ({}) were provided'
-                            .format(str(unrecognised_text))}
-        logger.error(error)
-
-        error["errors"] = [
-            create_error(request, 400, detail=error['message'])
-        ]
-
-        return HttpResponseBadRequest(to_json(error))
-
-    try:
-        filter_kwargs = get_filter_kwargs(key_map, request.GET.items())
-        if 'admin' not in user['permissions']:
-            filter_kwargs['backdropuser'] = BackdropUser.objects.filter(
-                email=user['email'])
-
-        data_sets = DataSet.objects.filter(**filter_kwargs).order_by('pk')
-        json_str = to_json([ds.serialize() for ds in data_sets])
-    except BackdropUser.DoesNotExist:
-        json_str = '[]'
 
     return HttpResponse(json_str, content_type='application/json')
 
