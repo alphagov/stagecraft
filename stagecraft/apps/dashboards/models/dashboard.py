@@ -280,35 +280,38 @@ def get_modules_or_tabs(request_slug, dashboard_json):
     # a slash
     if request_slug is None:
         return dashboard_json
-    remaining_parts = request_slug.replace(
+    module_slugs = request_slug.replace(
         dashboard_json['slug'], '').split('/')[1:]
-    if len(remaining_parts) == 0:
+    if len(module_slugs) == 0:
         return dashboard_json
     if 'modules' not in dashboard_json:
         return None
-    module = get_single_module_from_dashboard(
-        remaining_parts[0], dashboard_json)
-    if module is None:
-        return None
-    if len(remaining_parts) == 1:
-        dashboard_json['modules'] = [module]
-    elif len(remaining_parts) == 2:
-        tab_slug = remaining_parts[1].replace(remaining_parts[0] + '-', '')
-        tab = get_single_tab_from_module(tab_slug, module)
-        if tab is None:
+    modules = dashboard_json['modules']
+    for slug in module_slugs:
+        module = find_first_item_matching_slug(modules, slug)
+        if module is None:
             return None
-        tab['info'] = module['info']
-        tab['title'] = module['title'] + ' - ' + tab['title']
-        dashboard_json['modules'] = [tab]
-    else:
-        return None
+        elif module['modules']:
+            modules = module['modules']
+            dashboard_json['modules'] = [module]
+        elif 'tabs' in module:
+            last_slug = module_slugs[-1]
+            if last_slug == slug:
+                dashboard_json['modules'] = [module]
+            else:
+                tab_slug = last_slug.replace(slug + '-', '')
+                tab = get_single_tab_from_module(tab_slug, module)
+                if tab is None:
+                    return None
+                else:
+                    tab['info'] = module['info']
+                    tab['title'] = module['title'] + ' - ' + tab['title']
+                    dashboard_json['modules'] = [tab]
+            break
+        else:
+            dashboard_json['modules'] = [module]
     dashboard_json['page-type'] = 'module'
     return dashboard_json
-
-
-def get_single_module_from_dashboard(module_slug, dashboard_json):
-    return find_first_item_matching_slug(
-        dashboard_json['modules'], module_slug)
 
 
 def get_single_tab_from_module(tab_slug, module_json):

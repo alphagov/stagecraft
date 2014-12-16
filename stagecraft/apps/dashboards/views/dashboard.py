@@ -42,7 +42,7 @@ def dashboard_list_for_spotlight():
 
 
 def single_dashboard_for_spotlight(request, dashboard_slug):
-    dashboard = recursively_fetch_dashboard(dashboard_slug)
+    dashboard = fetch_dashboard(dashboard_slug)
     if not dashboard:
         return error_response(request, dashboard_slug)
     dashboard_json = dashboard.spotlightify(dashboard_slug)
@@ -74,19 +74,9 @@ def error_response(request, dashboard_slug):
                                 content_type='application/json')
 
 
-def recursively_fetch_dashboard(dashboard_slug, count=3):
-    if count == 0:
-        return None
-
-    dashboard = Dashboard.objects.filter(slug=dashboard_slug).first()
-
-    if not dashboard:
-        slug_parts = dashboard_slug.split('/')
-        if len(slug_parts) > 1:
-            slug_parts.pop()
-            dashboard = recursively_fetch_dashboard(
-                '/'.join(slug_parts), count=count - 1)
-
+def fetch_dashboard(dashboard_slug):
+    slug = dashboard_slug.split('/')[0]
+    dashboard = Dashboard.objects.filter(slug=slug).first()
     return dashboard
 
 
