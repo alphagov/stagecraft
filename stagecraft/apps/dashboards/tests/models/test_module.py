@@ -127,9 +127,6 @@ class ModuleTestCase(TestCase):
                       contains(child.spotlightify(),
                                other_child.spotlightify()))
         )
-        assert_that(
-            spotlightify['modules'][0]['parent'],
-            has_entry('id', str(parent.id)))
 
     def test_spotlightify_with_no_data_set(self):
         module = ModuleFactory(

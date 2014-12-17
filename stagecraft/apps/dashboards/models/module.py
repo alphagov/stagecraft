@@ -126,8 +126,6 @@ class Module(models.Model):
             if self.query_parameters is not None:
                 out['data-source']['query-params'] = self.query_parameters
 
-        out['parent'] = self._parent_id_as_dict()
-
         out['modules'] = [
             m.spotlightify() for m in self.module_set.all().order_by('order')]
 
