@@ -58,6 +58,7 @@ def transform(request, name):
         input_group=data_set.data_group,
         input_type=data_set.data_type)
     data_type_transforms = Transform.objects.filter(
+        input_group=None,
         input_type=data_set.data_type)
 
     transforms = data_set_transforms | data_type_transforms

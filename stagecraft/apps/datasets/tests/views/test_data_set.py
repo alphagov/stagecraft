@@ -134,6 +134,39 @@ class DataSetsViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', str(type_transform.id))))
 
+    def test_list_transforms_for_dataset_and_type_with_no_group(self):
+        data_set = DataSetFactory()
+        another_data_set = DataSetFactory(
+            data_type=data_set.data_type,
+        )
+        set_transform = TransformFactory(
+            input_group=data_set.data_group,
+            input_type=data_set.data_type,
+        )
+        another_set_transform = TransformFactory(
+            input_group=another_data_set.data_group,
+            input_type=another_data_set.data_type,
+        )
+        type_transform = TransformFactory(
+            input_type=data_set.data_type,
+        )
+
+        resp = self.client.get(
+            '/data-sets/{}/transform'.format(data_set.name),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+
+        assert_that(resp.status_code, is_(200))
+
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), is_(2))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(set_transform.id))))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', str(type_transform.id))))
+
     def test_list_vary_on_authorization_header(self):
         resp = self.client.get(
             '/data-sets',
