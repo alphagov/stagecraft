@@ -183,7 +183,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_that(resp, is_error_response())
 
     def test_authorization_header_needed_for_detail(self):
-        resp = self.client.get('/data-sets/set1')
+        resp = self.client.get('/data-sets/group1_type1')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
 
@@ -196,7 +196,7 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_correct_format_authorization_header_needed_for_detail(self):
         resp = self.client.get(
-            '/data-sets/set1',
+            '/data-sets/group1_type1',
             HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
@@ -210,7 +210,7 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_correct_authorization_header_needed_for_detail(self):
         resp = self.client.get(
-            '/data-sets/set1',
+            '/data-sets/group1_type1',
             HTTP_AUTHORIZATION='Bearer I AM WRONG')
         assert_that(resp, is_unauthorized())
         assert_that(resp, is_error_response())
@@ -230,7 +230,7 @@ class DataSetsViewsTestCase(TestCase):
             {
                 'bearer_token': None,
                 'capped_size': None,
-                'name': 'set1',
+                'name': 'group1_type1',
                 'data_type': 'type1',
                 'realtime': False,
                 'auto_ids': ['aa'],
@@ -349,7 +349,7 @@ class DataSetsViewsTestCase(TestCase):
             {
                 'bearer_token': None,
                 'capped_size': None,
-                'name': 'set1',
+                'name': 'group1_type1',
                 'data_type': 'type1',
                 'realtime': False,
                 'auto_ids': ['aa'],
@@ -427,7 +427,7 @@ class DataSetsViewsTestCase(TestCase):
             {
                 'bearer_token': None,
                 'capped_size': None,
-                'name': 'set1',
+                'name': 'group1_type1',
                 'data_type': 'type1',
                 'realtime': False,
                 'auto_ids': ['aa'],
@@ -488,13 +488,13 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_detail(self):
         resp = self.client.get(
-            '/data-sets/set1',
+            '/data-sets/group1_type1',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = {
             'bearer_token': None,
             'capped_size': None,
-            'name': 'set1',
+            'name': 'group1_type1',
             'data_type': 'type1',
             'realtime': False,
             'auto_ids': ['aa'],
@@ -508,6 +508,187 @@ class DataSetsViewsTestCase(TestCase):
             'schema': self._get_default_schema('group1/type1')
         }
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_post(self):
+        data_set = {
+            'name': 'blibble',
+            'data_type': 'type3',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'data_group': 'group1',
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        expected = {
+            'bearer_token': None,
+            'capped_size': None,
+            'name': 'group1_type3',
+            'data_type': 'type3',
+            'realtime': False,
+            'auto_ids': ['aa', 'bb'],
+            'max_age_expected': 86400,
+            'data_group': 'group1',
+            'upload_filters': ['backdrop.filter.1'],
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+            'schema': self._get_default_schema('group1/type3')
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 200)
+        assert_equal(json.loads(resp.content), expected)
+        resp = self.client.get(
+            '/data-sets/group1_type3',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        assert_equal(json.loads(resp.content.decode('utf-8')), expected)
+
+    def test_post_when_data_set_with_group_and_type_exists(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_type': 'type1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'data_group': 'group1',
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            json.loads(resp.content)['message'],
+            "A data set with the name 'group1_type1' already exists")
+
+    def test_post_when_no_group(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_type': 'type1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            resp.content,
+            "options failed validation: 'data_group' is a required property")
+
+    def test_post_when_no_type(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_group': 'group1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            resp.content,
+            "options failed validation: 'data_type' is a required property")
+
+    def test_post_when_non_existant_group(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_type': 'type1',
+            'data_group': '',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            json.loads(resp.content)['message'],
+            "No data group with name '' found")
+
+    def test_post_when_non_existant_type(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_type': 'wibble',
+            'data_group': 'group1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            json.loads(resp.content)['message'],
+            "No data type with name 'wibble' found")
+
+    def test_put_does_nothing(self):
+        data_set = {
+            'name': 'group1_type1',
+            'data_type': 'type1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'data_group': 'group1',
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.put(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 405)
 
     def test_users_for_nonexistant_dataset_returns_empty_list(self):
         resp = self.client.get(
@@ -596,13 +777,13 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_dashboards_by_dataset_no_dashboards(self):
         resp = self.client.get(
-            '/data-sets/set1/dashboard',
+            '/data-sets/group1_type1/dashboard',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         assert_equal(json.loads(resp.content.decode('utf-8')), [])
 
     def test_dashboards_by_dataset_some_dashboards(self):
-        data_set = DataSet.objects.get(name='set1')
+        data_set = DataSet.objects.get(name='group1_type1')
         dashboard = DashboardFactory()
         module_type = ModuleTypeFactory()
         ModuleFactory(
@@ -611,7 +792,7 @@ class DataSetsViewsTestCase(TestCase):
             data_set=data_set)
 
         resp = self.client.get(
-            '/data-sets/set1/dashboard',
+            '/data-sets/group1_type1/dashboard',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_equal(resp.status_code, 200)

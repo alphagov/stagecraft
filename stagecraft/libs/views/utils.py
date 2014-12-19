@@ -3,6 +3,7 @@ import json
 from django.utils.cache import patch_response_headers
 from functools import wraps
 from uuid import UUID
+from django.http import HttpResponseBadRequest
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -28,6 +29,18 @@ def long_cache(a_view):
 
 def to_json(what):
     return json.dumps(what, indent=1, cls=JsonEncoder)
+
+
+def build_400(logger, request, message):
+    error = {'status': 'error',
+             'message': message}
+    logger.error(error)
+
+    error["errors"] = [
+        create_error(request, 400, detail=error['message'])
+    ]
+
+    return HttpResponseBadRequest(to_json(error))
 
 
 def create_error(request, status, code='', title='', detail=''):

@@ -63,7 +63,7 @@
         "modified": "2014-06-05 00:00:00",
         "bearer_token": "",
         "capped_size": null,
-        "name": "set1",
+        "name": "group1_type1",
         "data_type": 1,
         "realtime": false,
         "auto_ids": "aa",

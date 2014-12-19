@@ -49,10 +49,10 @@ class DataSetTestCase(TestCase):
 
     def test_saving_existing_doesnt_change_the_name(self):
         with _make_temp_data_group_and_type() as (data_group, data_type):
-            data_set1 = DataSet.objects.get(name='set1')
+            data_set1 = DataSet.objects.get(name='set2')
             data_set1.save()
 
-            assert_equal('set1', data_set1.name)
+            assert_equal('set2', data_set1.name)
 
     @disable_backdrop_connection
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')

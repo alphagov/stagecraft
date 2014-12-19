@@ -26,13 +26,6 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^auth/gds/api/users/(?P<uid>[\w-]+)/reauth$', auth_views.invalidate),
     url(r'^auth/gds/api/users/(?P<uid>[\w-]+)$', auth_views.invalidate),
-
-    #url(r'^data-sets$', datasets_views.list, name='data-sets-list'),
-    #url(r'^data-sets/$', RedirectView.as_view(pattern_name='data-sets-list',
-    #                                          permanent=True,
-    #                                          query_string=True)),
-    #url(r'^data-sets/(?P<name>[\w-]+)$', datasets_views.detail),
-
     # Users with access to a particular data-set
     url(r'^data-sets/(?P<dataset_name>[\w-]+)/users$', datasets_views.users,
         name='data-sets-users'
