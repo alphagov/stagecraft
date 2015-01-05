@@ -36,7 +36,7 @@ class ModuleType(models.Model):
     class Meta:
         app_label = 'dashboards'
 
-    #should run on normal validate
+    # should run on normal validate
     def validate_schema(self):
         validator_for(self.schema, Draft3Validator).check_schema(self.schema)
         return True
@@ -75,15 +75,32 @@ class Module(models.Model):
 
     order = models.IntegerField()
 
-    #should run on normal validate
+    # should run on normal validate
     def validate_options(self):
         jsonschema.validate(self.options, self.type.schema)
         return True
 
-    #should run on normal validate
+    # should run on normal validate
     def validate_query_parameters(self):
         jsonschema.validate(self.query_parameters, query_param_schema)
         return True
+
+    # Override to perform custom validation
+    def clean(self, *args, **kwargs):
+        """
+        Part of the interface used by the Admin UI to validate fields - see
+        the docs for calling function full_clean() at
+        https://docs.djangoproject.com/en/1.7/ref/models/instances/#django.db.models.Model.full_clean
+
+        We define our own validation in here.
+        """
+        # Ensure that any group_by query parameters use a list rather than
+        # scalar value
+        if self.query_parameters:
+            group_by = self.query_parameters.get('group_by')
+            if group_by and type(group_by) is not list:
+                self.query_parameters['group_by'] = [group_by]
+                self.validate_query_parameters()
 
     def spotlightify(self):
         out = copy.deepcopy(self.options)

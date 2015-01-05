@@ -289,3 +289,62 @@ class ModuleTestCase(TestCase):
             calling(lambda: module.validate_options()),
             raises(ValidationError)
         )
+
+    def test_group_by_is_rewritten_to_be_a_list(self):
+        module = Module.objects.create(
+            title='a-title',
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            data_set=self.data_set,
+            order=1,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={
+                'group_by': 'foo'
+            })
+
+        module.full_clean()
+
+        assert_that(module.query_parameters['group_by'],
+                    equal_to(['foo']))
+
+    def test_list_group_by_is_unchanged(self):
+        module = Module.objects.create(
+            title='a-title',
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            data_set=self.data_set,
+            order=1,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={
+                'group_by': ['foo']
+            })
+
+        module.full_clean()
+
+        assert_that(module.query_parameters['group_by'],
+                    equal_to(['foo']))
+
+    def test_no_group_by_is_unchanged(self):
+        module = Module.objects.create(
+            title='a-title',
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            data_set=self.data_set,
+            order=1,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={}
+        )
+
+        module.full_clean()
+
+        assert_that(module.query_parameters.get('group_by'),
+                    equal_to(None))
