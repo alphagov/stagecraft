@@ -14,51 +14,79 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'Dashboard'
         db.create_table(u'dashboards_dashboard', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('slug', self.gf('django.db.models.fields.CharField')(unique=True, max_length=90)),
-            ('dashboard_type', self.gf('django.db.models.fields.CharField')(default='transaction', max_length=30)),
-            ('page_type', self.gf('django.db.models.fields.CharField')(default='dashboard', max_length=80)),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('slug', self.gf('django.db.models.fields.CharField')
+             (unique=True, max_length=90)),
+            ('dashboard_type', self.gf('django.db.models.fields.CharField')
+             (default='transaction', max_length=30)),
+            ('page_type', self.gf('django.db.models.fields.CharField')
+             (default='dashboard', max_length=80)),
             ('published', self.gf('django.db.models.fields.BooleanField')()),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=80)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
-            ('description_extra', self.gf('django.db.models.fields.CharField')(max_length=400, blank=True)),
-            ('costs', self.gf('django.db.models.fields.CharField')(max_length=1500, blank=True)),
-            ('other_notes', self.gf('django.db.models.fields.CharField')(max_length=700, blank=True)),
-            ('customer_type', self.gf('django.db.models.fields.CharField')(default='', max_length=20, blank=True)),
-            ('business_model', self.gf('django.db.models.fields.CharField')(default='', max_length=20, blank=True)),
-            ('improve_dashboard_message', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('strapline', self.gf('django.db.models.fields.CharField')(default='Dashboard', max_length=40)),
-            ('tagline', self.gf('django.db.models.fields.CharField')(max_length=400, blank=True)),
-            ('organisation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['organisation.Node'], null=True, blank=True)),
+            ('title', self.gf('django.db.models.fields.CharField')
+             (max_length=80)),
+            ('description', self.gf('django.db.models.fields.CharField')
+             (max_length=500, blank=True)),
+            ('description_extra', self.gf('django.db.models.fields.CharField')
+             (max_length=400, blank=True)),
+            ('costs', self.gf('django.db.models.fields.CharField')
+             (max_length=1500, blank=True)),
+            ('other_notes', self.gf('django.db.models.fields.CharField')
+             (max_length=700, blank=True)),
+            ('customer_type', self.gf('django.db.models.fields.CharField')
+             (default='', max_length=20, blank=True)),
+            ('business_model', self.gf('django.db.models.fields.CharField')
+             (default='', max_length=20, blank=True)),
+            ('improve_dashboard_message', self.gf(
+                'django.db.models.fields.BooleanField')(default=True)),
+            ('strapline', self.gf('django.db.models.fields.CharField')
+             (default='Dashboard', max_length=40)),
+            ('tagline', self.gf('django.db.models.fields.CharField')
+             (max_length=400, blank=True)),
+            ('organisation', self.gf('django.db.models.fields.related.ForeignKey')(
+                to=orm['organisation.Node'], null=True, blank=True)),
         ))
         db.send_create_signal('dashboards', ['Dashboard'])
 
         # Adding model 'Link'
         db.create_table(u'dashboards_link', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200)),
-            ('dashboard', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dashboards.Dashboard'])),
-            ('link_type', self.gf('django.db.models.fields.CharField')(max_length=20)),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('title', self.gf('django.db.models.fields.CharField')
+             (max_length=100)),
+            ('url', self.gf('django.db.models.fields.URLField')
+             (max_length=200)),
+            ('dashboard', self.gf('django.db.models.fields.related.ForeignKey')(
+                to=orm['dashboards.Dashboard'])),
+            ('link_type', self.gf(
+                'django.db.models.fields.CharField')(max_length=20)),
         ))
         db.send_create_signal('dashboards', ['Link'])
 
         # Adding model 'ModuleType'
         db.create_table(u'dashboards_moduletype', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=25)),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')
+             (unique=True, max_length=25)),
             ('schema', self.gf('jsonfield.fields.JSONField')()),
         ))
         db.send_create_signal('dashboards', ['ModuleType'])
 
         # Adding model 'Module'
         db.create_table(u'dashboards_module', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dashboards.ModuleType'])),
-            ('dashboard', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dashboards.Dashboard'])),
-            ('slug', self.gf('django.db.models.fields.CharField')(max_length=60)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=60)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=200)),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')
+             (to=orm['dashboards.ModuleType'])),
+            ('dashboard', self.gf('django.db.models.fields.related.ForeignKey')(
+                to=orm['dashboards.Dashboard'])),
+            ('slug', self.gf('django.db.models.fields.CharField')
+             (max_length=60)),
+            ('title', self.gf('django.db.models.fields.CharField')
+             (max_length=60)),
+            ('description', self.gf(
+                'django.db.models.fields.CharField')(max_length=200)),
             ('info', self.gf('dbarray.fields.CharArrayField')(max_length=255)),
             ('options', self.gf('jsonfield.fields.JSONField')()),
         ))
@@ -66,7 +94,6 @@ class Migration(SchemaMigration):
 
         # Adding unique constraint on 'Module', fields ['dashboard', 'slug']
         db.create_unique(u'dashboards_module', ['dashboard_id', 'slug'])
-
 
     def backwards(self, orm):
         # Removing unique constraint on 'Module', fields ['dashboard', 'slug']
@@ -83,7 +110,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Module'
         db.delete_table(u'dashboards_module')
-
 
     models = {
         'dashboards.dashboard': {

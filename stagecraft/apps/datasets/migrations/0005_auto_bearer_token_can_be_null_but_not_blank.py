@@ -10,12 +10,14 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'DataSet.bearer_token'
-        db.alter_column(u'datasets_dataset', 'bearer_token', self.gf('django.db.models.fields.CharField')(max_length=255, null=True))
+        db.alter_column(u'datasets_dataset', 'bearer_token', self.gf(
+            'django.db.models.fields.CharField')(max_length=255, null=True))
 
     def backwards(self, orm):
 
         # Changing field 'DataSet.bearer_token'
-        db.alter_column(u'datasets_dataset', 'bearer_token', self.gf('django.db.models.fields.CharField')(default='', max_length=255))
+        db.alter_column(u'datasets_dataset', 'bearer_token', self.gf(
+            'django.db.models.fields.CharField')(default='', max_length=255))
 
     models = {
         u'datasets.datagroup': {

@@ -6,6 +6,7 @@ from stagecraft.apps.datasets.models import OAuthUser
 
 
 class OAuthUserTest(TestCase):
+
     def test_get_by_access_token_returns_none_if_not_found(self):
         assert_that(
             OAuthUser.objects.get_by_access_token('not-there'),

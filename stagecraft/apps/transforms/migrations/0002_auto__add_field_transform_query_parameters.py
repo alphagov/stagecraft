@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Transform.query_parameters'
         db.add_column(u'transforms_transform', 'query_parameters',
-                      self.gf('jsonfield.fields.JSONField')(default='', blank=True),
+                      self.gf('jsonfield.fields.JSONField')(
+                          default='', blank=True),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Transform.query_parameters'
         db.delete_column(u'transforms_transform', 'query_parameters')
-
 
     models = {
         u'datasets.datagroup': {

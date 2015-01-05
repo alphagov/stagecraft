@@ -39,7 +39,7 @@ urlpatterns = patterns(
     url(r'^data-sets/(?P<dataset_name>[\w-]+)/users/$', RedirectView.as_view(
         pattern_name='data-sets-users',
         permanent=True
-        )),
+    )),
     url(r'^data-sets/(?P<name>[\w-]+)/dashboard$',
         datasets_views.dashboard,
         name='data-sets-dashboard'),

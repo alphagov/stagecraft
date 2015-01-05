@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class RequestLoggerMiddleware(object):
+
     def process_request(self, request):
         request.start_request_time = time.time()
         logger.info("{method} {path}".format(
@@ -19,7 +20,7 @@ class RequestLoggerMiddleware(object):
                 'http_host': request.META.get('HTTP_HOST'),
                 'http_path': request.get_full_path(),
                 'request_id': request.META.get('HTTP_REQUEST_ID')
-            })
+        })
 
     def process_response(self, request, response):
         if hasattr(request, 'start_request_time'):
@@ -35,5 +36,5 @@ class RequestLoggerMiddleware(object):
                     'http_path': request.get_full_path(),
                     'status': response.status_code,
                     'request_time': elapsed_time,
-                })
+            })
         return response

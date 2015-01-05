@@ -5,6 +5,7 @@ from ...datasets.tests.factories import DataTypeFactory
 
 
 class TransformTypeFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = TransformType
 
@@ -14,6 +15,7 @@ class TransformTypeFactory(factory.DjangoModelFactory):
 
 
 class TransformFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = Transform
 

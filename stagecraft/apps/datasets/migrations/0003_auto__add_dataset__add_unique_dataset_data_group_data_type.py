@@ -10,33 +10,48 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'DataSet'
         db.create_table(u'datasets_dataset', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=50)),
-            ('data_group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataGroup'])),
-            ('data_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataType'])),
-            ('raw_queries_allowed', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('bearer_token', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('upload_format', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('upload_filters', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('auto_ids', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('queryable', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('realtime', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('capped_size', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True, blank=True)),
-            ('max_age_expected', self.gf('django.db.models.fields.PositiveIntegerField')(default=86400, null=True, blank=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')
+             (primary_key=True)),
+            ('name', self.gf('django.db.models.fields.SlugField')
+             (unique=True, max_length=50)),
+            ('data_group', self.gf('django.db.models.fields.related.ForeignKey')(
+                to=orm['datasets.DataGroup'])),
+            ('data_type', self.gf('django.db.models.fields.related.ForeignKey')(
+                to=orm['datasets.DataType'])),
+            ('raw_queries_allowed', self.gf(
+                'django.db.models.fields.BooleanField')(default=True)),
+            ('bearer_token', self.gf('django.db.models.fields.CharField')
+             (max_length=255, blank=True)),
+            ('upload_format', self.gf('django.db.models.fields.CharField')
+             (max_length=255, blank=True)),
+            ('upload_filters', self.gf(
+                'django.db.models.fields.TextField')(blank=True)),
+            ('auto_ids', self.gf(
+                'django.db.models.fields.TextField')(blank=True)),
+            ('queryable', self.gf(
+                'django.db.models.fields.BooleanField')(default=True)),
+            ('realtime', self.gf(
+                'django.db.models.fields.BooleanField')(default=False)),
+            ('capped_size', self.gf('django.db.models.fields.PositiveIntegerField')(
+                default=None, null=True, blank=True)),
+            ('max_age_expected', self.gf('django.db.models.fields.PositiveIntegerField')(
+                default=86400, null=True, blank=True)),
         ))
         db.send_create_signal(u'datasets', ['DataSet'])
 
-        # Adding unique constraint on 'DataSet', fields ['data_group', 'data_type']
-        db.create_unique(u'datasets_dataset', ['data_group_id', 'data_type_id'])
-
+        # Adding unique constraint on 'DataSet', fields ['data_group',
+        # 'data_type']
+        db.create_unique(
+            u'datasets_dataset', ['data_group_id', 'data_type_id'])
 
     def backwards(self, orm):
-        # Removing unique constraint on 'DataSet', fields ['data_group', 'data_type']
-        db.delete_unique(u'datasets_dataset', ['data_group_id', 'data_type_id'])
+        # Removing unique constraint on 'DataSet', fields ['data_group',
+        # 'data_type']
+        db.delete_unique(
+            u'datasets_dataset', ['data_group_id', 'data_type_id'])
 
         # Deleting model 'DataSet'
         db.delete_table(u'datasets_dataset')
-
 
     models = {
         u'datasets.datagroup': {

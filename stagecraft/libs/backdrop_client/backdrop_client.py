@@ -19,30 +19,35 @@ class BackdropError(Exception):
 
 
 class BackdropUnknownError(BackdropError):
+
     def __str__(self):
         return 'Unknown Backdrop error: {}'.format(
             super(BackdropUnknownError, self).__str__())
 
 
 class BackdropConnectionError(BackdropError):
+
     def __str__(self):
         return 'Error connecting to Backdrop: {}'.format(
             super(BackdropConnectionError, self).__str__())
 
 
 class BackdropAuthenticationError(BackdropError):
+
     def __str__(self):
         return 'Error authenticating with Backdrop: {}'.format(
             super(BackdropAuthenticationError, self).__str__())
 
 
 class BackdropBadRequestError(BackdropError):
+
     def __str__(self):
         return 'Bad request to Backdrop: {}'.format(
             super(BackdropBadRequestError, self).__str__())
 
 
 class BackdropNotFoundError(BackdropError):
+
     def __str__(self):
         return 'Not found in Backdrop: {}'.format(
             super(BackdropNotFoundError, self).__str__())

@@ -4,6 +4,7 @@ from hamcrest.core.base_matcher import BaseMatcher
 
 
 class IsResponseWithHeader(BaseMatcher):
+
     def __init__(self, expected_header, expected_value):
         self.expected_header = expected_header
         self.expected_value = expected_value
@@ -22,6 +23,7 @@ def has_header(header, value):
 
 
 class IsResponseWithStatus(BaseMatcher):
+
     def __init__(self, expected_status):
         self.expected_status = expected_status
 
@@ -46,6 +48,7 @@ def is_forbidden():
 
 
 class IsErrorResponse(BaseMatcher):
+
     def __init__(self, message):
         self.message = message
 

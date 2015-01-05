@@ -5,6 +5,7 @@ from ....organisation.tests.factories import NodeFactory, NodeTypeFactory
 
 
 class DashboardFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = Dashboard
 
@@ -14,6 +15,7 @@ class DashboardFactory(factory.DjangoModelFactory):
 
 
 class LinkFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = Link
 
@@ -24,6 +26,7 @@ class LinkFactory(factory.DjangoModelFactory):
 
 
 class ModuleTypeFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = ModuleType
 
@@ -32,6 +35,7 @@ class ModuleTypeFactory(factory.DjangoModelFactory):
 
 
 class ModuleFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = Module
 

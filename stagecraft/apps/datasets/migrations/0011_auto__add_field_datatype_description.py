@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'DataType.description'
         db.add_column(u'datasets_datatype', 'description',
-                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
+                      self.gf('django.db.models.fields.TextField')(
+                          default='', blank=True),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'DataType.description'
         db.delete_column(u'datasets_datatype', 'description')
-
 
     models = {
         u'datasets.backdropuser': {

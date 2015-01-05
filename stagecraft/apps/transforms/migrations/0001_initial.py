@@ -10,25 +10,33 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'TransformType'
         db.create_table(u'transforms_transformtype', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=25)),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')
+             (unique=True, max_length=25)),
             ('schema', self.gf('jsonfield.fields.JSONField')(blank=True)),
-            ('function', self.gf('django.db.models.fields.CharField')(unique=True, max_length=200)),
+            ('function', self.gf('django.db.models.fields.CharField')
+             (unique=True, max_length=200)),
         ))
         db.send_create_signal(u'transforms', ['TransformType'])
 
         # Adding model 'Transform'
         db.create_table(u'transforms_transform', (
-            ('id', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, primary_key=True)),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['transforms.TransformType'])),
-            ('input_group', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['datasets.DataGroup'])),
-            ('input_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['datasets.DataType'])),
+            ('id', self.gf('uuidfield.fields.UUIDField')
+             (unique=True, max_length=32, primary_key=True)),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')
+             (to=orm['transforms.TransformType'])),
+            ('input_group', self.gf('django.db.models.fields.related.ForeignKey')(
+                blank=True, related_name='+', null=True, to=orm['datasets.DataGroup'])),
+            ('input_type', self.gf('django.db.models.fields.related.ForeignKey')(
+                related_name='+', to=orm['datasets.DataType'])),
             ('options', self.gf('jsonfield.fields.JSONField')(blank=True)),
-            ('output_group', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['datasets.DataGroup'])),
-            ('output_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['datasets.DataType'])),
+            ('output_group', self.gf('django.db.models.fields.related.ForeignKey')(
+                blank=True, related_name='+', null=True, to=orm['datasets.DataGroup'])),
+            ('output_type', self.gf('django.db.models.fields.related.ForeignKey')(
+                related_name='+', to=orm['datasets.DataType'])),
         ))
         db.send_create_signal(u'transforms', ['Transform'])
-
 
     def backwards(self, orm):
         # Deleting model 'TransformType'
@@ -36,7 +44,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Transform'
         db.delete_table(u'transforms_transform')
-
 
     models = {
         u'datasets.datagroup': {

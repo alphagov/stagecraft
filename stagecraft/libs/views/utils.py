@@ -6,6 +6,7 @@ from uuid import UUID
 
 
 class JsonEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, UUID):
             return '{}'.format(obj)

@@ -4,6 +4,7 @@ from ..models import Node, NodeType
 
 
 class NodeTypeFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = NodeType
 
@@ -11,6 +12,7 @@ class NodeTypeFactory(factory.DjangoModelFactory):
 
 
 class NodeFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = Node
 

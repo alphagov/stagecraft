@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'DataSet.published'
         db.add_column(u'datasets_dataset', 'published',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      self.gf('django.db.models.fields.BooleanField')(
+                          default=True),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'DataSet.published'
         db.delete_column(u'datasets_dataset', 'published')
-
 
     models = {
         u'datasets.backdropuser': {
