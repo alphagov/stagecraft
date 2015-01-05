@@ -97,11 +97,28 @@ class Module(models.Model):
         """
         # Ensure that any group_by query parameters use a list rather than
         # scalar value
-        if self.query_parameters:
-            group_by = self.query_parameters.get('group_by')
+        def listify_group_by(query_parameters):
+            group_by = query_parameters.get('group_by')
             if group_by and type(group_by) is not list:
-                self.query_parameters['group_by'] = [group_by]
+                query_parameters['group_by'] = [group_by]
+                return True
+            return False
+
+        # group_by can be part of query_parameters
+        if self.query_parameters:
+            if listify_group_by(self.query_parameters):
                 self.validate_query_parameters()
+
+        # group_by can be part of query_parameters in tabs
+        if self.options:
+            tabs = self.options.get('tabs')
+            if tabs:
+                for tab in tabs:
+                    query_parameters = tab.get('data-source',
+                                               {}).get('query-params', {})
+                    if query_parameters:
+                        listify_group_by(query_parameters)
+            self.validate_options()
 
     def _parent_id_as_dict(self):
         if self.parent is not None:
