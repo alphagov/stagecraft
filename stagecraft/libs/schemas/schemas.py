@@ -19,7 +19,7 @@ def get_defined_schemas(name=None):
 
 def load_json_schema(schema_path):
 
-    if not ".json" in schema_path:
+    if ".json" not in schema_path:
         schema_path = schema_path + ".json"
 
     schema_path = path.join(schema_root, schema_path)
