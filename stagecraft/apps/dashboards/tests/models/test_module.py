@@ -13,11 +13,13 @@ from ...models.module import Module, ModuleType
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
-    DataGroupFactory,
-    DataTypeFactory,
-    DataSetFactory,
     ModuleFactory,
     ModuleTypeFactory)
+
+from stagecraft.apps.datasets.tests.factories import(
+    DataGroupFactory,
+    DataTypeFactory,
+    DataSetFactory)
 
 
 class ModuleTypeTestCase(TestCase):
@@ -115,7 +117,7 @@ class ModuleTestCase(TestCase):
     def test_spotlightify_with_nested_modules(self):
         parent = ModuleFactory(slug='a-module', order=1)
         child = ModuleFactory(slug='b-module', order=2, parent=parent)
-        child_of_child = ModuleFactory(
+        ModuleFactory(
             slug='c-module', order=3, parent=child)
         other_child = ModuleFactory(slug='d-module', order=4, parent=parent)
 
@@ -249,7 +251,7 @@ class ModuleTestCase(TestCase):
     def test_serialize_with_nested_modules(self):
         parent = ModuleFactory(slug='a-module', order=1)
         child = ModuleFactory(slug='b-module', order=2, parent=parent)
-        child_of_child = ModuleFactory(
+        ModuleFactory(
             slug='c-module', order=3, parent=child)
         other_child = ModuleFactory(slug='d-module', order=4, parent=parent)
 

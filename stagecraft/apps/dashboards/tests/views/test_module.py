@@ -12,11 +12,13 @@ from ...views.module import add_module_to_dashboard
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory,
-    DataGroupFactory,
-    DataTypeFactory,
-    DataSetFactory,
     ModuleFactory,
     ModuleTypeFactory)
+
+from stagecraft.apps.datasets.tests.factories import(
+    DataGroupFactory,
+    DataTypeFactory,
+    DataSetFactory)
 
 
 class ModuleViewsTestCase(TestCase):
