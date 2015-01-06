@@ -19,8 +19,7 @@ from stagecraft.apps.datasets.tests.factories import(
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
 from stagecraft.apps.dashboards.models.module import Module
-from stagecraft.apps.dashboards.views.dashboard import(
-    recursively_fetch_dashboard)
+from stagecraft.apps.dashboards.views.dashboard import fetch_dashboard
 from stagecraft.libs.authorization.tests.test_http import (
     with_govuk_signon)
 from stagecraft.libs.views.utils import to_json
@@ -137,19 +136,11 @@ class DashboardViewsListTestCase(TestCase):
             }))
         assert_that(resp.status_code, equal_to(404))
 
-    def test_recursively_fetch_dashboard_recurses_down_the_slug_fragments(
-            self):
-        dashboard = DashboardFactory(slug='experimental/my_first_slug')
-        slug = 'experimental/my_first_slug/another/thing'
-        returned_dashboard = recursively_fetch_dashboard(slug)
+    def test_fetch_dashboard_with_multiple_slug_fragments(self):
+        dashboard = DashboardFactory(slug='my_first_slug')
+        slug = 'my_first_slug/another/thing'
+        returned_dashboard = fetch_dashboard(slug)
         assert_that(dashboard.id, equal_to(returned_dashboard.id))
-
-    def test_recursively_fetch_dashboard_returns_none_after_3_levels(
-            self):
-        DashboardFactory(slug='my_first_slug')
-        slug = 'my_first_slug/some_url_fragment/another/another'
-        returned_dashboard = recursively_fetch_dashboard(slug)
-        assert_that(returned_dashboard, is_(none()))
 
     @patch(
         'stagecraft.apps.dashboards.models.dashboard.Dashboard.spotlightify'
@@ -188,6 +179,33 @@ class DashboardViewsListTestCase(TestCase):
                         has_entry('slug', 'slug2'),
                         has_entry('slug', 'slug3')))
 
+    def test_dashboard_with_section_slug_returns_module_and_children(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        parent = ModuleFactory(
+            type=module_type,
+            slug='section-we-want',
+            order=1,
+            dashboard=dashboard
+        )
+        ModuleFactory(
+            type=module_type,
+            slug='module-we-want',
+            order=2,
+            dashboard=dashboard,
+            parent=parent)
+
+        resp = self.client.get(
+            '/public/dashboards', {'slug': 'my-first-slug/section-we-want'})
+        data = json.loads(resp.content)
+
+        assert_that(data['modules'],
+                    contains(has_entry('slug', 'section-we-want')))
+        assert_that(len(data['modules']), equal_to(1))
+        assert_that(data['modules'][0]['modules'],
+                    contains(has_entry('slug', 'module-we-want')))
+        assert_that(data, has_entry('page-type', 'module'))
+
     def test_dashboard_with_module_slug_only_returns_module(self):
         dashboard = DashboardFactory(slug='my-first-slug')
         module_type = ModuleTypeFactory()
@@ -199,6 +217,25 @@ class DashboardViewsListTestCase(TestCase):
             slug='module-we-dont-want')
         resp = self.client.get(
             '/public/dashboards', {'slug': 'my-first-slug/module-we-want'})
+        data = json.loads(resp.content)
+        assert_that(data['modules'],
+                    contains(has_entry('slug', 'module-we-want')))
+        assert_that(data, has_entry('page-type', 'module'))
+
+    def test_dashboard_with_sectioned_module_slug_only_returns_module(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        parent = ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='section-we-want')
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-want',
+            parent=parent)
+        resp = self.client.get(
+            '/public/dashboards',
+            {'slug': 'my-first-slug/section-we-want/module-we-want'}
+        )
         data = json.loads(resp.content)
         assert_that(data['modules'],
                     contains(has_entry('slug', 'module-we-want')))
@@ -240,6 +277,45 @@ class DashboardViewsListTestCase(TestCase):
         resp = self.client.get(
             '/public/dashboards',
             {'slug': 'my-first-slug/module-we-want/module-we-want-tab-we-want'}
+        )
+        data = json.loads(resp.content)
+        assert_that(data['modules'],
+                    contains(
+                        has_entries({'slug': 'tab-we-want',
+                                     'info': contains('module-info'),
+                                     'title': 'module-title - tab-title'
+                                     })))
+        assert_that(data, has_entry('page-type', 'module'))
+
+    def test_dashboard_with_sectioned_tab_slug_only_returns_tab(self):
+        dashboard = DashboardFactory(slug='my-first-slug')
+        module_type = ModuleTypeFactory()
+        parent = ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='section-we-want')
+        ModuleFactory(
+            type=module_type, dashboard=dashboard,
+            slug='module-we-want',
+            info=['module-info'],
+            title='module-title',
+            options={
+                'tabs': [
+                    {
+                        'slug': 'tab-we-want',
+                        'title': 'tab-title'
+                    },
+                    {
+                        'slug': 'tab-we-dont-want',
+                    }
+                ]
+            },
+            parent=parent
+        )
+        slug = 'my-first-slug/section-we-want/module-we-want/'
+        slug += 'module-we-want-tab-we-want'
+        resp = self.client.get(
+            '/public/dashboards',
+            {'slug': slug}
         )
         data = json.loads(resp.content)
         assert_that(data['modules'],
@@ -297,7 +373,7 @@ class DashboardViewsGetTestCase(TestCase):
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_get_an_existing_dashboard_returns_a_dashboard(self):
-        dashboard = DashboardFactory()
+        dashboard = DashboardFactory(slug='slug1')
 
         resp = self.client.get(
             '/dashboard/{}'.format(dashboard.slug),
@@ -384,6 +460,7 @@ class DashboardViewsUpdateTestCase(TestCase):
         dashboard_data['modules'][0]['query_parameters'] = {
             'sort_by': 'thing:desc',
         }
+        dashboard_data['modules'][0]['modules'] = []
 
         resp = self.client.put(
             '/dashboard/{}'.format(dashboard.id),
@@ -392,6 +469,55 @@ class DashboardViewsUpdateTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer correct-token')
 
         module_from_db = Module.objects.get(id=module.id)
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            module_from_db.title,
+            equal_to('new module title')
+        )
+        assert_that(
+            module_from_db.data_set_id,
+            equal_to(new_data_set.id)
+        )
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_updating_nested_module_attributes(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        module = ModuleFactory(
+            dashboard=dashboard,
+            title='module-title',
+            data_set=DataSetFactory()
+        )
+        nested_module = ModuleFactory(
+            parent=module,
+            dashboard=dashboard,
+            title='module-title',
+            data_set=DataSetFactory()
+        )
+        new_data_set = DataSetFactory(
+            data_group__name='new-group-title',
+            data_type__name='new-type-title'
+        )
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'][0]['order'] = 1
+        dashboard_data['modules'][0]['type_id'] = module.type_id
+        dashboard_data['modules'][0]['query_parameters'] = {
+            'sort_by': 'thing:desc', }
+        nested_data = dashboard_data['modules'][0]['modules'][0]
+        nested_data['title'] = 'new module title'
+        nested_data['data_group'] = 'new-group-title'
+        nested_data['data_type'] = 'new-type-title'
+        nested_data['order'] = 2
+        nested_data['type_id'] = module.type_id
+        nested_data['query_parameters'] = {'sort_by': 'thing:desc', }
+        nested_data['modules'] = []
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        module_from_db = Module.objects.get(id=nested_module.id)
         assert_that(resp.status_code, equal_to(200))
         assert_that(
             module_from_db.title,
@@ -465,6 +591,39 @@ class DashboardViewsUpdateTestCase(TestCase):
         assert_that(json.loads(
             resp.content), has_entry('modules', has_length(0)))
         assert_that(Module.objects.filter(id=module.id), has_length(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_removing_nested_module(self):
+        dashboard = DashboardFactory(title='test dashboard')
+        parent = ModuleFactory(dashboard=dashboard, title='parent')
+        child = ModuleFactory(
+            parent=parent, dashboard=dashboard, title='module to remove')
+        child_of_child = ModuleFactory(
+            title='child of child', parent=child, dashboard=dashboard)
+        dashboard_data = dashboard.serialize()
+        dashboard_data['modules'][0]['order'] = 1
+        dashboard_data['modules'][0]['type_id'] = parent.type_id
+        child_data = dashboard_data['modules'][0]['modules'][0]
+        child_of_child_data = child_data['modules'][0]
+        child_of_child_data['order'] = 2
+        child_of_child_data['type_id'] = child_of_child.type_id
+        dashboard_data['modules'][0]['modules'] = [child_of_child_data]
+
+        resp = self.client.put(
+            '/dashboard/{}'.format(dashboard.id),
+            json.dumps(dashboard_data, cls=JsonEncoder),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        parent_json = json.loads(resp.content)['modules'][0]
+        child_json = parent_json['modules'][0]
+        assert_that(parent_json['title'], equal_to('parent'))
+        assert_that(child_json['title'], equal_to('child of child'))
+        assert_that(child_json['modules'], has_length(0))
+        assert_that(Module.objects.filter(id=child.id), has_length(0))
+        assert_that(Module.objects.get(id=child_of_child.id).parent,
+                    equal_to(parent))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_update_existing_link(self):
@@ -601,14 +760,16 @@ class DashboardViewsCreateTestCase(TestCase):
                 'info': [],
                 'options': {},
                 'order': order,
+                'modules': [],
             }
 
         data = self._get_dashboard_payload()
         data['modules'] = [
             make_module('foo', 'The Foo', 1),
-            make_module('bar', 'The Bar', 3),
+            make_module('bar', 'The Bar', 4),
             make_module('monkey', 'The the', 2),
         ]
+        data['modules'][2]['modules'] = [make_module('chimp', 'Ooh', 3)]
 
         resp = self.client.post(
             '/dashboard', to_json(data),
@@ -617,7 +778,9 @@ class DashboardViewsCreateTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(200))
         dashboard = Dashboard.objects.first()
-        assert_that(dashboard.module_set.count(), equal_to(3))
+        assert_that(dashboard.module_set.count(), equal_to(4))
+        nested_module = Module.objects.get(slug='chimp')
+        assert_that(nested_module.parent.slug, equal_to('monkey'))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_create_dashboard_fails_with_invalid_module(self):

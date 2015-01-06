@@ -54,6 +54,7 @@ class Module(models.Model):
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
     data_set = models.ForeignKey(DataSet, null=True, blank=True)
+    parent = models.ForeignKey("self", null=True, blank=True)
 
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
@@ -102,6 +103,12 @@ class Module(models.Model):
                 self.query_parameters['group_by'] = [group_by]
                 self.validate_query_parameters()
 
+    def _parent_id_as_dict(self):
+        if self.parent is not None:
+            return {'id': str(self.parent.id)}
+        else:
+            return None
+
     def spotlightify(self):
         out = copy.deepcopy(self.options)
         out['module-type'] = self.type.name
@@ -118,6 +125,9 @@ class Module(models.Model):
 
             if self.query_parameters is not None:
                 out['data-source']['query-params'] = self.query_parameters
+
+        out['modules'] = [
+            m.spotlightify() for m in self.module_set.all().order_by('order')]
 
         return out
 
@@ -143,6 +153,11 @@ class Module(models.Model):
             out['data_type'] = self.data_set.data_type.name
         else:
             out['data_set'] = None
+
+        out['parent'] = self._parent_id_as_dict()
+
+        out['modules'] = [
+            m.serialize() for m in self.module_set.all().order_by('order')]
 
         return out
 

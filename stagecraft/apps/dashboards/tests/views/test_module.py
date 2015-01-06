@@ -6,25 +6,34 @@ from hamcrest import (
     has_entry, has_item, has_key, is_not, has_length
 )
 
-from stagecraft.apps.datasets.models import DataGroup, DataType, DataSet
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from ...models import Dashboard, Module, ModuleType
 from ...views.module import add_module_to_dashboard
+
+from stagecraft.apps.dashboards.tests.factories.factories import(
+    DashboardFactory,
+    ModuleFactory,
+    ModuleTypeFactory)
+
+from stagecraft.apps.datasets.tests.factories import(
+    DataGroupFactory,
+    DataTypeFactory,
+    DataSetFactory)
 
 
 class ModuleViewsTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data_group = DataGroup.objects.create(name='group')
-        cls.data_type = DataType.objects.create(name='type')
+        cls.data_group = DataGroupFactory(name='group')
+        cls.data_type = DataTypeFactory(name='type')
 
-        cls.data_set = DataSet.objects.create(
+        cls.data_set = DataSetFactory(
             data_group=cls.data_group,
             data_type=cls.data_type,
         )
 
-        cls.module_type = ModuleType.objects.create(
+        cls.module_type = ModuleTypeFactory(
             name='a-type',
             schema={
                 'type': 'object',
@@ -38,7 +47,7 @@ class ModuleViewsTestCase(TestCase):
             }
         )
 
-        cls.dashboard = Dashboard.objects.create(
+        cls.dashboard = DashboardFactory(
             published=True,
             title='A service',
             slug='some-slug',
@@ -66,18 +75,18 @@ class ModuleViewsTestCase(TestCase):
         assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_modules_by_uuid_or_slug(self):
-        dashboard2 = Dashboard.objects.create(
+        DashboardFactory(
             published=True,
             title='A service',
             slug='some-slug2',
         )
-        module1 = Module.objects.create(
+        module1 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-1',
             options={},
             order=1)
-        module2 = Module.objects.create(
+        module2 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-2',
@@ -99,7 +108,7 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', str(module2.id))))
 
-        resp2 = self.client.get(
+        self.client.get(
             '/dashboard/{}/module'.format(self.dashboard.id))
 
         resp_json = json.loads(resp.content)
@@ -112,29 +121,25 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', str(module2.id))))
 
-        module1.delete()
-        module2.delete()
-        dashboard2.delete()
-
     def test_list_modules_on_dashboard(self):
-        dashboard2 = Dashboard.objects.create(
+        dashboard2 = DashboardFactory(
             published=True,
             title='A service',
             slug='some-slug2',
         )
-        module1 = Module.objects.create(
+        module1 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-1',
             options={},
             order=1)
-        module2 = Module.objects.create(
+        module2 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
             slug='module-2',
             options={},
             order=2)
-        module3 = Module.objects.create(
+        module3 = ModuleFactory(
             type=self.module_type,
             dashboard=dashboard2,
             slug='module-3',
@@ -159,11 +164,6 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             is_not(has_item(has_entry('id', str(module3.id)))))
 
-        module1.delete()
-        module2.delete()
-        module3.delete()
-        dashboard2.delete()
-
     def test_add_a_module_to_a_dashboard(self):
         resp = self.client.post(
             '/dashboard/{}/module'.format(self.dashboard.slug),
@@ -177,6 +177,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -260,6 +261,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -281,6 +283,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -302,6 +305,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
                 'query_parameters': {},
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
@@ -324,6 +328,7 @@ class ModuleViewsTestCase(TestCase):
                     'thing': 'a value',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -348,6 +353,7 @@ class ModuleViewsTestCase(TestCase):
                     'sort_by': 'thing:desc',
                 },
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -458,6 +464,7 @@ class ModuleViewsTestCase(TestCase):
                 'info': ['foo'],
                 'options': {'thing': 'a value'},
                 'order': 1,
+                'modules': [],
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -477,6 +484,7 @@ class ModuleViewsTestCase(TestCase):
                 'info': ['foo'],
                 'options': {'thing': 'a value'},
                 'order': 1,
+                'modules': [],
             }
         )
         dashboard = Dashboard.objects.get(id=self.dashboard.id)
@@ -497,8 +505,8 @@ class ModuleTypeViewsTestCase(TestCase):
         assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_types(self):
-        ModuleType.objects.create(name="foo", schema={})
-        ModuleType.objects.create(name="bar", schema={})
+        ModuleTypeFactory(name="foo", schema={})
+        ModuleTypeFactory(name="bar", schema={})
 
         resp = self.client.get('/module-type')
         resp_json = json.loads(resp.content)
@@ -514,8 +522,8 @@ class ModuleTypeViewsTestCase(TestCase):
         )
 
     def test_list_types_filter_by_name(self):
-        ModuleType.objects.create(name="foo", schema={})
-        ModuleType.objects.create(name="bar", schema={})
+        ModuleTypeFactory(name="foo", schema={})
+        ModuleTypeFactory(name="bar", schema={})
 
         resp = self.client.get('/module-type?name=foo')
         resp_json = json.loads(resp.content)
@@ -527,8 +535,8 @@ class ModuleTypeViewsTestCase(TestCase):
         )
 
     def test_list_types_filter_by_name_case_insensitive(self):
-        ModuleType.objects.create(name="foo", schema={})
-        ModuleType.objects.create(name="bar", schema={})
+        ModuleTypeFactory(name="foo", schema={})
+        ModuleTypeFactory(name="bar", schema={})
 
         resp = self.client.get('/module-type?name=fOo')
         resp_json = json.loads(resp.content)

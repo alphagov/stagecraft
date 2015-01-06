@@ -53,26 +53,29 @@ def list_modules_on_dashboard(request, dashboard):
     return json_response(serialized)
 
 
-def add_module_to_dashboard(dashboard, module_settings):
+def add_module_to_dashboard(dashboard, module_settings, parent_module=None):
+
+    def make_error(msg_part):
+        return "Error in module {0} (slug '{1}') - message: '{2}'".format(
+            module_settings['order'], module_settings['slug'], msg_part)
+
     missing_keys = REQUIRED_KEYS - set(module_settings.keys())
     if len(missing_keys) > 0:
-        raise ValueError(
-            'missing keys: {}'.format(', '.join(missing_keys)))
+        raise ValueError('missing keys: {}'.format(', '.join(missing_keys)))
 
     try:
         module_type = ModuleType.objects.get(id=module_settings['type_id'])
     except(ModuleType.DoesNotExist, DataError):
-        raise ValueError('module type was not found')
+        raise ValueError(make_error('module type was not found'))
 
     if module_settings.get('id'):
         try:
             module = Module.objects.get(id=module_settings['id'])
         except Module.DoesNotExist as e:
-            raise ValueError('module with id {} not found'.format(
-                module_data['id']))
+            msg = 'module with id {} not found'.format(module_settings['id'])
+            raise ValueError(make_error(msg))
     else:
-        module = Module(
-        )
+        module = Module()
 
     module.dashboard = dashboard
     module.type = module_type
@@ -83,11 +86,16 @@ def add_module_to_dashboard(dashboard, module_settings):
     module.options = module_settings['options']
     module.order = module_settings['order']
 
+    if parent_module is not None:
+        module.parent = parent_module
+    else:
+        module.parent = None
+
     try:
         module.validate_options()
     except ValidationError as err:
-        raise ValueError(
-            'options field failed validation: {}'.format(err.message))
+        msg = 'options field failed validation: {}'.format(err.message)
+        raise ValueError(make_error(msg))
 
     if module_settings.get('data_group') and module_settings.get('data_type'):
         try:
@@ -96,7 +104,7 @@ def add_module_to_dashboard(dashboard, module_settings):
                 data_type__name=module_settings['data_type'],
             )
         except DataSet.DoesNotExist:
-            raise ValueError('data set does not exist')
+            raise ValueError(make_error('data set does not exist'))
 
         module.data_set = data_set
         module.query_parameters = module_settings.get('query_parameters', {})
@@ -104,10 +112,10 @@ def add_module_to_dashboard(dashboard, module_settings):
         try:
             module.validate_query_parameters()
         except ValidationError as err:
-            raise ValueError(
-                'Query parameters not valid: {}'.format(err.message))
+            msg = 'Query parameters not valid: {}'.format(err.message)
+            raise ValueError(make_error(msg))
     elif module_settings.get('query_parameters'):
-        raise ValueError('query_parameters but no data set')
+        raise ValueError(make_error('query_parameters but no data set'))
 
     try:
         module.full_clean()
@@ -116,8 +124,8 @@ def add_module_to_dashboard(dashboard, module_settings):
             '{}: {}'.format(k, ' '.join(v))
             for k, v in err.message_dict.items()
         ]
-        message = "\n".join(messages)
-        raise ValueError(message)
+        msg = "\n".join(messages)
+        raise ValueError(make_error(msg))
 
     module.save()
 

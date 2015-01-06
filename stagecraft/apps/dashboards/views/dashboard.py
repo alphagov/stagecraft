@@ -42,7 +42,7 @@ def dashboard_list_for_spotlight():
 
 
 def single_dashboard_for_spotlight(request, dashboard_slug):
-    dashboard = recursively_fetch_dashboard(dashboard_slug)
+    dashboard = fetch_dashboard(dashboard_slug)
     if not dashboard:
         return error_response(request, dashboard_slug)
     dashboard_json = dashboard.spotlightify(dashboard_slug)
@@ -74,19 +74,9 @@ def error_response(request, dashboard_slug):
                                 content_type='application/json')
 
 
-def recursively_fetch_dashboard(dashboard_slug, count=3):
-    if count == 0:
-        return None
-
-    dashboard = Dashboard.objects.filter(slug=dashboard_slug).first()
-
-    if not dashboard:
-        slug_parts = dashboard_slug.split('/')
-        if len(slug_parts) > 1:
-            slug_parts.pop()
-            dashboard = recursively_fetch_dashboard(
-                '/'.join(slug_parts), count=count - 1)
-
+def fetch_dashboard(dashboard_slug):
+    slug = dashboard_slug.split('/')[0]
+    dashboard = Dashboard.objects.filter(slug=slug).first()
     return dashboard
 
 
@@ -142,6 +132,17 @@ def get_dashboard_by_uuid(user, request, dashboard_id=None):
 @never_cache
 @atomic_view
 def dashboard(user, request, identifier=None):
+
+    def add_module_and_children_to_dashboard(dashboard,
+                                             module_data,
+                                             parent=None):
+        modules = []
+        module = add_module_to_dashboard(dashboard, module_data, parent)
+        modules.append(module)
+        for module_data in module_data['modules']:
+            modules.extend(add_module_and_children_to_dashboard(
+                dashboard, module_data, module))
+        return modules
 
     if request.method == 'GET':
         if is_uuid(identifier):
@@ -230,15 +231,16 @@ def dashboard(user, request, identifier=None):
     if 'modules' in data:
         module_ids = set([m.id for m in dashboard.module_set.all()])
 
-        for i, module_data in enumerate(data['modules'], start=1):
+        for module_data in data['modules']:
             try:
-                module = add_module_to_dashboard(dashboard, module_data)
-                module_ids.discard(module.id)
+                modules = add_module_and_children_to_dashboard(
+                    dashboard, module_data)
+                for m in modules:
+                    module_ids.discard(m.id)
             except ValueError as e:
                 error = {
                     'status': 'error',
-                    'message': 'Failed to create module {}: {}'.format(
-                        i, e.message),
+                    'message': e.message,
                     'errors': [create_error(request, 400,
                                             detail=e.message)]
                 }

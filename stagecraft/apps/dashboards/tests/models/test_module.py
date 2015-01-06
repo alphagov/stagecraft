@@ -1,22 +1,31 @@
 
 from django.db import transaction, IntegrityError
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from jsonschema.exceptions import ValidationError, SchemaError
 from hamcrest import (
-    assert_that, equal_to, calling, raises, is_not, has_entry, has_key
+    assert_that, equal_to, calling, raises, is_not, has_entry, has_key,
+    contains
 )
 
-from stagecraft.apps.datasets.models import DataGroup, DataType, DataSet
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 
-from ...models.dashboard import Dashboard
 from ...models.module import Module, ModuleType
+
+from stagecraft.apps.dashboards.tests.factories.factories import(
+    DashboardFactory,
+    ModuleFactory,
+    ModuleTypeFactory)
+
+from stagecraft.apps.datasets.tests.factories import(
+    DataGroupFactory,
+    DataTypeFactory,
+    DataSetFactory)
 
 
 class ModuleTypeTestCase(TestCase):
 
     def test_module_type_serialization(self):
-        module_type = ModuleType.objects.create(
+        module_type = ModuleTypeFactory(
             name='foo',
             schema={
                 'some': 'thing',
@@ -50,17 +59,17 @@ class ModuleTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data_group = DataGroup.objects.create(name='group')
-        cls.data_type = DataType.objects.create(name='type')
-        cls.data_set = DataSet.objects.create(
+        cls.data_group = DataGroupFactory(name='group')
+        cls.data_type = DataTypeFactory(name='type')
+        cls.data_set = DataSetFactory(
             data_group=cls.data_group,
             data_type=cls.data_type,
         )
-        cls.module_type = ModuleType.objects.create(name='graph')
-        cls.dashboard_a = Dashboard.objects.create(
+        cls.module_type = ModuleTypeFactory(name='graph', schema={})
+        cls.dashboard_a = DashboardFactory(
             slug='a-dashboard',
             published=False)
-        cls.dashboard_b = Dashboard.objects.create(
+        cls.dashboard_b = DashboardFactory(
             slug='b-dashboard',
             published=False)
 
@@ -75,7 +84,7 @@ class ModuleTestCase(TestCase):
         cls.dashboard_b.delete()
 
     def test_spotlightify(self):
-        module = Module.objects.create(
+        module = ModuleFactory(
             slug='a-module',
             type=self.module_type,
             dashboard=self.dashboard_a,
@@ -105,8 +114,24 @@ class ModuleTestCase(TestCase):
             spotlight_module['data-source']['query-params']['sort_by'],
             equal_to('foo'))
 
+    def test_spotlightify_with_nested_modules(self):
+        parent = ModuleFactory(slug='a-module', order=1)
+        child = ModuleFactory(slug='b-module', order=2, parent=parent)
+        ModuleFactory(
+            slug='c-module', order=3, parent=child)
+        other_child = ModuleFactory(slug='d-module', order=4, parent=parent)
+
+        spotlightify = parent.spotlightify()
+
+        assert_that(
+            spotlightify,
+            has_entry('modules',
+                      contains(child.spotlightify(),
+                               other_child.spotlightify()))
+        )
+
     def test_spotlightify_with_no_data_set(self):
-        module = Module.objects.create(
+        module = ModuleFactory(
             slug='a-module',
             type=self.module_type,
             dashboard=self.dashboard_a,
@@ -130,7 +155,7 @@ class ModuleTestCase(TestCase):
             is_not(has_key('data-source')))
 
     def test_serialize_with_no_dataset(self):
-        module = Module.objects.create(
+        module = ModuleFactory(
             slug='a-module',
             type=self.module_type,
             order=1,
@@ -149,10 +174,8 @@ class ModuleTestCase(TestCase):
         assert_that(serialization['query_parameters'], equal_to(None))
         assert_that(serialization['data_set'], equal_to(None))
 
-        module.delete()
-
     def test_serialize_with_dataset(self):
-        module = Module.objects.create(
+        module = ModuleFactory(
             slug='a-module',
             type=self.module_type,
             order=1,
@@ -182,10 +205,8 @@ class ModuleTestCase(TestCase):
                 'data_type',
                 equal_to(self.data_set.data_type.name)))
 
-        module.delete()
-
     def test_serialize_with_dataset_but_no_query_parameters(self):
-        module = Module.objects.create(
+        module = ModuleFactory(
             slug='a-module',
             type=self.module_type,
             data_set=self.data_set,
@@ -213,12 +234,41 @@ class ModuleTestCase(TestCase):
             has_entry(
                 'data_type', equal_to(self.data_set.data_type.name)))
 
-        module.delete()
+    def test_serialize_with_no_nested_modules(self):
+        module = ModuleFactory(
+            slug='a-module',
+            type=self.module_type,
+            options={},
+            query_parameters={},
+            order=1,
+            dashboard=self.dashboard_a)
+
+        serialization = module.serialize()
+
+        assert_that(serialization['modules'], equal_to([]))
+        assert_that(serialization['parent'], equal_to(None))
+
+    def test_serialize_with_nested_modules(self):
+        parent = ModuleFactory(slug='a-module', order=1)
+        child = ModuleFactory(slug='b-module', order=2, parent=parent)
+        ModuleFactory(
+            slug='c-module', order=3, parent=child)
+        other_child = ModuleFactory(slug='d-module', order=4, parent=parent)
+
+        serialization = parent.serialize()
+
+        assert_that(
+            serialization,
+            has_entry('modules',
+                      contains(child.serialize(), other_child.serialize())))
+        assert_that(
+            serialization['modules'][0]['parent'],
+            has_entry('id', str(parent.id)))
 
     def test_cannot_have_two_equal_slugs_on_one_dashboard(self):
         def create_module(dashboard_model):
             with transaction.atomic():
-                Module.objects.create(
+                ModuleFactory(
                     slug='a-module',
                     type=self.module_type,
                     dashboard=dashboard_model,
@@ -256,7 +306,7 @@ class ModuleTestCase(TestCase):
         )
 
     def test_options_validated_against_type(self):
-        module_type = ModuleType.objects.create(
+        module_type = ModuleTypeFactory(
             name='some-graph',
             schema={
                 "type": "object",
