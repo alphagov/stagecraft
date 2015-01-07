@@ -348,9 +348,6 @@ class ModuleTestCase(TestCase):
             dashboard=self.dashboard_a,
             data_set=self.data_set,
             order=1,
-            options={
-                'foo': 'bar',
-            },
             query_parameters={
                 'group_by': 'foo'
             })
@@ -368,9 +365,6 @@ class ModuleTestCase(TestCase):
             dashboard=self.dashboard_a,
             data_set=self.data_set,
             order=1,
-            options={
-                'foo': 'bar',
-            },
             query_parameters={
                 'group_by': ['foo']
             })
@@ -388,9 +382,6 @@ class ModuleTestCase(TestCase):
             dashboard=self.dashboard_a,
             data_set=self.data_set,
             order=1,
-            options={
-                'foo': 'bar',
-            },
             query_parameters={}
         )
 
@@ -398,3 +389,30 @@ class ModuleTestCase(TestCase):
 
         assert_that(module.query_parameters.get('group_by'),
                     equal_to(None))
+
+    def test_tabs_group_by_is_rewritten_to_be_a_list(self):
+        module = Module.objects.create(
+            title='a-title',
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            data_set=self.data_set,
+            order=1,
+            options={
+                'tabs': [
+                    {
+                        'data-source': {
+                            'query-params': {
+                                'group_by': 'foo'
+                            }
+                        }
+                    },
+                    {}
+                ]
+            })
+
+        module.full_clean()
+
+        data_source = module.options['tabs'][0]['data-source']
+        assert_that(data_source['query-params']['group_by'],
+                    equal_to(['foo']))
