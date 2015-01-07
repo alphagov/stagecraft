@@ -49,9 +49,6 @@ class DataSetView(ResourceView):
             "capped_size": {
                 "type": "string"
             },
-            "name": {
-                "type": "string"
-            },
             "data_type": {
                 "type": "string"
             },
@@ -169,6 +166,7 @@ class DataSetView(ResourceView):
                 .format(model_json['data_type']))
         model_json['data_group'] = data_group
         model_json['data_type'] = data_type
+        model_json['name'] = '{}_{}'.format(data_group, data_type)
         kwargs['model_json'] = model_json
         try:
             return super(DataSetView, self).post(request, **kwargs)

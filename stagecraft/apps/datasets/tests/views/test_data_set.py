@@ -511,7 +511,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_post(self):
         data_set = {
-            'name': 'blibble',
             'data_type': 'type3',
             'realtime': False,
             'auto_ids': 'aa,bb',
@@ -524,9 +523,9 @@ class DataSetsViewsTestCase(TestCase):
             'published': False,
         }
         expected = {
+            'name': 'group1_type3',
             'bearer_token': None,
             'capped_size': None,
-            'name': 'group1_type3',
             'data_type': 'type3',
             'realtime': False,
             'auto_ids': ['aa', 'bb'],
@@ -551,9 +550,33 @@ class DataSetsViewsTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
-    def test_post_when_data_set_with_group_and_type_exists(self):
+    def test_post_with_name_is_rejected(self):
         data_set = {
             'name': 'group1_type1',
+            'data_type': 'type1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'data_group': 'group1',
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            resp.content,
+            "options failed validation: Additional properties are not allowed "
+            "(u'name' was unexpected)")
+
+    def test_post_when_data_set_with_group_and_type_exists(self):
+        data_set = {
             'data_type': 'type1',
             'realtime': False,
             'auto_ids': 'aa,bb',
@@ -577,7 +600,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_post_when_no_group(self):
         data_set = {
-            'name': 'group1_type1',
             'data_type': 'type1',
             'realtime': False,
             'auto_ids': 'aa,bb',
@@ -600,7 +622,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_post_when_no_type(self):
         data_set = {
-            'name': 'group1_type1',
             'data_group': 'group1',
             'realtime': False,
             'auto_ids': 'aa,bb',
@@ -623,7 +644,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_post_when_non_existant_group(self):
         data_set = {
-            'name': 'group1_type1',
             'data_type': 'type1',
             'data_group': '',
             'realtime': False,
@@ -647,7 +667,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_post_when_non_existant_type(self):
         data_set = {
-            'name': 'group1_type1',
             'data_type': 'wibble',
             'data_group': 'group1',
             'realtime': False,
@@ -671,7 +690,6 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_put_does_nothing(self):
         data_set = {
-            'name': 'group1_type1',
             'data_type': 'type1',
             'realtime': False,
             'auto_ids': 'aa,bb',
