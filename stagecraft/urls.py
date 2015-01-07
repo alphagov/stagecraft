@@ -84,5 +84,5 @@ urlpatterns = patterns(
     resource_url('transform', transforms_views.TransformView),
     resource_url('data-sets',
                  datasets_views.DataSetView,
-                 finder_matcher='<name>[\w-]+'),
+                 id_matcher='<name>[\w-]+'),
 )

@@ -1,10 +1,5 @@
-import json
-import logging
-
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
 from django.views.decorators.cache import never_cache
 
 from stagecraft.libs.authorization.http import permission_required
@@ -37,7 +32,7 @@ class NodeTypeView(ResourceView):
 
     @method_decorator(permission_required('organisation'))
     def post(self, user, request, **kwargs):
-        return super(NodeTypeView, self).post(request, **kwargs)
+        return super(NodeTypeView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json):
         model.name = model_json['name']
@@ -84,7 +79,7 @@ class NodeView(ResourceView):
 
     @method_decorator(permission_required('organisation'))
     def post(self, user, request, **kwargs):
-        return super(NodeView, self).post(request, **kwargs)
+        return super(NodeView, self).post(user, request, **kwargs)
 
     def from_resource(self, request, identifier, model):
         if identifier == 'ancestors':

@@ -88,59 +88,10 @@ class DataSetView(ResourceView):
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
     def get(self, user, request, **kwargs):
-        name = kwargs.get(self.id_field, None)
-        if name is not None:
-            try:
-                data_set = DataSet.objects.get(name=name)
-                user_is_not_admin = 'admin' not in user['permissions']
-                user_is_not_assigned = data_set.backdropuser_set.filter(
-                    email=user['email']).count() == 0
-                if user_is_not_admin and user_is_not_assigned:
-                    logger.warn("Unauthorized access to '{}' by '{}'".format(
-                        name, user['email']))
-                    raise DataSet.DoesNotExist()
-            except DataSet.DoesNotExist:
-                error = {'status': 'error',
-                         'message': "No Data Set named '{}' exists".
-                         format(name)}
-                logger.warn(error)
-
-                error["errors"] = [
-                    create_error(request, 404, detail=error['message'])]
-
-                return HttpResponseNotFound(to_json(error))
-        else:
-            return self.list(user, request)
-
-        json_str = to_json(data_set.serialize())
-
-        return HttpResponse(json_str, content_type='application/json')
-
-    # No longer called directly - happens through get which is protected.
-    def list(self, user, request):
-        # 400 if any query string keys were not in allowed set
-        if not set(request.GET).issubset(self.list_filters):
-            unrecognised = set(request.GET).difference(self.list_filters)
-            unrecognised_text = ', '.join(
-                "'{}'".format(i) for i in unrecognised)
-            return build_400(
-                logger,
-                request,
-                'Unrecognised parameter(s) ({}) were provided'
-                .format(str(unrecognised_text)))
-        try:
-            filter_kwargs = {}
-            if 'admin' not in user['permissions']:
-                filter_kwargs['backdropuser'] = BackdropUser.objects.filter(
-                    email=user['email'])
-
-            data_sets = super(DataSetView, self).list(
-                request, additional_filters=filter_kwargs).order_by('pk')
-            json_str = to_json([ds.serialize() for ds in data_sets])
-        except BackdropUser.DoesNotExist:
-            json_str = '[]'
-
-        return HttpResponse(json_str, content_type='application/json')
+        kwargs['user'] = user
+        return super(DataSetView, self).get(
+            request,
+            **kwargs)
 
     @method_decorator(permission_required('signin'))
     @method_decorator(never_cache)
@@ -169,7 +120,7 @@ class DataSetView(ResourceView):
         model_json['name'] = '{}_{}'.format(data_group, data_type)
         kwargs['model_json'] = model_json
         try:
-            return super(DataSetView, self).post(request, **kwargs)
+            return super(DataSetView, self).post(user, request, **kwargs)
         except InstanceExistsError:
             return build_400(
                 logger,

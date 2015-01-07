@@ -106,7 +106,7 @@ class ResourceViewTestCase(TestCase):
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
-        response = view.post(request, **args)
+        response = view.post(None, request, **args)
 
         assert_that(response, instance_of(HttpResponse))
 

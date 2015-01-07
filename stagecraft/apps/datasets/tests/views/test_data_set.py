@@ -466,18 +466,6 @@ class DataSetsViewsTestCase(TestCase):
                 record, response_object[i]
             )
 
-    def test_list_nonexistant_key(self):
-        resp = self.client.get(
-            '/data-sets?nonexistant-key=something',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        assert_equal(resp.status_code, 400)
-        actual = json.loads(resp.content.decode('utf-8'))
-        assert_equal(1, len(actual['errors']))
-        assert_equal('400', actual['errors'][0]['status'])
-        assert_equal("Unrecognised parameter(s) ('nonexistant-key') " +
-                     "were provided",
-                     actual['errors'][0]['detail'])
-
     def test_list_nonexistant_record(self):
         resp = self.client.get(
             '/data-sets?data-group=nonexistant-group',

@@ -63,7 +63,7 @@ class TransformTypeView(ResourceView):
 
     @method_decorator(permission_required('transforms'))
     def post(self, user, request, **kwargs):
-        return super(TransformTypeView, self).post(request, **kwargs)
+        return super(TransformTypeView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json):
         model.name = model_json['name']
@@ -141,7 +141,7 @@ class TransformView(ResourceView):
 
     @method_decorator(permission_required('transforms'))
     def post(self, user, request, **kwargs):
-        return super(TransformView, self).post(request, **kwargs)
+        return super(TransformView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json):
         try:
