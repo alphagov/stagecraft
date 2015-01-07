@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Module.order'
         db.add_column(u'dashboards_module', 'order',
-                      self.gf('django.db.models.fields.IntegerField')(default=0),
+                      self.gf('django.db.models.fields.IntegerField')(
+                          default=0),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Module.order'
         db.delete_column(u'dashboards_module', 'order')
-
 
     models = {
         'dashboards.dashboard': {

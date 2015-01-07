@@ -10,18 +10,22 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'Dashboard.business_model'
-        db.alter_column(u'dashboards_dashboard', 'business_model', self.gf('django.db.models.fields.CharField')(max_length=31))
+        db.alter_column(u'dashboards_dashboard', 'business_model', self.gf(
+            'django.db.models.fields.CharField')(max_length=31))
 
         # Changing field 'Module.info'
-        db.alter_column(u'dashboards_module', 'info', self.gf('dbarray.fields.TextArrayField')())
+        db.alter_column(
+            u'dashboards_module', 'info', self.gf('dbarray.fields.TextArrayField')())
 
     def backwards(self, orm):
 
         # Changing field 'Dashboard.business_model'
-        db.alter_column(u'dashboards_dashboard', 'business_model', self.gf('django.db.models.fields.CharField')(max_length=20))
+        db.alter_column(u'dashboards_dashboard', 'business_model', self.gf(
+            'django.db.models.fields.CharField')(max_length=20))
 
         # Changing field 'Module.info'
-        db.alter_column(u'dashboards_module', 'info', self.gf('dbarray.fields.CharArrayField')(max_length=255))
+        db.alter_column(u'dashboards_module', 'info', self.gf(
+            'dbarray.fields.CharArrayField')(max_length=255))
 
     models = {
         'dashboards.dashboard': {

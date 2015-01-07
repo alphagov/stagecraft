@@ -13,6 +13,7 @@ from stagecraft.apps.datasets.models import DataType
 
 
 class DataTypeTestCase(TestCase):
+
     def test_data_type_name_must_be_unique(self):
         a = DataType.objects.create(name='foo')
         a.validate_unique()

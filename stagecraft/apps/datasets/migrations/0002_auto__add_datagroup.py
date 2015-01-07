@@ -10,16 +10,16 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'DataGroup'
         db.create_table(u'datasets_datagroup', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=50)),
+            (u'id', self.gf('django.db.models.fields.AutoField')
+             (primary_key=True)),
+            ('name', self.gf('django.db.models.fields.SlugField')
+             (unique=True, max_length=50)),
         ))
         db.send_create_signal(u'datasets', ['DataGroup'])
-
 
     def backwards(self, orm):
         # Deleting model 'DataGroup'
         db.delete_table(u'datasets_datagroup')
-
 
     models = {
         u'datasets.datagroup': {

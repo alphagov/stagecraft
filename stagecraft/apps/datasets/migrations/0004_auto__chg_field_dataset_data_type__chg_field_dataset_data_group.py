@@ -10,18 +10,22 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'DataSet.data_type'
-        db.alter_column(u'datasets_dataset', 'data_type_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataType'], on_delete=models.PROTECT))
+        db.alter_column(u'datasets_dataset', 'data_type_id', self.gf(
+            'django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataType'], on_delete=models.PROTECT))
 
         # Changing field 'DataSet.data_group'
-        db.alter_column(u'datasets_dataset', 'data_group_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataGroup'], on_delete=models.PROTECT))
+        db.alter_column(u'datasets_dataset', 'data_group_id', self.gf(
+            'django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataGroup'], on_delete=models.PROTECT))
 
     def backwards(self, orm):
 
         # Changing field 'DataSet.data_type'
-        db.alter_column(u'datasets_dataset', 'data_type_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataType']))
+        db.alter_column(u'datasets_dataset', 'data_type_id', self.gf(
+            'django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataType']))
 
         # Changing field 'DataSet.data_group'
-        db.alter_column(u'datasets_dataset', 'data_group_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataGroup']))
+        db.alter_column(u'datasets_dataset', 'data_group_id', self.gf(
+            'django.db.models.fields.related.ForeignKey')(to=orm['datasets.DataGroup']))
 
     models = {
         u'datasets.datagroup': {

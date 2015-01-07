@@ -14,6 +14,7 @@ from ..support.test_helpers import (
 
 
 class LongCacheTestCase(TestCase):
+
     def test_detail_sets_cache_headers(self):
         resp = self.client.get(
             '/data-sets/set1',

@@ -10,6 +10,7 @@ from ..support.test_helpers import is_unauthorized, is_forbidden
 
 
 class OAuthInvalidateTestCase(TestCase):
+
     def setUp(self):
         self.client = Client(enforce_csrf_checks=True)
         settings.USE_DEVELOPMENT_USERS = False

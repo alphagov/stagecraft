@@ -6,6 +6,7 @@ from nose.tools import assert_raises
 
 
 class TestSetToken(TestCase):
+
     @mock.patch("stagecraft.libs.mass_update.data_set_mass_update."
                 "DataSetMassUpdate."
                 "update_bearer_token_for_data_type_or_group_name")

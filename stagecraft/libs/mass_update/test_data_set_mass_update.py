@@ -5,6 +5,7 @@ from nose.tools import assert_equal
 
 
 class TestDataSetMassUpdate(TestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.data_group1 = DataGroup.objects.create(name='datagroup1')

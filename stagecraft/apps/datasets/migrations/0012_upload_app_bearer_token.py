@@ -9,15 +9,15 @@ import random
 from itertools import repeat
 
 DATASET_NAME_EXCLUSIONS = [
-        'driving_test_practical_transactions_by_channel',
-        'evl_customer_satisfaction',
-        'gcloud_sales',
-        'patent_renewal_journey_completion',
-        'patent_renewal_transactions_by_channel',
-        'solihull_local_authority_missed_bin_by_ward',
-        'solihull_local_authority_transactions_by_channel',
-        'student_finance_transactions_by_channel',
-    ]
+    'driving_test_practical_transactions_by_channel',
+    'evl_customer_satisfaction',
+    'gcloud_sales',
+    'patent_renewal_journey_completion',
+    'patent_renewal_transactions_by_channel',
+    'solihull_local_authority_missed_bin_by_ward',
+    'solihull_local_authority_transactions_by_channel',
+    'student_finance_transactions_by_channel',
+]
 
 BEARER_TOKEN_LENGTH = 64
 
@@ -25,19 +25,23 @@ BEARER_TOKEN_LENGTH = 64
 def get_dataset_emails(dataset):
     return [u.email for u in dataset.backdropuser_set.all()]
 
+
 def generate_bearer_token():
     chars = "abcdefghjkmnpqrstuvwxyz23456789"
     return "".join(map(random.choice, repeat(chars, BEARER_TOKEN_LENGTH)))
+
 
 def delete_all_users(dataset):
     print('deleting all users for {} - users {}'.format(
         dataset.name, get_dataset_emails(dataset)))
     dataset.backdropuser_set.clear()
 
+
 def add_bearer_token(dataset):
     dataset.bearer_token = generate_bearer_token()
     print('adding bearer token for {}'.format(dataset.name))
     dataset.save()
+
 
 def get_datasets_with_users_and_bearer_tokens(orm):
     return orm['datasets.DataSet'].\
@@ -47,11 +51,13 @@ def get_datasets_with_users_and_bearer_tokens(orm):
         filter(backdropuser__email__isnull=False).\
         distinct()
 
+
 def get_datasets_without_bearer_tokens(orm):
     return orm['datasets.DataSet'].\
         objects.\
         filter(Q(bearer_token__exact='') | Q( bearer_token__isnull=True)).\
         distinct()
+
 
 class Migration(DataMigration):
 
@@ -61,7 +67,6 @@ class Migration(DataMigration):
 
     def backwards(self, orm):
         "Write your backwards methods here."
-
 
     models = {
         u'datasets.backdropuser': {

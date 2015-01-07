@@ -42,6 +42,10 @@ find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 # probably going to need to install dependencies
 pip install -r requirements/ci.txt --use-mirrors
 
+if [ -z "$NO_AUTOPEP8" ]; then
+  autopep8 -i -r stagecraft
+fi
+
 # run style check
 $basedir/pep-it.sh | tee "$outdir/pep8.out"
 display_result $? 3 "Code style check"

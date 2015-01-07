@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class OAuthUserManager(models.Manager):
+
     def get_by_access_token(self, access_token):
         try:
             oauth_user = self.get(access_token=access_token)

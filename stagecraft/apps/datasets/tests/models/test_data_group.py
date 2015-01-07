@@ -13,6 +13,7 @@ from stagecraft.apps.datasets.models import DataGroup
 
 
 class DataGroupTestCase(TestCase):
+
     def test_data_group_name_must_be_unique(self):
         a = DataGroup.objects.create(name='foo')
         a.validate_unique()

@@ -10,20 +10,24 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'BackdropUser'
         db.create_table(u'datasets_backdropuser', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('email', self.gf('django.db.models.fields.EmailField')(unique=True, max_length=254)),
+            (u'id', self.gf('django.db.models.fields.AutoField')
+             (primary_key=True)),
+            ('email', self.gf('django.db.models.fields.EmailField')
+             (unique=True, max_length=254)),
         ))
         db.send_create_signal(u'datasets', ['BackdropUser'])
 
         # Adding M2M table for field data_sets on 'BackdropUser'
         m2m_table_name = db.shorten_name(u'datasets_backdropuser_data_sets')
         db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('backdropuser', models.ForeignKey(orm[u'datasets.backdropuser'], null=False)),
-            ('dataset', models.ForeignKey(orm[u'datasets.dataset'], null=False))
+            ('id', models.AutoField(
+                verbose_name='ID', primary_key=True, auto_created=True)),
+            ('backdropuser', models.ForeignKey(
+                orm[u'datasets.backdropuser'], null=False)),
+            ('dataset', models.ForeignKey(
+                orm[u'datasets.dataset'], null=False))
         ))
         db.create_unique(m2m_table_name, ['backdropuser_id', 'dataset_id'])
-
 
     def backwards(self, orm):
         # Deleting model 'BackdropUser'
@@ -31,7 +35,6 @@ class Migration(SchemaMigration):
 
         # Removing M2M table for field data_sets on 'BackdropUser'
         db.delete_table(db.shorten_name(u'datasets_backdropuser_data_sets'))
-
 
     models = {
         u'datasets.backdropuser': {

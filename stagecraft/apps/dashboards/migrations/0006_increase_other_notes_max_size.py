@@ -10,12 +10,14 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'Dashboard.other_notes'
-        db.alter_column(u'dashboards_dashboard', 'other_notes', self.gf('django.db.models.fields.CharField')(max_length=1000))
+        db.alter_column(u'dashboards_dashboard', 'other_notes', self.gf(
+            'django.db.models.fields.CharField')(max_length=1000))
 
     def backwards(self, orm):
 
         # Changing field 'Dashboard.other_notes'
-        db.alter_column(u'dashboards_dashboard', 'other_notes', self.gf('django.db.models.fields.CharField')(max_length=700))
+        db.alter_column(u'dashboards_dashboard', 'other_notes', self.gf(
+            'django.db.models.fields.CharField')(max_length=700))
 
     models = {
         'dashboards.dashboard': {

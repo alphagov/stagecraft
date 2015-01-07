@@ -153,7 +153,7 @@ class DashboardTestCase(TransactionTestCase):
                     has_entries({
                         'url': 'http://www.gov.uk',
                         'title': 'transaction',
-                        }),
+                    }),
                     'other':
                     has_items(
                         has_entries({

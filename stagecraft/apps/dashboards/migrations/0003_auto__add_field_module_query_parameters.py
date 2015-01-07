@@ -13,11 +13,9 @@ class Migration(SchemaMigration):
                       self.gf('jsonfield.fields.JSONField')(null=True),
                       keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Module.query_parameters'
         db.delete_column(u'dashboards_module', 'query_parameters')
-
 
     models = {
         'dashboards.dashboard': {

@@ -10,14 +10,15 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'DataSet.created'
         db.add_column(u'datasets_dataset', 'created',
-                      self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, default=datetime.datetime(2014, 6, 5, 0, 0), blank=True),
+                      self.gf('django.db.models.fields.DateTimeField')(
+                          auto_now_add=True, default=datetime.datetime(2014, 6, 5, 0, 0), blank=True),
                       keep_default=False)
 
         # Adding field 'DataSet.modified'
         db.add_column(u'datasets_dataset', 'modified',
-                      self.gf('django.db.models.fields.DateTimeField')(auto_now=True, default=datetime.datetime(2014, 6, 5, 0, 0), blank=True),
+                      self.gf('django.db.models.fields.DateTimeField')(
+                          auto_now=True, default=datetime.datetime(2014, 6, 5, 0, 0), blank=True),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'DataSet.created'
@@ -25,7 +26,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'DataSet.modified'
         db.delete_column(u'datasets_dataset', 'modified')
-
 
     models = {
         u'datasets.backdropuser': {

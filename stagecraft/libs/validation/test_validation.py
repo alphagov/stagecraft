@@ -21,6 +21,7 @@ def mock_request(auth_header):
 
 
 class BearerTokenIsValid(TestCase):
+
     def test_extract_bearer_token_returns_the_token_if_valid(self):
         token = "token"
         auth_header = "Bearer {}".format(token)

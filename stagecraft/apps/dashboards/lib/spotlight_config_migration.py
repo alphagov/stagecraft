@@ -43,39 +43,39 @@ class Dashboard():
         return self.type_id_map[type_str]
 
     def create_organisation(self, organisation_type, parent_id=None):
-            resp = self.stagecraft_client.get_organisation(
-                self.data[organisation_type]['title'],
-                self.data[organisation_type].get('abbr', None)
-            )
-            assert resp.status_code == 200
+        resp = self.stagecraft_client.get_organisation(
+            self.data[organisation_type]['title'],
+            self.data[organisation_type].get('abbr', None)
+        )
+        assert resp.status_code == 200
 
-            if len(resp.json()) == 0:
-                post_data = {
-                    "name": self.data[organisation_type]["title"],
-                    "type_id": self.get_type_id(organisation_type)
-                }
-                if "abbr" in self.data[organisation_type]:
-                    post_data["abbreviation"] = (
-                        self.data[organisation_type]["abbr"]
-                    )
-                if parent_id:
-                    post_data['parent_id'] = parent_id
-                post_resp = self.stagecraft_client.create_organisation(
-                    post_data)
-                logger.debug(
-                    'response from creating org type {} - {}'.format(
-                        organisation_type, post_resp.json()))
-                org_id = post_resp.json()['id']
-            elif len(resp.json()) > 1:
-                logger.warning(
-                    'multiple organisations found for dashboard{}'.format(
-                        self.data['slug']
-                    ))
-                org_id = resp.json()[0]['id']
-            else:
-                org_id = resp.json()[0]['id']
-            self.data.pop(organisation_type)
-            return org_id
+        if len(resp.json()) == 0:
+            post_data = {
+                "name": self.data[organisation_type]["title"],
+                "type_id": self.get_type_id(organisation_type)
+            }
+            if "abbr" in self.data[organisation_type]:
+                post_data["abbreviation"] = (
+                    self.data[organisation_type]["abbr"]
+                )
+            if parent_id:
+                post_data['parent_id'] = parent_id
+            post_resp = self.stagecraft_client.create_organisation(
+                post_data)
+            logger.debug(
+                'response from creating org type {} - {}'.format(
+                    organisation_type, post_resp.json()))
+            org_id = post_resp.json()['id']
+        elif len(resp.json()) > 1:
+            logger.warning(
+                'multiple organisations found for dashboard{}'.format(
+                    self.data['slug']
+                ))
+            org_id = resp.json()[0]['id']
+        else:
+            org_id = resp.json()[0]['id']
+        self.data.pop(organisation_type)
+        return org_id
 
     # send to stagecraft
     def send(self):
