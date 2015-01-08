@@ -8,7 +8,7 @@ from ..helpers.validators import data_type_name_validator
 
 @python_2_unicode_compatible
 class DataType(models.Model):
-    name = models.SlugField(max_length=50, unique=True,
+    name = models.SlugField(max_length=60, unique=True,
                             validators=[data_type_name_validator])
     description = models.TextField(blank=True)
 
