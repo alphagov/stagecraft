@@ -83,7 +83,7 @@ class ResourceView(View):
     def from_resource(self, request, model):
         return None
 
-    def update_model(self, model, model_json):
+    def update_model(self, model, model_json, request):
         pass
 
     def get(self, request, **kwargs):
@@ -122,16 +122,13 @@ class ResourceView(View):
             return HttpResponse('sub resource not found', status=404)
 
     def post(self, user, request, **kwargs):
-        if 'model_json' not in kwargs:
-            model_json, err = self._validate_json(request)
-            if err:
-                return err
-        else:
-            model_json = kwargs['model_json']
+        model_json, err = self._validate_json(request)
+        if err:
+            return err
 
         model = self._get_or_create_model(model_json)
 
-        err = self.update_model(model, model_json)
+        err = self.update_model(model, model_json, request)
         if err:
             return err
 
@@ -169,17 +166,11 @@ class ResourceView(View):
     def _get_or_create_model(self, model_json):
         if self.id_field in model_json:
             id = model_json[self.id_field]
-            if self.generated_id:
-                try:
-                    model = self.model.objects.get(**{self.id_field: id})
-                except self.model.DoesNotExist:
-                    return HttpResponse(
-                        'model with id {} not found'.format(id))
-            else:
-                try:
-                    model = self.model.objects.get(**{self.id_field: id})
-                except self.model.DoesNotExist:
-                    model = self.model()
+            try:
+                model = self.model.objects.get(**{self.id_field: id})
+            except self.model.DoesNotExist:
+                return HttpResponse(
+                    'model with id {} not found'.format(id))
         else:
             model = self.model()
 

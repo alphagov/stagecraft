@@ -61,7 +61,7 @@ class TestResourceView(ResourceView):
         "additionalProperties": False,
     }
 
-    def update_model(self, model, model_json):
+    def update_model(self, model, model_json, request):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:

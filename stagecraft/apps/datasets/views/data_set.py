@@ -16,8 +16,7 @@ from stagecraft.apps.datasets.models import(
     DataSet,
     BackdropUser,
     DataGroup,
-    DataType,
-    generate_data_set_name)
+    DataType)
 from stagecraft.apps.transforms.models import Transform
 from stagecraft.apps.transforms.views import TransformView
 
@@ -98,12 +97,16 @@ class DataSetView(ResourceView):
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
     def post(self, user, request, **kwargs):
-        model_json, err = self._validate_json(request)
-        if err:
-            return err
+        return super(DataSetView, self).post(user, request, **kwargs)
+
+    def update_model(self, model, model_json, request):
         try:
             data_group = DataGroup.objects.get(name=model_json['data_group'])
             data_type = DataType.objects.get(name=model_json['data_type'])
+            model_json['data_group'] = data_group
+            model_json['data_type'] = data_type
+            for (key, value) in model_json.items():
+                setattr(model, key, value)
         except DataGroup.DoesNotExist:
             return build_400(
                 logger,
@@ -116,32 +119,6 @@ class DataSetView(ResourceView):
                 request,
                 "No data type with name '{}' found"
                 .format(model_json['data_type']))
-        model_json['data_group'] = data_group
-        model_json['data_type'] = data_type
-        name = generate_data_set_name(data_group, data_type)
-        model_json['name'] = name
-        kwargs['model_json'] = model_json
-        try:
-            return super(DataSetView, self).post(user, request, **kwargs)
-        except InstanceExistsError:
-            return build_400(
-                logger,
-                request,
-                "A data set with the name '{}' already exists"
-                .format(name))
-
-    def _get_or_create_model(self, model_json):
-        model = super(DataSetView, self)._get_or_create_model(model_json)
-        # update should work if the following two lines are removed.
-        if model.pk:
-            raise InstanceExistsError
-        return model
-        # Don't yet support update with data sets.
-
-    def update_model(self, model, model_json):
-        for (key, value) in model_json.items():
-            setattr(model, key, value)
-        model.save()
 
     @staticmethod
     def serialize(model):

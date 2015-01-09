@@ -576,8 +576,9 @@ class DataSetsViewsTestCase(TestCase):
             content_type='application/json')
         assert_equal(resp.status_code, 400)
         assert_equal(
-            json.loads(resp.content)['message'],
-            "A data set with the name 'group1_type1' already exists")
+            resp.content,
+            "validation errors:\n__all__: Data set with this "
+            "Data group and Data type already exists.")
 
     def test_post_when_data_set_with_group_and_type_with_hyphens_exists(self):
         data_set = {
@@ -599,8 +600,9 @@ class DataSetsViewsTestCase(TestCase):
             content_type='application/json')
         assert_equal(resp.status_code, 400)
         assert_equal(
-            json.loads(resp.content)['message'],
-            "A data set with the name 'group1_1_type1_1' already exists")
+            resp.content,
+            "validation errors:\n__all__: Data set with this "
+            "Data group and Data type already exists.")
 
     def test_post_when_no_group(self):
         data_set = {
