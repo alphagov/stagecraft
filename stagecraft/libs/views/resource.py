@@ -1,5 +1,3 @@
-from stagecraft.libs.views.utils import(
-    build_400)
 import json
 import jsonschema
 import logging
@@ -12,7 +10,6 @@ from django.conf.urls import url
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 
-from django.core.exceptions import FieldError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from django.db import DataError, IntegrityError

@@ -134,16 +134,9 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_list_transforms_for_dataset_and_type_with_no_group(self):
         data_set = DataSetFactory()
-        another_data_set = DataSetFactory(
-            data_type=data_set.data_type,
-        )
         set_transform = TransformFactory(
             input_group=data_set.data_group,
             input_type=data_set.data_type,
-        )
-        another_set_transform = TransformFactory(
-            input_group=another_data_set.data_group,
-            input_type=another_data_set.data_type,
         )
         type_transform = TransformFactory(
             input_type=data_set.data_type,
@@ -327,7 +320,7 @@ class DataSetsViewsTestCase(TestCase):
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_equal(resp.status_code, 200)
             response_object = json.loads(resp.content.decode('utf-8'))
-            assert_equal(len(response_object), 5)
+            assert_equal(len(response_object), 6)
 
     def test_list_returns_no_data_sets_if_there_is_no_backdrop_user(self):
         settings.USE_DEVELOPMENT_USERS = False
@@ -586,6 +579,29 @@ class DataSetsViewsTestCase(TestCase):
             json.loads(resp.content)['message'],
             "A data set with the name 'group1_type1' already exists")
 
+    def test_post_when_data_set_with_group_and_type_with_hyphens_exists(self):
+        data_set = {
+            'data_type': 'type1-1',
+            'realtime': False,
+            'auto_ids': 'aa,bb',
+            'max_age_expected': 86400,
+            'data_group': 'group1-1',
+            'upload_filters': 'backdrop.filter.1',
+            'queryable': True,
+            'upload_format': '',
+            'raw_queries_allowed': True,
+            'published': False,
+        }
+        resp = self.client.post(
+            '/data-sets',
+            data=json.dumps(data_set),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+        assert_equal(resp.status_code, 400)
+        assert_equal(
+            json.loads(resp.content)['message'],
+            "A data set with the name 'group1_1_type1_1' already exists")
+
     def test_post_when_no_group(self):
         data_set = {
             'data_type': 'type1',
@@ -819,7 +835,7 @@ class HealthCheckTestCase(TestCase):
         decoded = json.loads(self.response.content.decode('utf-8'))
         assert_equal(
             decoded,
-            {'message': 'Got 5 data sets.'})
+            {'message': 'Got 6 data sets.'})
 
 
 class DataSetsSchemasTestCase(TestCase):

@@ -23,6 +23,11 @@ import reversion
 import logging
 
 
+def generate_data_set_name(data_group, data_type):
+    return '_'.join((data_group.name,
+                     data_type.name)).replace('-', '_')
+
+
 class ImmutableFieldError(ValidationError):
     pass
 
@@ -257,8 +262,7 @@ class DataSet(models.Model):
         super(DataSet, self).save(*args, **kwargs)
 
     def generate_data_set_name(self):
-        return '_'.join((self.data_group.name,
-                         self.data_type.name)).replace('-', '_')
+        return generate_data_set_name(self.data_group, self.data_type)
 
     @property
     def is_capped(self):

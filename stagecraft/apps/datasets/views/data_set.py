@@ -16,7 +16,8 @@ from stagecraft.apps.datasets.models import(
     DataSet,
     BackdropUser,
     DataGroup,
-    DataType)
+    DataType,
+    generate_data_set_name)
 from stagecraft.apps.transforms.models import Transform
 from stagecraft.apps.transforms.views import TransformView
 
@@ -117,7 +118,8 @@ class DataSetView(ResourceView):
                 .format(model_json['data_type']))
         model_json['data_group'] = data_group
         model_json['data_type'] = data_type
-        model_json['name'] = '{}_{}'.format(data_group, data_type)
+        name = generate_data_set_name(data_group, data_type)
+        model_json['name'] = name
         kwargs['model_json'] = model_json
         try:
             return super(DataSetView, self).post(user, request, **kwargs)
@@ -125,8 +127,8 @@ class DataSetView(ResourceView):
             return build_400(
                 logger,
                 request,
-                "A data set with the name '{}_{}' already exists"
-                .format(data_group.name, data_type.name))
+                "A data set with the name '{}' already exists"
+                .format(name))
 
     def _get_or_create_model(self, model_json):
         model = super(DataSetView, self)._get_or_create_model(model_json)
