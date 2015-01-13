@@ -188,8 +188,9 @@ def main():
             seen_dashboards[data_key] = True
 
             existing_data_type = DataType.objects.get(name=data_type_name)
+            existing_data_group = DataGroup.objects.get(name=data_group_name)
             existing_data_set = DataSet.objects.get(
-                data_group=data_group,
+                data_group=existing_data_group,
                 data_type=existing_data_type
             )
 
