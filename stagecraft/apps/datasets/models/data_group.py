@@ -7,7 +7,7 @@ from ..helpers.validators import data_group_name_validator
 
 @python_2_unicode_compatible
 class DataGroup(models.Model):
-    name = models.SlugField(max_length=50, unique=True,
+    name = models.SlugField(max_length=60, unique=True,
                             validators=[data_group_name_validator])
 
     def __str__(self):
