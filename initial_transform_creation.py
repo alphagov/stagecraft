@@ -7,23 +7,39 @@ from stagecraft.apps.dashboards.models.module import ModuleType
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.apps.transforms.models import TransformType
 
 import json
 import requests
+import logging
 
 STAGECRAFT_ROOT = settings.APP_ROOT
 BACKDROP_ROOT = settings.BACKDROP_URL
 
 
 def main():
+
+    # force django to bootstrap logging so we can override it
+    env = settings.ENV_HOSTNAME
+    logger = logging.getLogger('')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
+
     def find_modules(dashboards, module_type):
-        dashboards_to_process = [
+        dashboards_not_to_process = [
             'prison-visits',
             'lasting-power-of-attorney',
-            'accelerated-possession-eviction'
+            'accelerated-possession-eviction',
+            # we are going to reconfigure this to use transformed datasets
+            # manually
+            'standard-dashboard',
+            # not worth migrating this dashboard as it is a temp playground
+            '204051c53890188126a906b64eeebaad',
+            # in progress dashboard, doesnt need migrating for now
+            'a09f5e63f8ee45f651647aa51149860a',
         ]
         for dashboard in dashboards:
-            if dashboard.slug in dashboards_to_process:
+            if dashboard.slug not in dashboards_not_to_process:
                 modules = dashboard.module_set.filter(type__name=module_type)
             else:
                 modules = []
@@ -105,18 +121,12 @@ def main():
 
     dashboards = Dashboard.objects.all()
 
+    seen_dashboards = {}
+
     for transform_type in transform_types:
-        r = requests.post(STAGECRAFT_ROOT + '/transform-type',
-                          data=json.dumps(transform_type), headers=headers)
-
-        if r.status_code != 200:
-            print(r.text)
-            error_message = 'Received error from Stagecraft' \
-                + 'when making TransformType: ' \
-                + transform_type['name']
-            exit(error_message)
-
-        transform_type_id = r.json()['id']
+        transform_type_object = TransformType.objects.get(
+            name=transform_type['name'])
+        transform_type_id = str(transform_type_object.id)
 
         metadata = transform_metadata[transform_type['name']]
         for module in find_modules(dashboards, metadata['module']):
@@ -125,19 +135,57 @@ def main():
 
             if metadata['module'] == 'completion_rate':
                 new_data_type_name = module.slug
+                dashboards_using_same_datasets = [
+                    'book-practical-driving-test',
+                    'tax-disc',
+                    'sorn',
+                    'change-practical-driving-test',
+                ]
+                if module.dashboard.slug in dashboards_using_same_datasets:
+                    new_data_type_name += '-{}'.format(module.dashboard.slug)
+                logger.debug(
+                    'completion_rate module'
+                    'so data type name is module slug: {}'.format(
+                        new_data_type_name))
             elif metadata['module'] == 'user_satisfaction_graph':
                 new_data_type_name = 'user-satisfaction-score'
+                logger.debug(
+                    'user_satisfaction_graph module'
+                    'so data type name is hardcoded: {}'.format(
+                        new_data_type_name))
             else:
                 new_data_type_name = data_type_name \
                     + '-' + metadata['data_type_append']
+                logger.debug(
+                    'manual append to data_type'.format(
+                        new_data_type_name))
 
             (data_group, data_group_created) = DataGroup.objects.get_or_create(
                 name=data_group_name)
+            logger.debug('creating new datatype with object {}, for dataset '
+                         '{}-{} and transform {} for module {} and '
+                         'dashboard {}'.format(
+                             new_data_type_name,
+                             data_group_name,
+                             data_type_name,
+                             transform_type['name'],
+                             module.slug,
+                             module.dashboard.slug,
+                         ))
+            data_key = '{}-{}'.format(
+                data_group_name,
+                new_data_type_name,
+            )
+
+            if seen_dashboards.get(data_key) is not None:
+                logger.debug('already seen {}'.format(data_key))
+
             (data_type, data_type_created) = DataType.objects.get_or_create(
                 name=new_data_type_name)
 
             if data_group_created:
                 exit('Data group did not exist before script started')
+            seen_dashboards[data_key] = True
 
             existing_data_type = DataType.objects.get(name=data_type_name)
             existing_data_set = DataSet.objects.get(
@@ -154,9 +202,9 @@ def main():
             debug_names = ' '.join([
                 data_group_name, data_type_name, new_data_type_name])
             if data_set_created:
-                print("Created data set: " + debug_names)
+                logger.info("Created data set: " + debug_names)
             else:
-                print("Data set already existed: " + debug_names)
+                logger.info("Data set already existed: " + debug_names)
 
             excluded_query_parameters = ['duration']
 
@@ -189,7 +237,7 @@ def main():
                 headers=headers)
 
             if r.status_code != 200:
-                print(r.text)
+                logger.info(r.text)
                 error_message = 'Received error from Stagecraft when making ' \
                     + 'Transform: ' + data_group_name + ' ' \
                     + new_data_type_name
@@ -208,20 +256,27 @@ def main():
             )
 
             if r.status_code != 200:
-                print(r.text)
+                logger.info(r.text)
                 exit('Error getting oldest data point')
 
-            earliest_timestamp = r.json()['data'][0]['_timestamp']
-
-            run_transform = {
-                "_start_at": earliest_timestamp
-            }
-            r = requests.post(
-                '{0}/data/{1}/{2}/transform'.format(
-                    BACKDROP_ROOT, data_group_name, data_type_name),
-                data=json.dumps(run_transform),
-                headers=backdrop_headers
-            )
+            data = r.json()['data']
+            if len(data) != 0:
+                earliest_timestamp = data[0]['_timestamp']
+                run_transform = {
+                    "_start_at": earliest_timestamp
+                }
+                r = requests.post(
+                    '{0}/data/{1}/{2}/transform'.format(
+                        BACKDROP_ROOT, data_group_name, data_type_name),
+                    data=json.dumps(run_transform),
+                    headers=backdrop_headers
+                )
+            else:
+                logger.debug(
+                    'no need to run initial transform '
+                    'for {}{} as empty'.format(
+                        data_group_name,
+                        data_type_name))
 
             # Change the existing module
             module.data_set = data_set
@@ -296,7 +351,7 @@ def main():
             module.full_clean()
             module.save()
 
-    print("Finished creating TransformTypes and Transforms.")
+    logger.info("Finished creating TransformTypes and Transforms.")
 
 
 if __name__ == '__main__':
