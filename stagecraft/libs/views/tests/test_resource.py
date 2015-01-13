@@ -61,7 +61,7 @@ class TestResourceView(ResourceView):
         "additionalProperties": False,
     }
 
-    def update_model(self, model, model_json):
+    def update_model(self, model, model_json, request):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:
@@ -106,7 +106,7 @@ class ResourceViewTestCase(TestCase):
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
-        response = view.post(request, **args)
+        response = view.post(None, request, **args)
 
         assert_that(response, instance_of(HttpResponse))
 

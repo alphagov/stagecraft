@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.http import (HttpResponse, HttpResponseNotFound)
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers

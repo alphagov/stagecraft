@@ -49,10 +49,23 @@ class DataSetTestCase(TestCase):
 
     def test_saving_existing_doesnt_change_the_name(self):
         with _make_temp_data_group_and_type() as (data_group, data_type):
-            data_set1 = DataSet.objects.get(name='set1')
+            data_set1 = DataSet.objects.get(name='set2')
             data_set1.save()
 
-            assert_equal('set1', data_set1.name)
+            assert_equal('set2', data_set1.name)
+
+    def test_saving_with_new_name_doesnt_change_it(self):
+        with _make_temp_data_group_and_type() as (data_group, data_type):
+            data_set1 = DataSet.objects.get(name='set2')
+            data_set1.name = 'apple'
+            try:
+                data_set1.save()
+            except ImmutableFieldError:
+                pass
+            set2s = DataSet.objects.filter(name='set2')
+            apples = DataSet.objects.filter(name='apple')
+            assert_equal(len(set2s), 1)
+            assert_equal(len(apples), 0)
 
     @disable_backdrop_connection
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
@@ -109,14 +122,6 @@ class DataSetTestCase(TestCase):
             data_group=self.data_group1,
             data_type=self.data_type1)
         assert_raises(ValidationError, lambda: data_set2.validate_unique())
-
-    def test_name_cannot_be_changed(self):
-        data_set = DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-
-        data_set.name = 'Fred'
-        assert_raises(ImmutableFieldError, data_set.save)
 
     def test_name_can_be_set_on_creation(self):
         DataSet.objects.create(
