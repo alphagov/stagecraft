@@ -131,6 +131,7 @@ def main():
         metadata = transform_metadata[transform_type['name']]
         for module in find_modules(dashboards, metadata['module']):
             data_group_name = module.data_set.data_group.name
+            new_data_group_name = data_group_name
             data_type_name = module.data_set.data_type.name
 
             if metadata['module'] == 'completion_rate':
@@ -142,7 +143,8 @@ def main():
                     'change-practical-driving-test',
                 ]
                 if module.dashboard.slug in dashboards_using_same_datasets:
-                    new_data_type_name += '-{}'.format(module.dashboard.slug)
+                    new_data_group_name = data_group_name + '-{}'.format(
+                        module.dashboard.slug)
                 logger.debug(
                     'completion_rate module'
                     'so data type name is module slug: {}'.format(
@@ -161,19 +163,19 @@ def main():
                         new_data_type_name))
 
             (data_group, data_group_created) = DataGroup.objects.get_or_create(
-                name=data_group_name)
+                name=new_data_group_name)
             logger.debug('creating new datatype with object {}, for dataset '
                          '{}-{} and transform {} for module {} and '
                          'dashboard {}'.format(
                              new_data_type_name,
-                             data_group_name,
+                             new_data_group_name,
                              data_type_name,
                              transform_type['name'],
                              module.slug,
                              module.dashboard.slug,
                          ))
             data_key = '{}-{}'.format(
-                data_group_name,
+                new_data_group_name,
                 new_data_type_name,
             )
 
@@ -184,12 +186,14 @@ def main():
                 name=new_data_type_name)
 
             if data_group_created:
-                exit('Data group did not exist before script started')
+                logger.info('Creating Data group {}'.format(
+                    new_data_group_name))
             seen_dashboards[data_key] = True
 
             existing_data_type = DataType.objects.get(name=data_type_name)
+            existing_data_group = DataGroup.objects.get(name=data_group_name)
             existing_data_set = DataSet.objects.get(
-                data_group=data_group,
+                data_group=existing_data_group,
                 data_type=existing_data_type
             )
 
@@ -200,7 +204,7 @@ def main():
             )
 
             debug_names = ' '.join([
-                data_group_name, data_type_name, new_data_type_name])
+                new_data_group_name, data_type_name, new_data_type_name])
             if data_set_created:
                 logger.info("Created data set: " + debug_names)
             else:
@@ -226,7 +230,7 @@ def main():
                     for transform_option, spotlight_option
                     in metadata['options'].iteritems()},
                 "output": {
-                    "data-group": data_group_name,
+                    "data-group": new_data_group_name,
                     "data-type": new_data_type_name,
                 }
             }
