@@ -10,6 +10,8 @@ from stagecraft.apps.datasets.views import data_set as datasets_views
 from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
 from stagecraft.apps.dashboards.views import dashboard as dashboard_views
 from stagecraft.apps.dashboards.views import module as module_views
+from stagecraft.apps.dashboards.views import \
+    transactions_explorer as transactions_explorer_views
 
 from stagecraft.libs.views.resource import resource_url
 from stagecraft.libs.status import views as status_views
@@ -77,6 +79,9 @@ urlpatterns = patterns(
         module_views.modules_on_dashboard),
     url(r'^dashboard/(?P<identifier>[-a-z0-9]+)$',
         dashboard_views.dashboard, name='dashboard'),
+
+    url(r'^transactions-explorer-service/(?P<identifier>[-a-z0-9]+)/dashboard',
+        transactions_explorer_views.dashboards_by_tx, name='dashboards_by_tx'),
 
     resource_url('organisation/node', organisation_views.NodeView),
     resource_url('organisation/type', organisation_views.NodeTypeView),

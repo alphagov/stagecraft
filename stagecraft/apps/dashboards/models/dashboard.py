@@ -9,7 +9,26 @@ def list_to_tuple_pairs(elements):
     return tuple([(element, element) for element in elements])
 
 
+class DashboardManager(models.Manager):
+
+    def by_tx_id(self, tx_id):
+        filter_string = '"service_id:{}"'.format(tx_id)
+        return self.raw('''
+            SELECT DISTINCT dashboards_dashboard.*
+            FROM dashboards_module
+              INNER JOIN dashboards_dashboard ON
+                dashboards_dashboard.id = dashboards_module.dashboard_id,
+              json_array_elements(query_parameters->'filter_by') AS filters
+            WHERE filters::text = %s
+              AND data_set_id=(SELECT id FROM datasets_dataset
+                               WHERE name='transactional_services_summaries')
+              AND dashboards_dashboard.published=TRUE
+        ''', [filter_string])
+
+
 class Dashboard(models.Model):
+    objects = DashboardManager()
+
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
