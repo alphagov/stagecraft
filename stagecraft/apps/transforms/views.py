@@ -154,7 +154,7 @@ class TransformView(ResourceView):
 
         if input_type is None:
             return HttpResponse(
-                'input requires at least a data-type',
+                'input requires at least a data-type (that exists)',
                 status=400)
 
         (output_group, output_type) = \
@@ -162,7 +162,7 @@ class TransformView(ResourceView):
 
         if output_type is None:
             return HttpResponse(
-                'output requires at least a data-type',
+                'output requires at least a data-type (that exists)',
                 status=400)
 
         model.type = transform_type
