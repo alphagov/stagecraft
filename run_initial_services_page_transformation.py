@@ -9,7 +9,11 @@ from stagecraft.apps.datasets.models.data_type import DataType
 from stagecraft.apps.datasets.models.data_set import DataSet
 from stagecraft.apps.transforms.models import TransformType
 from django.db.models import Q
+from django.db.utils import IntegrityError
 import operator
+
+import random
+from itertools import repeat
 
 import json
 import requests
@@ -22,6 +26,10 @@ headers = {
     'Authorization': 'Bearer {0}'.format(settings.MIGRATION_SIGNON_TOKEN),
     'Content-Type': 'application/json',
 }
+
+def generate_bearer_token():
+    chars = "abcdefghjkmnpqrstuvwxyz23456789"
+    return "".join(map(random.choice, repeat(chars, 64)))
 
 
 def main():
@@ -37,10 +45,27 @@ def main():
         'user-satisfaction-score',
         'digital-takeup',
     ]
+    aggregate_data_group_name = 'service-aggregates'
+    (aggregate_data_group, _) = DataGroup.objects.get_or_create(
+        name=aggregate_data_group_name)
+    aggregate_data_type_name = 'latest-dataset-values'
+    (aggregate_data_type, _) = DataType.objects.get_or_create(
+        name=aggregate_data_type_name)
+    try:
+        aggregate_data_set = DataSet.objects.create(
+            data_type=aggregate_data_type,
+            data_group=aggregate_data_group,
+            bearer_token=generate_bearer_token()
+        )
+    except IntegrityError:
+        aggregate_data_set = DataSet.objects.get(
+            data_type__name=aggregate_data_type_name,
+            data_group__name=aggregate_data_group_name,
+        )
 
     (transform_type, _) = TransformType.objects.get_or_create(
         name="latest_dataset_value",
-        function='backdrop.transformers.tasks.latest_dataset_value.compute'
+        function='backdrop.transformers.tasks.latest_dataset_value.compute',
     )
 
     for data_type in data_types:
@@ -54,8 +79,8 @@ def main():
             "options": {
             },
             "output": {
-                "data-group": "service-aggregates",
-                "data-type": "latest-dataset-values",
+                "data-group": aggregate_data_group_name,
+                "data-type": aggregate_data_type_name,
             }
         }
 
@@ -68,7 +93,7 @@ def main():
             logger.info(r.text)
             logger.info(r.status_code)
             error_message = 'Transform already exists in Stagecraft making ' \
-                + 'Transform: ' + data_type_name
+                + 'Transform: ' + data_type
             logger.info(error_message)
 
     # get all the datasets for the given data types
