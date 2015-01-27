@@ -19,6 +19,9 @@ import json
 import requests
 import logging
 
+import datetime
+import string
+
 STAGECRAFT_ROOT = settings.APP_ROOT
 BACKDROP_ROOT = settings.BACKDROP_URL
 
@@ -27,9 +30,23 @@ headers = {
     'Content-Type': 'application/json',
 }
 
+
 def generate_bearer_token():
     chars = "abcdefghjkmnpqrstuvwxyz23456789"
     return "".join(map(random.choice, repeat(chars, 64)))
+
+
+def add_day(timestamp):
+    """
+    >>> add_day('2014-11-24T00:00:00+00:00')
+    '2014-11-25T00:00:00+00:00'
+    >>> add_day('2014-10-31T00:00:00+00:00')
+    '2014-11-01T00:00:00+00:00'
+    """
+    date = datetime.datetime.strptime(
+        string.split(timestamp, '+')[0], '%Y-%m-%dT%H:%M:%S')
+    next_day_date = date + datetime.timedelta(days=1)
+    return next_day_date.isoformat() + '+00:00'
 
 
 def main():
@@ -91,7 +108,7 @@ def main():
             'Content-Type': 'application/json',
         }
         r = requests.get(
-            '{}/data/{}/{}?limit=1&sort_by=_timestamp:descending'.format(
+            '{}/data/{}/{}?limit=20&sort_by=_timestamp:descending'.format(
                 BACKDROP_ROOT, data_set.data_group.name,
                 data_set.data_type.name),
             headers=backdrop_headers,
@@ -103,17 +120,27 @@ def main():
 
         data = r.json()['data']
         if len(data) != 0:
-            latest_timestamp = data[0]['_timestamp']
-            run_transform = {
-                "_start_at": latest_timestamp
-            }
-            r = requests.post(
-                '{0}/data/{1}/{2}/transform'.format(
-                    BACKDROP_ROOT, data_set.data_group.name,
-                    data_set.data_type.name),
-                data=json.dumps(run_transform),
-                headers=backdrop_headers
-            )
+            for data_point in data:
+                has_data = False
+                latest_timestamp = data_point['_timestamp']
+                if data_point.get('score') or data_point.get('rate'):
+                    has_data = True
+                    logger.debug('Data found for {}'.format(data_set.name))
+                    run_transform = {
+                        "_start_at": latest_timestamp,
+                        "_end_at": add_day(latest_timestamp),
+                    }
+                    r = requests.post(
+                        '{0}/data/{1}/{2}/transform'.format(
+                            BACKDROP_ROOT, data_set.data_group.name,
+                            data_set.data_type.name),
+                        data=json.dumps(run_transform),
+                        headers=backdrop_headers
+                    )
+                    break
+            if not has_data:
+                logger.debug('No data found for {}'.format(data_set.name))
+
         else:
             logger.debug(
                 'no need to run initial transform '
