@@ -7,7 +7,7 @@ from stagecraft.apps.dashboards.models.module import ModuleType
 from stagecraft.apps.datasets.models.data_group import DataGroup
 from stagecraft.apps.datasets.models.data_type import DataType
 from stagecraft.apps.datasets.models.data_set import DataSet
-from stagecraft.apps.transforms.models import TransformType
+from stagecraft.apps.transforms.models import TransformType, Transform
 from django.db.models import Q
 from django.db.utils import IntegrityError
 import operator
@@ -69,33 +69,13 @@ def main():
     )
 
     for data_type in data_types:
-        transform = {
-            "type_id": str(transform_type.id),
-            "input": {
-                "data-group": '*',
-                "data-type": data_type,
-            },
-            "query-parameters": {},
-            "options": {
-            },
-            "output": {
-                "data-group": aggregate_data_group_name,
-                "data-type": aggregate_data_type_name,
-            }
-        }
-
-        r = requests.post(
-            STAGECRAFT_ROOT + '/transform',
-            data=json.dumps(transform),
-            headers=headers)
-
-        if r.status_code != 200:
-            logger.info(r.text)
-            logger.info(r.status_code)
-            error_message = 'Transform already exists in Stagecraft making ' \
-                + 'Transform: ' + data_type
-            logger.info(error_message)
-
+        input_type = DataType.objects.get(name=data_type)
+        transform = Transform.objects.get_or_create(
+            type=transform_type,
+            input_type=input_type,
+            output_type=aggregate_data_type,
+            output_group=aggregate_data_group
+        )
     # get all the datasets for the given data types
     data_sets = DataSet.objects.filter(
         reduce(
