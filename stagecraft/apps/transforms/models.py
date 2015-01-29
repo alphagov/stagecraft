@@ -20,7 +20,7 @@ class TransformType(models.Model):
         max_length=25,
         unique=True,
     )
-    schema = JSONField(blank=True)
+    schema = JSONField(default={}, blank=True)
 
     function_validator = RegexValidator(
         '^[a-z_\.]+$',
@@ -54,8 +54,8 @@ class Transform(models.Model):
     )
     input_type = models.ForeignKey(DataType, related_name='+')
 
-    query_parameters = JSONField(blank=True)
-    options = JSONField(blank=True)
+    query_parameters = JSONField(default={}, blank=True)
+    options = JSONField(default={}, blank=True)
 
     output_group = models.ForeignKey(
         DataGroup, null=True,
