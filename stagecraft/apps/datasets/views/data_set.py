@@ -84,6 +84,15 @@ class DataSetView(ResourceView):
         "additionalProperties": False,
     }
 
+    def list(self, request, **kwargs):
+        '''
+        Override ResourceView's list function (called by its 'get' function)
+        so that the retrieval of all data sets can be optimised
+        by eager loading data group and type associations.
+        '''
+        queryset = super(DataSetView, self).list(request, **kwargs)
+        return queryset.select_related('data_group', 'data_type')
+
     @method_decorator(permission_required('signin'))
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))

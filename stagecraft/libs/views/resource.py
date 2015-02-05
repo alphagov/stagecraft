@@ -65,9 +65,7 @@ class ResourceView(View):
         # Used to filter by, for instance, backdrop user
         filter_args = dict(filter_args.items() + additional_filters.items())
 
-        return self.model.objects.filter(
-            **filter_args).select_related(
-                'data_group', 'data_type').order_by('pk')
+        return self.model.objects.filter(**filter_args).order_by('pk')
 
     def by_id(self, request, id, user=None):
         get_args = {self.id_field: id}
