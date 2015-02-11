@@ -7,6 +7,7 @@ from stagecraft.apps.datasets.models import(
 
 from django.http import HttpResponse
 from django.conf.urls import url
+from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 
@@ -18,7 +19,11 @@ from jsonschema import FormatChecker
 from jsonschema.compat import str_types
 from jsonschema.exceptions import ValidationError
 
+from .transaction import atomic_view
+
+
 logger = logging.getLogger(__name__)
+
 
 UUID_RE_STRING = \
     '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
@@ -121,6 +126,7 @@ class ResourceView(View):
         else:
             return HttpResponse('sub resource not found', status=404)
 
+    @method_decorator(atomic_view)
     def post(self, user, request, **kwargs):
         model_json, err = self._validate_json(request)
         if err:
