@@ -261,10 +261,12 @@ class Dashboard(models.Model):
 
     def department(self):
         agency = self.agency()
-        if agency and not agency.parent:
-            raise ValueError
-        elif agency:
-            return agency.parent
+        if agency:
+            parent = agency.parents.first()
+            if not parent:
+                raise ValueError
+            else:
+                return parent
         else:
             return self.organisation
 
