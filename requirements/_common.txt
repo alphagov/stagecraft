@@ -21,3 +21,6 @@ performanceplatform-client==0.2.4
 # For writing stats out about our code
 statsd==3.0.1
 django-statsd-mozilla==0.3.12
+
+#for pulling transactions explorer spreadsheets.
+gspread==0.2.2
