@@ -2,6 +2,7 @@
 
 import os
 import sys
+import redirects
 
 try:
     username = os.environ['GOOGLE_USERNAME']
@@ -21,4 +22,6 @@ column_positions = {
 from spreadsheets import SpreadsheetMunger
 
 munger = SpreadsheetMunger(column_positions)
-print munger.load(username, password)
+results = munger.load(username, password)
+list_of_rows = redirects.generate(results)
+redirects.write(list_of_rows)

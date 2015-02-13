@@ -26,5 +26,6 @@ def test_load(mock_login):
         'names_tx_id_column': 16
     })
     result = munger.load('beep', 'boop')
-    with open('stagecraft/tools/fixtures/result.json', 'r') as f:
+    result_path = 'stagecraft/tools/fixtures/spreadsheet_munging_result.json'
+    with open(result_path, 'r') as f:
         assert_that(json.loads(f.read()), equal_to(result))
