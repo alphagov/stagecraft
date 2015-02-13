@@ -19,5 +19,6 @@ def test_load(mock_login):
 
     mock_login().open_by_key().worksheet().get_all_values.side_effect = get_appropriate_spreadsheet()  # noqa
     result = load('beep', 'boop')
-    with open('stagecraft/tools/fixtures/result.json', 'r') as f:
+    result_path = 'stagecraft/tools/fixtures/spreadsheet_munging_result.json'
+    with open(result_path, 'r') as f:
         assert_that(json.loads(f.read()), equal_to(result))
