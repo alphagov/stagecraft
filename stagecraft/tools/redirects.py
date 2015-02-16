@@ -1,3 +1,4 @@
+import sys
 import csv
 import requests
 
@@ -47,7 +48,17 @@ def redirect_page(source_url, destination_url):
 
 
 def write(list_of_lists):
-    with open('redirects.csv', 'w') as csvfile:
+
+    def _write_csv(csvfile):
         writer = csv.writer(csvfile)
         for row in list_of_lists:
             writer.writerow(row)
+
+    if sys.version_info >= (3, 0, 0):
+        # python 3 produces different output with the newline argument
+        with open('redirects.csv', 'w', newline='\r\n') as csvfile:
+            _write_csv(csvfile)
+    else:
+        # python 2 does not support a newline argument
+        with open('redirects.csv', 'w') as csvfile:
+            _write_csv(csvfile)
