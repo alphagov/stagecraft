@@ -260,7 +260,8 @@ class DashboardTestCase(TransactionTestCase):
     def test_department_returns_agency_department_when_organisation_is_an_agency(self):  # noqa
         agency = AgencyWithDepartmentFactory()
         self.dashboard.organisation = agency
-        assert_that(self.dashboard.department(), equal_to(agency.parent))
+        assert_that(
+            self.dashboard.department(), equal_to(agency.parents.first()))
 
     def test_department_throws_exception_when_agency_has_no_department(self):
         self.dashboard.organisation = AgencyFactory()

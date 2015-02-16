@@ -1,6 +1,37 @@
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
 from uuidfield import UUIDField
+
+
+class NodeManager(models.Manager):
+
+    def ancestors_of(self, node, include_self=True):
+        if include_self:
+            initial_query = 'VALUES (null::uuid, %s::uuid, 0)'
+        else:
+            initial_query = '''
+            SELECT parents.from_node_id::uuid AS node_from,
+                   parents.to_node_id::uuid AS node_to,
+                   0 AS depth
+            FROM organisation_node_parents parents
+            WHERE parents.from_node_id=%s::uuid
+            '''
+
+        return self.raw('''
+        WITH RECURSIVE node_parents(node_from, node_to, depth) AS (
+        ''' + initial_query + '''
+          UNION ALL
+            SELECT parents.from_node_id::uuid AS node_from,
+                   parents.to_node_id::uuid AS node_to,
+                   (node_parents.depth+1) AS depth
+            FROM organisation_node_parents parents, node_parents
+            WHERE parents.from_node_id=node_parents.node_to
+        )
+        SELECT organisation_node.*
+        FROM node_parents
+          INNER JOIN organisation_node
+          ON organisation_node.id = node_parents.node_to
+        ORDER BY node_parents.depth DESC
+        ''', [node.id])
 
 
 class NodeType(models.Model):
@@ -8,17 +39,19 @@ class NodeType(models.Model):
     name = models.CharField(max_length=256, unique=True)
 
 
-class Node(MPTTModel):
+class Node(models.Model):
+    objects = NodeManager()
+
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     name = models.CharField(max_length=256, unique=True)
     abbreviation = models.CharField(
         max_length=50, unique=True,
         null=True, blank=True)
     typeOf = models.ForeignKey(NodeType)
-    parent = TreeForeignKey(
-        'self', null=True,
-        blank=True, related_name='children'
-    )
+    parents = models.ManyToManyField('self', symmetrical=False)
+
+    def get_ancestors(self, include_self=True):
+        return Node.objects.ancestors_of(self, include_self)
 
     def spotlightify(self):
         node = {}

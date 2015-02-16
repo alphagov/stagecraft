@@ -8,11 +8,36 @@ from hamcrest import (
 )
 from httmock import HTTMock
 
+from .factories import NodeFactory, NodeTypeFactory
+
 from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
 class NodeViewsTestCase(TestCase):
-    fixtures = ['organisation_cheese.xml']
+
+    def setUp(self):
+        thing = NodeTypeFactory(
+            id='ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4',
+            name='Thing',
+        )
+        department = NodeTypeFactory(
+            id='f9510fef-a879-4cf8-bcfb-9e0871579f5a',
+            name='Department',
+        )
+
+        cheese = NodeFactory(
+            id='f59bddcc-4494-46f8-a2c9-884030fa3087',
+            name='Cheese',
+            abbreviation=None,
+            typeOf=department,
+        )
+        brie = NodeFactory(
+            id='edc9aa07-f45f-4d93-9f9c-d9d760f08019',
+            name='Brie',
+            abbreviation='BR',
+            typeOf=thing,
+        )
+        brie.parents.add(cheese)
 
     def test_root_view_only_get_post(self):
         delete_resp = self.client.delete(
@@ -303,7 +328,30 @@ class NodeViewsTestCase(TestCase):
 
 
 class NodeTypeViewsTestCase(TestCase):
-    fixtures = ['organisation_cheese.xml']
+
+    def setUp(self):
+        thing = NodeTypeFactory(
+            id='ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4',
+            name='Thing',
+        )
+        department = NodeTypeFactory(
+            id='f9510fef-a879-4cf8-bcfb-9e0871579f5a',
+            name='Department',
+        )
+
+        cheese = NodeFactory(
+            id='f59bddcc-4494-46f8-a2c9-884030fa3087',
+            name='Cheese',
+            abbreviation=None,
+            typeOf=department,
+        )
+        brie = NodeFactory(
+            id='edc9aa07-f45f-4d93-9f9c-d9d760f08019',
+            name='Brie',
+            abbreviation='BR',
+            typeOf=thing,
+        )
+        brie.parents.add(cheese)
 
     def test_root_view_only_get_post(self):
         delete_resp = self.client.delete(

@@ -40,6 +40,16 @@ class FormatCheckerTestCase(TestCase):
             is_not(raises(FormatError)))
 
 
+def patched_validate(self):
+    if self.name == 'save-and-fail-validation':
+        return 'failed validation'
+    else:
+        return None
+
+
+Node.validate = patched_validate
+
+
 class TestResourceView(ResourceView):
 
     model = Node
@@ -70,6 +80,9 @@ class TestResourceView(ResourceView):
         model.name = model_json['name']
         model.abbreviation = model_json.get('abbreviation', None)
         model.typeOf = node_type
+
+        if model_json['name'] == 'save-and-fail-validation':
+            model.save()
 
     @staticmethod
     def serialize(model):
@@ -208,3 +221,18 @@ class ResourceViewTestCase(TestCase):
             'id': str(node.id),
         })
         assert_that(model.name, is_(node.name))
+
+    def test_rollsback_on_failure(self):
+        node_type = NodeTypeFactory()
+        post_object = {
+            'type_id': str(node_type.id),
+            'name': 'save-and-fail-validation',
+        }
+        status_code, json_response = self.post(body=json.dumps(post_object))
+
+        assert_that(status_code, is_(400))
+        assert_that(
+            calling(Node.objects.get).with_args(
+                name='save-and-fail-validation'),
+            raises(Node.DoesNotExist),
+        )

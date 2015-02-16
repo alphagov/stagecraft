@@ -109,7 +109,10 @@ class NodeView(ResourceView):
         model.name = model_json['name']
         model.abbreviation = model_json.get('abbreviation', None)
         model.typeOf = node_type
-        model.parent = parent_node
+
+        if parent_node is not None:
+            model.save()
+            model.parents.add(parent_node)
 
     @staticmethod
     def serialize(model, resolve_parent=True):
@@ -125,9 +128,10 @@ class NodeView(ResourceView):
             node['abbreviation'] = model.name
 
         if resolve_parent:
-            if model.parent is not None:
+            parent = model.parents.first()
+            if parent is not None:
                 node['parent'] = NodeView.serialize(
-                    model.parent,
+                    parent,
                     resolve_parent=False
                 )
             else:
