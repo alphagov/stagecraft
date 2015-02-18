@@ -1,0 +1,66 @@
+[  
+  {  
+    "title":"Crown Prosecution Service",
+    "format":"Non-ministerial department",
+    "updated_at":"2014-10-15T15:35:31+01:00",
+    "web_url":"https://www.gov.uk/government/organisations/crown-prosecution-service",
+    "details":{  
+      "organisation_logo_type_class_name":"no-identity",
+      "logo_formatted_name":"Crown Prosecution Service",
+      "slug":"crown-prosecution-service",
+      "abbreviation":"CPS",
+      "closed_at":null,
+      "content_id":"6c97de66-80ac-4eca-9a19-92d16442e72f",
+      "organisation_brand_colour_class_name":"attorney-generals-office",
+      "govuk_status":"exempt"
+    },
+    "parent_organisations":[  
+      {  
+        "web_url":"https://www.gov.uk/government/organisations/attorney-generals-office",
+        "id":"https://www.gov.uk/api/organisations/attorney-generals-office"
+      }
+    ],
+    "child_organisations":[  
+
+    ],
+    "id":"https://www.gov.uk/api/organisations/crown-prosecution-service"
+  },
+  {  
+    "title":"Attorney General's Office",
+    "format":"Ministerial department",
+    "updated_at":"2014-11-14T16:49:13+00:00",
+    "web_url":"https://www.gov.uk/government/organisations/attorney-generals-office",
+    "details":{  
+      "organisation_logo_type_class_name":"single-identity",
+      "logo_formatted_name":"Attorney \r\nGeneral's \r\nOffice",
+      "slug":"attorney-generals-office",
+      "abbreviation":"AGO",
+      "closed_at":null,
+      "content_id":"25aacd68-dc0c-4041-9c3a-df59a5357c23",
+      "organisation_brand_colour_class_name":"attorney-generals-office",
+      "govuk_status":"live"
+    },
+    "parent_organisations":[  
+
+    ],
+    "child_organisations":[  
+      {  
+        "web_url":"https://www.gov.uk/government/organisations/treasury-solicitor-s-department",
+        "id":"https://www.gov.uk/api/organisations/treasury-solicitor-s-department"
+      },
+      {  
+        "web_url":"https://www.gov.uk/government/organisations/crown-prosecution-service",
+        "id":"https://www.gov.uk/api/organisations/crown-prosecution-service"
+      },
+      {  
+        "web_url":"https://www.gov.uk/government/organisations/serious-fraud-office",
+        "id":"https://www.gov.uk/api/organisations/serious-fraud-office"
+      },
+      {  
+        "web_url":"https://www.gov.uk/government/organisations/hm-crown-prosecution-service-inspectorate",
+        "id":"https://www.gov.uk/api/organisations/hm-crown-prosecution-service-inspectorate"
+      }
+    ],
+    "id":"https://www.gov.uk/api/organisations/attorney-generals-office"
+  }
+]
