@@ -1,5 +1,5 @@
 from mock import patch
-from .spreadsheets import SpreadsheetMunger
+from ..spreadsheets import SpreadsheetMunger
 import json
 from hamcrest import (
     assert_that, equal_to
