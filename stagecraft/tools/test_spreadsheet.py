@@ -1,5 +1,5 @@
 from mock import patch
-from .spreadsheets import load
+from .spreadsheets import SpreadsheetMunger
 import json
 from hamcrest import (
     assert_that, equal_to
@@ -18,6 +18,13 @@ def test_load(mock_login):
         return [tx_worksheet, names_worksheet]
 
     mock_login().open_by_key().worksheet().get_all_values.side_effect = get_appropriate_spreadsheet()  # noqa
-    result = load('beep', 'boop')
+    munger = SpreadsheetMunger(positions={
+        'names_name': 6,
+        'names_slug': 7,
+        'names_service_name': 4,
+        'names_service_slug': 5,
+        'names_tx_id_column': 16
+    })
+    result = munger.load('beep', 'boop')
     with open('stagecraft/tools/fixtures/result.json', 'r') as f:
         assert_that(json.loads(f.read()), equal_to(result))

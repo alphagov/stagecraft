@@ -11,6 +11,14 @@ except KeyError:
           "and password (GOOGLE_PASSWORD) as environment variables")
     sys.exit(1)
 
-from spreadsheets import load
+column_positions = {
+    'names_name': 7,
+    'names_slug': 8,
+    'names_service_name': 5,
+    'names_service_slug': 6,
+    'names_tx_id_column': 17
+}
+from spreadsheets import SpreadsheetMunger
 
-print load(username, password)
+munger = SpreadsheetMunger(column_positions)
+print munger.load(username, password)
