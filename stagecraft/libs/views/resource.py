@@ -58,7 +58,10 @@ class ResourceView(View):
     def list(self, request, **kwargs):
         user = kwargs.get('user', None)
         additional_filters = kwargs.get('additional_filters', {})
-        if user and 'admin' not in user['permissions']:
+        unfiltered_roles = {'admin', 'dashboard-editor'}
+        should_filter = user and (len(set(user['permissions']).intersection(
+            unfiltered_roles)) == 0)
+        if should_filter:
             additional_filters['backdropuser'] = BackdropUser.objects.filter(
                 email=user['email'])
 
