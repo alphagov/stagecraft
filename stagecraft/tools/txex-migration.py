@@ -12,11 +12,11 @@ except KeyError:
     sys.exit(1)
 
 column_positions = {
-    'names_name': 7,
-    'names_slug': 8,
-    'names_service_name': 5,
-    'names_service_slug': 6,
-    'names_tx_id_column': 17
+    'names_name': 8,
+    'names_slug': 9,
+    'names_service_name': 6,
+    'names_service_slug': 7,
+    'names_tx_id_column': 18
 }
 from spreadsheets import SpreadsheetMunger
 
