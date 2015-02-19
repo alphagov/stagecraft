@@ -2,6 +2,7 @@ import cPickle as pickle
 import os
 import requests
 import sys
+from stagecraft.apps.organisation.models import Node, NodeType
 
 from collections import defaultdict
 from spreadsheets import SpreadsheetMunger
@@ -62,8 +63,8 @@ def load_data(username, password):
     # f.write(json.dumps([org for org in govuk_organisations if org['web_url'] == 'https://www.gov.uk/government/organisations/crown-prosecution-service']))  # noqa
     # with open('thing2.json', 'w') as f:
     # f.write(json.dumps([org for org in govuk_organisations if org['web_url'] == 'https://www.gov.uk/government/organisations/attorney-generals-office']))  # noqa
-    #with open('thing3.json', 'w') as f:
-        #f.write(json.dumps(list(set([org['format'] for org in govuk_organisations]))))  # noqa
+    # with open('thing3.json', 'w') as f:
+    # f.write(json.dumps(list(set([org['format'] for org in govuk_organisations]))))  # noqa
     return transactions_data, govuk_organisations
 
 
@@ -72,9 +73,8 @@ def load_organisations(username, password):
 
     print transactions_data
     print govuk_organisations
-    # create_departments()
-    # create_agencies()
-    # create_services()
+    nodes_hash = build_up_node_hash(transactions_data, govuk_organisations)
+    create_nodes(nodes_hash)
     # transactions = create_transactions()
     # for transaction in transactions:
     # associate_with_dashboard(transaction, stuff)
@@ -99,6 +99,24 @@ types_hash = {
 }
 
 
+def create_nodes(nodes_hash):
+    def _get_or_create_node(node_hash, nodes_hash):
+        node_type, _ = NodeType.objects.get_or_create(name=node_hash['typeOf'])
+        node, _ = Node.objects.get_or_create(
+            name=node_hash['name'],
+            abbreviation=slugify(node_hash['abbreviation']),
+            typeOf=node_type
+        )
+        for parent in node_hash['parents']:
+            node.parents.add(
+                _get_or_create_node(
+                    nodes_hash[parent],
+                    nodes_hash))
+        return node
+    for key_or_abbr, node_hash in nodes_hash.items():
+        _get_or_create_node(node_hash, nodes_hash)
+
+
 def build_up_org_hash(organisations):
     org_id_hash = {}
     for org in organisations:
@@ -121,7 +139,10 @@ def build_up_org_hash(organisations):
 
 
 def slugify(string):
-    return string.lower()
+    if string:
+        return string.lower()
+    else:
+        return string
 
 
 def build_up_node_hash(transactions, organisations):
@@ -140,13 +161,13 @@ def build_up_node_hash(transactions, organisations):
     for tx in transactions:
         org_hash[transaction_name(tx)] = {
             'name': transaction_name(tx),
-            'abbreviation': '',
+            'abbreviation': None,
             'typeOf': 'transaction',
             'parents': [service_name(tx)]
         }
         org_hash[service_name(tx)] = {
             'name': service_name(tx),
-            'abbreviation': '',
+            'abbreviation': None,
             'typeOf': 'service',
             'parents': []
         }
