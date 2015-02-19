@@ -3,10 +3,12 @@ from hamcrest import (
 )
 from mock import patch
 import json
-from stagecraft.apps.organisation.models import Node, NodeType
+from stagecraft.apps.organisation.models import Node
+from stagecraft.apps.dashboards.models import Dashboard
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
-    ModuleFactory)
+    ModuleFactory,
+    DashboardFactory)
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
 
 from ..load_organisations import(
@@ -28,32 +30,60 @@ def test_load_organisations(mock_load_data):
     mock_load_data.return_value = tx_fixture, govuk_fixture
 
     tx_data_set = DataSetFactory(
-        name='transactional_services_summaries',
+        data_group__name='transactional_services',
+        data_type__name='summaries'
     )
     kpi_module = ModuleFactory(
+        dashboard=DashboardFactory(published=True),
         data_set=tx_data_set,
         query_parameters={
-            'filter_by': ['service_id:daa-reports-filing'],
+            'filter_by': ['service_id:bis-acas-elearning-registrations'],
         }
     )
     dashboard = kpi_module.dashboard
 
     load_organisations('foo', 'bar')
 
+    dashboard = Dashboard.objects.get(id=dashboard.id)
+
     assert_that(dashboard.organisation, is_not(None))
 
-    org_parents = dashboard.organisation.get_ancestors(include_self=True)
+    org_parents = [org for org in dashboard.organisation.get_ancestors(
+        include_self=True)]
 
     assert_that(len(org_parents), is_(4))
-    assert_that(org_parents[0].name, is_('Report filing'))
-    assert_that(org_parents[0].typeOf.name, is_('transaction'))
-    assert_that(org_parents[1].name, is_('Filing cabinet service'))
-    assert_that(org_parents[1].typeOf.name, is_('service'))
-    assert_that(org_parents[2].name, is_('Paper love agency'))
-    assert_that(org_parents[2].typeOf.name, is_('agency'))
-    assert_that(org_parents[3].name, is_(
-        'Department of Administrative Affairs'))
-    assert_that(org_parents[3].typeOf.name, is_('department'))
+
+    assert_that(
+        dashboard.organisation.name,
+        equal_to(
+            "Training and resources on workplace relations: registrations"))
+    assert_that(
+        dashboard.organisation.typeOf.name,
+        equal_to("transaction"))
+
+    parent_org = dashboard.organisation.parents.first()
+    assert_that(
+        parent_org.name,
+        equal_to("Training and resources on workplace relations"))
+    assert_that(
+        parent_org.typeOf.name,
+        equal_to("service"))
+
+    parent_org = parent_org.parents.first()
+    assert_that(
+        parent_org.name,
+        equal_to("Crown Prosecution Service"))
+    assert_that(
+        parent_org.typeOf.name,
+        equal_to("agency"))
+
+    parent_org = parent_org.parents.first()
+    assert_that(
+        parent_org.name,
+        equal_to("Attorney General's Office"))
+    assert_that(
+        parent_org.typeOf.name,
+        equal_to("department"))
 
 # this is the intermediate data format built up from external data
 # it is then used to actually create and update things in the database.
