@@ -3,6 +3,7 @@ import os
 import requests
 import sys
 from stagecraft.apps.organisation.models import Node, NodeType
+from stagecraft.apps.dashboards.models import Dashboard
 
 from collections import defaultdict
 from spreadsheets import SpreadsheetMunger
@@ -74,11 +75,25 @@ def load_organisations(username, password):
     print transactions_data
     print govuk_organisations
     nodes_hash = build_up_node_hash(transactions_data, govuk_organisations)
+    # as this is recursive internally
+    # we could filter to start with the transactions only
+    # and then return these created and keyed off the name at the end
+    # however I don't fully understand the graph yet and there may be
+    # orphans building up in this way.
+    # instead ensure we create everything and then load transactions that
+    # have been created and associate based on the standard way of building
+    # up a transaction name
     create_nodes(nodes_hash)
-    # transactions = create_transactions()
-    # for transaction in transactions:
-    # associate_with_dashboard(transaction, stuff)
-    # associate_with_parents_recursively(transaction, stuff)
+    for transaction in transactions_data:
+        associate_with_dashboard(transaction)
+
+
+def associate_with_dashboard(transaction_hash):
+    transaction = Node.objects.get(name=transaction_name(transaction_hash))
+    dashboards = Dashboard.objects.by_tx_id(transaction_hash['tx_id'])
+    for dashboard in dashboards:
+        dashboard.organisation = transaction
+        dashboard.save()
 
 # a type for all of these or map them? or is there a
 # field other than format we should use?
@@ -145,12 +160,15 @@ def slugify(string):
         return string
 
 
-def build_up_node_hash(transactions, organisations):
-    def service_name(tx):
-        return "{}".format(tx['service']['name'])
+def service_name(tx):
+    return "{}".format(tx['service']['name'])
 
-    def transaction_name(tx):
-        return "{}: {}".format(tx['service']['name'], tx['slug'])
+
+def transaction_name(tx):
+    return "{}: {}".format(tx['service']['name'], tx['slug'])
+
+
+def build_up_node_hash(transactions, organisations):
 
     no_agency_found = []
     no_dep_found = []
