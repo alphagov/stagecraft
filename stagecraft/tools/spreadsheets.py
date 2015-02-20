@@ -1,4 +1,5 @@
 import gspread
+import pickle
 
 
 class SpreadsheetMunger:
@@ -6,10 +7,16 @@ class SpreadsheetMunger:
     def __init__(self, positions={}):
         # The transaction explorer spreadsheet is less likely to change.
         # As a result we can assume these positions.
+        self.tx_name = positions.get('tx_name', 4)
+        self.tx_desc1 = positions.get('tx_desc1', 65)
+        self.tx_desc2 = positions.get('tx_desc2', 66)
         self.tx_agency_abbr = positions.get('tx_agency_abbr', 3)
         self.tx_agency_name = positions.get('tx_agency_name', 2)
         self.tx_department_abbr = positions.get('tx_department_abbr', 0)
         self.tx_department_name = positions.get('tx_department_name', 1)
+        self.tx_high_volume = positions.get('tx_high_volume', 74)
+        self.tx_costs = positions.get('tx_costs', 68)
+        self.tx_other_notes = positions.get('tx_other_notes', 69)
 
         self.tx_tx_id_column = positions.get('tx_tx_id_column', 6)
 
@@ -37,6 +44,31 @@ class SpreadsheetMunger:
         >>> agency == {'abbr': 'Bar', 'name': 'foo', 'slug': 'bar'}
         True
         """
+
+        name = row[self.tx_name]
+        if len(name) > 80:
+            name = name[:80]
+
+        description = row[self.tx_desc1]
+        if len(description) > 500:
+            description = description[:500]
+
+        description_extra = row[self.tx_desc2]
+        if len(description_extra) > 400:
+            description_extra = description_extra[:400]
+
+        costs = row[self.tx_costs]
+        if len(costs) > 1500:
+            costs = costs[:1500]
+
+        other_notes = row[self.tx_other_notes]
+        if len(other_notes) > 1000:
+            other_notes = other_notes[:1000]
+
+        slug = row[self.tx_tx_id_column]
+        if len(slug) > 90:
+            slug = slug[:90]
+
         agency = {
             'abbr': row[self.tx_agency_abbr],
             'slug': row[self.tx_agency_abbr].lower(),
@@ -52,9 +84,20 @@ class SpreadsheetMunger:
            or agency['name'] == department['name']):
             agency = None
 
+        high_volume = False
+        if row[self.tx_high_volume] == 'yes':
+            high_volume = True
+
         return {
+            'name': name,
+            'description': description,
+            'description_extra': description_extra,
+            'slug': slug,
             'department': department,
             'agency': agency,
+            'high_volume': high_volume,
+            'costs': costs,
+            'other_notes': other_notes,
         }
 
     def _parse_names_row(self, row):
@@ -95,26 +138,35 @@ class SpreadsheetMunger:
                          list(names_datum.items()) +
                          [('tx_id', tx_id)]))
             except KeyError:
-                print('failed to find name info for {}'.format(tx_id))
+                print(
+                    'Failed to find names spreadsheet record for {}'\
+                            .format(tx_id))
 
         return merged
 
-    def load(self, username, password):
+    def load_tx_worksheet(self, username, password):
         account = gspread.login(username, password)
 
-        tx_worksheet = account.open_by_key(
-            '0AiLXeWvTKFmBdFpxdEdHUWJCYnVMS0lnUHJDelFVc0E').worksheet(
-                'TX_Data')
-        names_worksheet = account.open_by_key(
-            '1jwJBNgKCOn5PN_rC2VDK9iwBSaP0s7KrUjQY_Hpj-V8').worksheet('Sheet1')
+        try:
+            with open('tx_worksheet.pickle', 'rb') as pickled:
+                print('Loading pickled spreadsheet')
+                all_values = pickle.load(pickled)
+        except IOError:
+            tx_worksheet = account.open_by_key(
+                '0AiLXeWvTKFmBdFpxdEdHUWJCYnVMS0lnUHJDelFVc0E')\
+                        .worksheet('TX_Data')
+            all_values = tx_worksheet.get_all_values()
 
-        tx_data = self._parse_rows(
-            tx_worksheet,
-            self._parse_tx_row,
-            self.tx_tx_id_column)
-        names_data = self._parse_rows(
-            names_worksheet,
-            self._parse_names_row,
-            self.names_tx_id_column)
+            with open('tx_worksheet.pickle', 'wb') as pickled:
+                print('Saving pickled spreadsheet')
+                pickle.dump(all_values, pickled, pickle.HIGHEST_PROTOCOL)
 
-        return self._merge(tx_data, names_data)
+        rows = []
+        for row in all_values[1:]:
+            rows.append(self._parse_tx_row(row))
+        return rows
+
+    def load(self, username, password):
+        tx = load_tx_worksheet(username, password)
+        names = load_names_worksheet(username, password)
+        return self._merge(tx, names)
