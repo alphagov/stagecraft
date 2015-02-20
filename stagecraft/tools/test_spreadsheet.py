@@ -1,9 +1,13 @@
-from mock import patch
-from .spreadsheets import SpreadsheetMunger
 import json
+
+from mock import patch
+from nose.tools import nottest
 from hamcrest import (
     assert_that, equal_to
 )
+
+from .spreadsheets import SpreadsheetMunger
+
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
     tx_worksheet = json.loads(f.read())
@@ -12,6 +16,7 @@ with open('stagecraft/tools/fixtures/names.json') as f:
     names_worksheet = json.loads(f.read())
 
 
+@nottest
 @patch('gspread.login')
 def test_load(mock_login):
     def get_appropriate_spreadsheet():
