@@ -21,6 +21,7 @@ from stagecraft.libs.views.utils import to_json, create_error
 from stagecraft.libs.views.transaction import atomic_view
 from .module import add_module_to_dashboard
 from ..models.module import Module
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +43,20 @@ def dashboard_list_for_spotlight():
 
 
 def single_dashboard_for_spotlight(request, dashboard_slug):
+    start = time.time()
+    logger.info('fetching dashboard')
     dashboard = fetch_dashboard(dashboard_slug)
+    fetch_time = time.time()
+    fetch_elapsed = fetch_time - start
+    logger.info('fetching dashboard took {}'.format(
+        fetch_elapsed), extra={'elapsed_time': fetch_elapsed})
     if not dashboard:
         return error_response(request, dashboard_slug)
     dashboard_json = dashboard.spotlightify(dashboard_slug)
+    spotlightify_time = time.time()
+    spotlightify_elapsed = spotlightify_time - start
+    logger.info('spotlightifying dashboard took {}'.format(
+        spotlightify_elapsed), extra={'elapsed_time': spotlightify_elapsed})
     if not dashboard_json:
         return error_response(request, dashboard_slug)
     json_str = to_json(dashboard_json)
