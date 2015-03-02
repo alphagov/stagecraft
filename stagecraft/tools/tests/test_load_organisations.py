@@ -223,24 +223,24 @@ def test_create_nodes():
              " workplace relations")
     tx_ancestors = [
         ancestor.name for ancestor in transaction.get_ancestors()]
-    assert_that(tx_ancestors, equal_to(
-        ["Attorney General's Office",
-         "Foo thing",
-         "Crown Prosecution Service",
-         "Training and resources on workplace relations",
-         "Registrations to use online training and resources on"
-         " workplace relations"]))
+    assert_that(sorted(tx_ancestors), equal_to(
+        sorted(["Foo thing",
+                "Attorney General's Office",
+                "Crown Prosecution Service",
+                "Training and resources on workplace relations",
+                "Registrations to use online training and resources on"
+                " workplace relations"])))
 
     service = Node.objects.get(
         name="Training and resources on"
              " workplace relations")
     service_ancestors = [
         ancestor.name for ancestor in service.get_ancestors()]
-    assert_that(service_ancestors, equal_to(
-        ["Attorney General's Office",
-         "Foo thing",
-         "Crown Prosecution Service",
-         "Training and resources on workplace relations"]))
+    assert_that(sorted(service_ancestors), equal_to(
+                sorted(["Attorney General's Office",
+                        "Foo thing",
+                        "Crown Prosecution Service",
+                        "Training and resources on workplace relations"])))
 
     agency = Node.objects.get(
         name="Crown Prosecution Service")
