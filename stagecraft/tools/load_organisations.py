@@ -222,7 +222,7 @@ def build_up_org_hash(organisations):
             'parents': []
         }
 
-    # assign parents
+    # assign parents, all at least have name
     for org in organisations:
         for parent in org['parent_organisations']:
             abbr = org_id_hash[parent['id']]['abbreviation']
@@ -266,36 +266,35 @@ def build_up_org_hash(organisations):
 
 
 def associate_parents(tx, org_hash, typeOf):
-    # if there is a thing for abbreviation then add it's abbreviation to parents  # noqa
-    if slugify(tx[typeOf]['abbr']) in org_hash:
-        parent = org_hash[slugify(tx[typeOf]['abbr'])]
+    def matching_org(org_hash, key):
+        if key in org_hash:
+            return org_hash[key]
+
+    def has_attr_for_type(tx, typeOf, attr_key):
+        return tx[typeOf][attr_key]
+
+    def has_name_for_type(tx, typeOf):
+        return has_attr_for_type(tx, typeOf, 'name')
+
+    def has_abbreviation_for_type(tx, typeOf):
+        return has_attr_for_type(tx, typeOf, 'abbr')
+    parent_by_name = matching_org(org_hash, slugify(tx[typeOf]['name']))
+    parent_by_abbreviation = matching_org(
+        org_hash, slugify(tx[typeOf]['abbr']))
+    if has_abbreviation_for_type(tx, typeOf) and parent_by_abbreviation:
+        parent = parent_by_abbreviation
         parent = add_type_to_parent(parent, typeOf)
-        # prevent null or blank string parents
-        if slugify(parent['abbreviation']):
-            org_hash[service_name(tx)]['parents'].append(
-                slugify(parent['abbreviation']))
-            return (True, (tx[typeOf], parent))
-        else:
-            # the parent has no name or abbrevation
-            # how did it get his way?
-            return (False, ('blank or null abbr', tx[typeOf], parent))
-    # try the name if no luck with the abbreviation
-    elif slugify(tx[typeOf]['name']) in org_hash:
-        parent = org_hash[slugify(tx[typeOf]['name'])]
+        parent_identifier = slugify(parent['abbreviation'])
+    elif has_name_for_type(tx, typeOf) and parent_by_name:
+        parent = parent_by_name
         parent = add_type_to_parent(parent, typeOf)
-        # prevent null or blank string parents
-        if slugify(parent['name']):
-            org_hash[service_name(tx)]['parents'].append(
-                slugify(parent['name']))
-            return (True, (tx[typeOf], parent))
-        else:
-            # the parent has no name or abbrevation
-            # how did it get his way?
-            return (False, ('blank or null name', tx[typeOf], parent))
-    # if there is nothing for name
-    # or abbreviation then add to not found
+        parent_identifier = slugify(parent['name'])
     else:
         return (False, (tx[typeOf], None))
+
+    org_hash[service_name(tx)]['parents'].append(
+        parent_identifier)
+    return (True, (tx[typeOf], parent))
 
 ###
 
@@ -483,12 +482,12 @@ def main():
         'duplicate_services': 347,
         'duplicate_transactions': 547,
         'duplicate_dep_or_agency_abbreviations': 3,
-        'link_to_parents_not_found': 175,
-        'link_to_parents_found': 610,
+        'link_to_parents_not_found': 85,
+        'link_to_parents_found': 700,
         'transactions_associated_with_dashboards': 93,
         'transactions_not_associated_with_dashboards': 692,
-        'total_parents_found': 1110,
-        'total_parents': 1245
+        'total_parents_found': 1166,
+        'total_parents': 1329
     }
     for key, things in happened.items():
         print key
