@@ -14,6 +14,13 @@ from stagecraft.apps.datasets.models import DataSet
 
 from .dashboard import Dashboard
 
+class ModuleManager(models.Manager):
+
+    def get_queryset(self):
+        return super(ModuleManager, self).get_queryset().select_related(
+            'data_set__data_group', 'data_set__data_type',
+            'type')
+
 
 class ModuleType(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
@@ -75,6 +82,8 @@ class Module(models.Model):
     query_parameters = JSONField(null=True, blank=True)
 
     order = models.IntegerField()
+
+    objects = ModuleManager()
 
     # should run on normal validate
     def validate_options(self):
