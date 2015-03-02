@@ -304,7 +304,6 @@ def create_nodes(nodes_hash):
     failed_to_create = []
     created = []
     existing = []
-    failed_to_find_or_create_parent = defaultdict(list)
     errors = defaultdict(list)
 
     def _get_or_create_node(node_hash, nodes_hash):
@@ -345,23 +344,32 @@ def create_nodes(nodes_hash):
                 'typeOf': node_type
             })
             return False
-        for parent_id in node_hash['parents']:
-            parent = _get_or_create_node(
-                nodes_hash[parent_id],
-                nodes_hash)
-            if parent:
-                node.parents.add(parent)
-            else:
-                failed_to_find_or_create_parent[node_hash['name']].append(
-                    nodes_hash[parent_id])
-                WHAT_HAPPENED.this_happened(
-                    'failed_to_find_or_create_parent',
-                    failed_to_find_or_create_parent)
         return node
 
+    created_nodes = []
+    abbr_or_name_to_uuid = {}
+    total_parents = []
+    total_parents_found = []
     for key_or_abbr, node_hash in nodes_hash.items():
-        _get_or_create_node(node_hash, nodes_hash)
+        node = _get_or_create_node(node_hash, nodes_hash)
+        if node:
+            if node.abbreviation:
+                abbr_or_name_to_uuid[node.abbreviation] = node.id
+            if node.name:
+                abbr_or_name_to_uuid[node.name] = node.id
+            created_nodes.append((node, node_hash['parents']))
+    for node, parents in created_nodes:
+        parent_uuids = []
+        for parent in parents:
+            if parent in abbr_or_name_to_uuid:
+                parent_uuids.append(abbr_or_name_to_uuid[parent])
+        total_parents += parents
+        total_parents_found += parent_uuids
+        if parent_uuids:
+            node.parents.add(*parent_uuids)
 
+    WHAT_HAPPENED.this_happened('total_parents_found', total_parents_found)
+    WHAT_HAPPENED.this_happened('total_parents', total_parents)
     WHAT_HAPPENED.this_happened('created_nodes', created)
     WHAT_HAPPENED.this_happened('existing_nodes', existing)
     WHAT_HAPPENED.this_happened(
@@ -467,10 +475,10 @@ def main():
         'transactions': 785,
         'created_nodes': 1467,
         'existing_nodes': 7,
-        'unable_to_find_or_create_nodes': 221,
+        'unable_to_find_or_create_nodes': 96,
         'unable_existing_nodes_diff_details': 3,
         'unable_existing_nodes_diff_details_msgs': 3,
-        'unable_data_error_nodes': 218,
+        'unable_data_error_nodes': 93,
         'unable_data_error_nodes_msgs': 5,
         'duplicate_services': 347,
         'duplicate_transactions': 547,
@@ -479,7 +487,8 @@ def main():
         'link_to_parents_found': 610,
         'transactions_associated_with_dashboards': 93,
         'transactions_not_associated_with_dashboards': 692,
-        'failed_to_find_or_create_parent': 35
+        'total_parents_found': 1110,
+        'total_parents': 1245
     }
     for key, things in happened.items():
         print key
