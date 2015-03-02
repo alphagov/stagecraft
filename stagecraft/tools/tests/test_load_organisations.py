@@ -14,8 +14,9 @@ from stagecraft.apps.datasets.tests.factories import DataSetFactory
 
 from ..load_organisations import(
     load_organisations,
-    build_up_org_hash,
-    build_up_node_hash,
+    add_departments_and_agencies_to_org_dict,
+    build_up_node_dict,
+    WHAT_HAPPENED,
     create_nodes)
 
 
@@ -103,6 +104,11 @@ class LoadOrganisationsTestCase(TestCase):
 
     @patch('stagecraft.tools.load_organisations.load_data')
     def test_load_organisations_same_result_if_run_twice(self, mock_load_data):
+        # ensure we are clearing between runs
+        # as what happened is global
+        # and new runs delete and recreate.
+        WHAT_HAPPENED.this_happened(
+            'created_nodes', [])
         mock_load_data.return_value = tx_fixture, govuk_fixture
 
         what_happened = load_organisations('foo', 'bar')
@@ -141,6 +147,11 @@ class LoadOrganisationsTestCase(TestCase):
             len(what_happened['transactions_not_associated_with_dashboards']),
             equal_to(0))
 
+        # ensure we are clearing between runs
+        # as what happened is global
+        # and new runs delete and recreate.
+        WHAT_HAPPENED.this_happened(
+            'created_nodes', [])
         what_happened = load_organisations('foo', 'bar')
         assert_that(len(what_happened['dashboards_at_start']), equal_to(1))
         assert_that(len(what_happened['dashboards_at_end']), equal_to(1))
@@ -246,10 +257,10 @@ def test_create_nodes():
         name="Crown Prosecution Service")
     agency_ancestors = [
         ancestor.name for ancestor in agency.get_ancestors()]
-    assert_that(agency_ancestors, equal_to(
-        ["Attorney General's Office",
-         "Foo thing",
-         "Crown Prosecution Service"]))
+    assert_that(sorted(agency_ancestors), equal_to(
+                sorted(["Attorney General's Office",
+                        "Foo thing",
+                        "Crown Prosecution Service"])))
 
     department = Node.objects.get(
         name="Attorney General's Office")
@@ -259,12 +270,12 @@ def test_create_nodes():
         ["Attorney General's Office"]))
 
 
-def test_build_up_node_hash():
-    result = build_up_node_hash(tx_fixture, govuk_fixture)
+def test_build_up_node_dict():
+    result = build_up_node_dict(tx_fixture, govuk_fixture)
     assert_that(result, equal_to(expected_result))
 
 
-def test_build_up_org_hash():
+def test_add_departments_and_agencies_to_org_dict():
     expected_result = {
         'cps': {
             'name': 'Crown Prosecution Service',
@@ -285,5 +296,6 @@ def test_build_up_org_hash():
             'parents': []
         }
     }
-    result = build_up_org_hash(govuk_fixture)
+    org_dict = {}
+    result = add_departments_and_agencies_to_org_dict(org_dict, govuk_fixture)
     assert_that(result, equal_to(expected_result))
