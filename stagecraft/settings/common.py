@@ -74,6 +74,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'dogslow.WatchdogMiddleware',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'stagecraft.libs.request_logger.middleware.RequestLoggerMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -115,3 +116,8 @@ NOSE_ARGS = ['-s', '--exclude-dir=stagecraft/settings']
 
 STATIC_URL = '/static/'
 STATIC_ROOT = abspath(pjoin(BASE_DIR, 'assets'))
+
+DOGSLOW_LOG_TO_FILE = False
+DOGSLOW_TIMER = 1
+DOGSLOW_LOGGER = 'stagecraft.apps'
+DOGSLOW_LOG_LEVEL = 'INFO'
