@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from uuidfield import UUIDField
 
@@ -50,6 +51,17 @@ class Node(models.Model):
     abbreviation = models.CharField(
         max_length=50, unique=True,
         null=True, blank=True)
+    slug_validator = RegexValidator(
+        '^[-a-z0-9]+$',
+        message='Slug can only contain lower case letters, numbers or hyphens'
+    )
+    slug = models.CharField(
+        max_length=90,
+        validators=[
+            slug_validator
+        ],
+        default=''
+    )
     typeOf = models.ForeignKey(NodeType)
     parents = models.ManyToManyField('self', symmetrical=False)
 
