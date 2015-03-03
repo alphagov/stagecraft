@@ -193,30 +193,35 @@ expected_result = {
     " on workplace relations": {
         'name': "Registrations to use online training and resources"
                 " on workplace relations",
+        'slug': 'registrations',
         'abbreviation': None,
         'typeOf': 'transaction',
         'parents': ['Training and resources on workplace relations']
     },
     'Training and resources on workplace relations': {
         'name': 'Training and resources on workplace relations',
+        'slug': 'training-resources-on-workplace-relations',
         'abbreviation': None,
         'typeOf': 'service',
         'parents': [u'cps']
     },
     u'cps': {
         'name': u'Crown Prosecution Service',
+        'slug': u'cps',
         'abbreviation': u'CPS',
         'typeOf': 'agency',
         'parents': [u'ago', u'foo']
     },
     u'ago': {
         'name': "Attorney General's Office",
+        'slug': "attorney-generals-office",
         'abbreviation': u'AGO',
         'typeOf': 'department',
         'parents': []
     },
     u'foo': {
         'name': u'Foo thing',
+        'slug': u'foo-thing',
         'abbreviation': u'foo',
         'typeOf': 'department',
         'parents': []
@@ -279,18 +284,21 @@ def test_add_departments_and_agencies_to_org_dict():
     expected_result = {
         'cps': {
             'name': 'Crown Prosecution Service',
+            'slug': 'crown-prosecution-service',
             'abbreviation': 'CPS',
             'typeOf': 'department',
             'parents': ['ago', 'foo']
         },
         'ago': {
             'name': "Attorney General's Office",
+            'slug': "attorney-generals-office",
             'abbreviation': 'AGO',
             'typeOf': 'department',
             'parents': []
         },
         'foo': {
             'name': "Foo thing",
+            'slug': u'foo-thing',
             'abbreviation': 'foo',
             'typeOf': 'department',
             'parents': []

@@ -65,6 +65,7 @@ class TestResourceView(ResourceView):
                 "format": "uuid",
             },
             "name": {"type": "string"},
+            "slug": {"type": "string"},
             "abbreviation": {"type": "string"},
         },
         "required": ["type_id", "name"],
@@ -78,6 +79,7 @@ class TestResourceView(ResourceView):
             return HttpResponse('no NodeType found', status=400)
 
         model.name = model_json['name']
+        model.slug = model_json.get('slug', None)
         model.abbreviation = model_json.get('abbreviation', None)
         model.typeOf = node_type
 
@@ -187,6 +189,7 @@ class ResourceViewTestCase(TestCase):
         post_object = {
             'type_id': str(node_type.id),
             'name': 'foo',
+            'slug': 'xtx'
         }
         status_code, json_response = self.post(body=json.dumps(post_object))
 
@@ -227,6 +230,7 @@ class ResourceViewTestCase(TestCase):
         post_object = {
             'type_id': str(node_type.id),
             'name': 'save-and-fail-validation',
+            'slug': 'save-and',
         }
         status_code, json_response = self.post(body=json.dumps(post_object))
 
