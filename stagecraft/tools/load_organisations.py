@@ -168,12 +168,14 @@ def add_transactions_and_services_to_org_dict(org_dict, transactions):
 
         org_dict[transaction_name(tx)] = {
             'name': transaction_name(tx),
+            'slug': transaction_slug(tx),
             'abbreviation': None,
             'typeOf': 'transaction',
             'parents': [service_name(tx)]
         }
         org_dict[service_name(tx)] = {
             'name': service_name(tx),
+            'slug': service_slug(tx),
             'abbreviation': None,
             'typeOf': 'service',
             'parents': []
@@ -219,9 +221,13 @@ def build_department_and_agency_dict_keyed_off_govuk_id(organisations):
     # based on iterating through all tx rows in build_up_node_dict.
     # We do this here though to to get the full org graph even when orgs are
     # not associated with a transaction in txex
+
+    # name will be overwritten with the renamed value if found
+    # slug will be overwritten with the renamed value if found
     for org in organisations:
         org_id_dict[org['id']] = {
             'name': org['title'],
+            'slug': org['details']['slug'],
             'abbreviation': org['details']['abbreviation'],
             'typeOf': types_dict[org['format']],
             'parents': []
@@ -296,10 +302,14 @@ def associate_parents(tx, org_dict, typeOf):
     if has_abbreviation_for_type(tx, typeOf) and parent_by_abbreviation:
         parent = parent_by_abbreviation
         parent = add_type_to_parent(parent, typeOf)
+        parent['name'] = tx[typeOf]['name']
+        parent['slug'] = tx[typeOf]['slug']
         parent_identifier = slugify(parent['abbreviation'])
     elif has_name_for_type(tx, typeOf) and parent_by_name:
         parent = parent_by_name
         parent = add_type_to_parent(parent, typeOf)
+        parent['name'] = tx[typeOf]['name']
+        parent['slug'] = tx[typeOf]['slug']
         parent_identifier = slugify(parent['name'])
     else:
         return (False, (tx[typeOf], None))
@@ -315,7 +325,7 @@ def create_nodes(nodes_dict):
     total_parents = []
     total_parents_found = []
     for key_or_abbr, node_dict in nodes_dict.items():
-        node = get_or_create_node(node_dict, nodes_dict)
+        node = get_or_create_node(node_dict)
         if node:
             if node.abbreviation:
                 abbr_or_name_to_uuid[node.abbreviation] = node.id
@@ -336,13 +346,8 @@ def create_nodes(nodes_dict):
     WHAT_HAPPENED.this_happened('total_parents', total_parents)
 
 
-def get_or_create_node(node_dict, nodes_dict):
+def get_or_create_node(node_dict):
     node_type, _ = NodeType.objects.get_or_create(name=node_dict['typeOf'])
-    found_or_created = {
-        'name': node_dict['name'],
-        'abbreviation': slugify(node_dict['abbreviation']),
-        'typeOf': node_type
-    }
     try:
         defaults = {
             'typeOf': node_type
@@ -356,11 +361,11 @@ def get_or_create_node(node_dict, nodes_dict):
 
         if created:
             WHAT_HAPPENED.add_to_what_happened(
-                'created_nodes', [found_or_created])
-        elif(found_or_created not in WHAT_HAPPENED.get('created_nodes')
-             and found_or_created not in WHAT_HAPPENED.get('existing_nodes')):
+                'created_nodes', [node_dict])
+        elif(node_dict not in WHAT_HAPPENED.get('created_nodes')
+             and node_dict not in WHAT_HAPPENED.get('existing_nodes')):
             WHAT_HAPPENED.add_to_what_happened(
-                'existing_nodes', [found_or_created])
+                'existing_nodes', [node_dict])
     # integrity error are existing with slightly different stuff.
     # data errors are too long field
     except(django.db.utils.DataError, django.db.utils.IntegrityError) as e:
@@ -375,7 +380,7 @@ def get_or_create_node(node_dict, nodes_dict):
             WHAT_HAPPENED.add_to_what_happened(
                 'unable_data_error_nodes_msgs', [e.message])
         WHAT_HAPPENED.add_to_what_happened(
-            'unable_to_find_or_create_nodes', [found_or_created])
+            'unable_to_find_or_create_nodes', [node_dict])
         return False
     return node
 
@@ -415,8 +420,16 @@ def service_name(tx):
     return tx['service']['name'].encode('utf-8')
 
 
+def service_slug(tx):
+    return tx['service']['slug']
+
+
 def transaction_name(tx):
     return tx['name'].encode('utf-8')
+
+
+def transaction_slug(tx):
+    return tx['slug']
 
 
 def add_type_to_parent(parent, typeOf):
@@ -458,8 +471,8 @@ def main():
 
     happened = load_organisations(username, password)
     expected_happenings = {
-        'dashboards_at_start': 872,
-        'dashboards_at_end': 872,
+        'dashboards_at_start': 874,
+        'dashboards_at_end': 874,
         'total_nodes_before': 0,
         'total_nodes_after':  1467,
         'organisations': 894,
@@ -476,21 +489,32 @@ def main():
         'link_to_parents_found': 700,
         'transactions_associated_with_dashboards': 93,
         'transactions_not_associated_with_dashboards': 692,
-        'total_parents_found': 1166,
+        'total_parents_found': 1178,
         'total_parents': 1329
     }
     for key, things in happened.items():
         print key
         print len(things)
         print '^'
+    print 'unable_existing_nodes_diff_details_msgs'
     print len(set(happened['unable_existing_nodes_diff_details_msgs']))
+    print '^'
+    print 'unable_data_error_nodes_msgs'
     print len(set(happened['unable_data_error_nodes_msgs']))
+    print '^'
 
     for key, things in happened.items():
         if key in expected_happenings:
+            print "tracking"
+            print key
+            print "^"
             if not expected_happenings[key] == len(things):
                 raise Exception("{} should have been {} but was {}".format(
                     key, expected_happenings[key], len(things)))
+        else:
+            print "something happened we aren't tracking:"
+            print key
+            print "^"
 
     if not len(set(happened['unable_existing_nodes_diff_details_msgs'])) == 3:
         raise Exception("{} should have been {} but was {}".format(

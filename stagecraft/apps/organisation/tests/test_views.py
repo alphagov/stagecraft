@@ -166,6 +166,7 @@ class NodeViewsTestCase(TestCase):
             data=json.dumps({
                 'name': 'Edam',
                 'abbreviation': 'ED',
+                'slug': 'wha',
                 'type_id': 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4',
                 'parent_id': 'f59bddcc-4494-46f8-a2c9-884030fa3087'
             }),
@@ -278,6 +279,7 @@ class NodeViewsTestCase(TestCase):
             '/organisation/node',
             data=json.dumps({
                 'name': 'Edam',
+                'slug': 'abc',
                 'abbreviation': 'ED',
                 'type_id': 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4'
             }),
@@ -295,6 +297,7 @@ class NodeViewsTestCase(TestCase):
             '/organisation/node',
             data=json.dumps({
                 'name': 'Edam',
+                'slug': 'whoo',
                 'type_id': 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4'
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',

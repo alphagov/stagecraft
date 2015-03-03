@@ -62,6 +62,7 @@ class NodeView(ResourceView):
                 "format": "uuid",
             },
             "name": {"type": "string"},
+            "slug": {"type": "string"},
             "abbreviation": {"type": "string"},
         },
         "required": ["type_id", "name"],
@@ -107,6 +108,7 @@ class NodeView(ResourceView):
             parent_node = None
 
         model.name = model_json['name']
+        model.slug = model_json.get('slug', None)
         model.abbreviation = model_json.get('abbreviation', None)
         model.typeOf = node_type
 
