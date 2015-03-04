@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Node.slug'
         db.add_column(u'organisation_node', 'slug',
-                      self.gf('django.db.models.fields.CharField')(max_length=90))
+                      self.gf('django.db.models.fields.CharField')(max_length=90, default=''))
 
     def backwards(self, orm):
         # Deleting field 'Node.slug'
