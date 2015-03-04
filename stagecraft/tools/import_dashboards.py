@@ -22,7 +22,7 @@ handler.setLevel(logging.DEBUG)
 log.addHandler(handler)
 
 
-def import_dashboards(summaries, dry_run=False):
+def import_dashboards(summaries, dry_run=False, all_records=False):
     try:
         username = os.environ['GOOGLE_USERNAME']
         password = os.environ['GOOGLE_PASSWORD']
@@ -32,33 +32,76 @@ def import_dashboards(summaries, dry_run=False):
         sys.exit(1)
 
     loader = SpreadsheetMunger(positions={
-        'names_name': 9,
-        'names_slug': 10,
-        'names_service_name': 11,
-        'names_service_slug': 12,
-        'names_tx_id_column': 19
+        'names_description': 8,
+        'names_name': 11,
+        'names_slug': 12,
+        'names_notes': 17,
+        'names_other_notes': 18,
+        'names_tx_id': 19,
     })
     records = loader.load_tx_worksheet(username, password)
     log.debug('Loaded {} records'.format(len(records)))
 
     for record in records:
-        if not record['high_volume']:
-            import_dashboard(summaries, record, dry_run)
+        if all_records or not record['high_volume']:
+            loader.sanitise_record(record)
+            import_dashboard(record, summaries, dry_run)
 
 
-def import_dashboard(summaries, record, dry_run=False):
+def import_dashboard(record, summaries, dry_run=False):
+
     log.debug(record)
     try:
-        dashboard = Dashboard.objects.get(slug=record['slug'])
-        log.debug('Retrieved dashboard: {}'.format(record['slug']))
+        dashboard = Dashboard.objects.get(slug=record['tx_id'])
+        log.debug('Retrieved dashboard: {}'.format(record['tx_id']))
     except Dashboard.DoesNotExist:
-        dashboard = create_dashboard(record, dry_run)
-        log.debug('Creating dashboard: {}'.format(record['slug']))
+        dashboard = Dashboard()
+        log.debug('Creating dashboard: {}'.format(record['tx_id']))
+
+    dashboard.title = record['name']
+    dashboard.slug = record['tx_id']
+    dashboard.description = record['description']
+    dashboard.description_extra = record['description_extra']
+    dashboard.costs = record['costs']
+    dashboard.other_notes = record['other_notes']
+
+    if dashboard.organisation is None:
+        if record.get('agency'):
+            key = 'agency'
+        else:
+            key = 'department'
+        try:
+            org = Node.objects.get(abbreviation=record[key]['abbr'])
+            dashboard.organisation = org
+        except Node.DoesNotExist:
+            if not dry_run:
+                log.warn('Organisation not found for record : {}' \
+                        .format(record['tx_id']))
+
+    if record['high_volume']:
+        dashboard.dashboard_type = 'high-volume-transaction'
+    else:
+        dashboard.dashboard_type = 'transaction'
+
+    # Don't modify published status if it exists.
+    if dashboard.published is None:
+        dashboard.published = False
+
+    if dry_run:
+        dashboard.full_clean()
+    else:
+        dashboard.save()
+
     dataset = get_dataset()
+    import_modules(dashboard, dataset, record, summaries)
+
+
+def import_modules(dashboard, dataset, record, summaries):
+
     modules = []
 
     service_data = [
-        data for data in summaries if data['service_id'] == record['slug']]
+        data for data in summaries if data['service_id'] == record['tx_id']]
     quarterly_data = [
         datum for datum in service_data if datum['type'] == 'quarterly']
     seasonal_data = [
@@ -67,20 +110,20 @@ def import_dashboard(summaries, record, dry_run=False):
 
     # Order in which modules are appended is significant
     # as it will affect how the dashboard displays.
-    modules.append(make_tpy_module(record, dashboard, dataset, dry_run))
+    modules.append(import_tpy_module(record, dashboard, dataset))
 
     for datum in seasonal_data:
         if datum.get('total_cost') is not None:
-            modules.append(make_tc_module(record, dashboard, dataset, dry_run))
+            modules.append(import_tc_module(record, dashboard, dataset))
             break
 
     for datum in seasonal_data:
         if datum.get('cost_per_transaction') is not None:
             modules.append(
-                make_cpt_module(record, dashboard, dataset, dry_run))
+                import_cpt_module(record, dashboard, dataset))
             break
 
-    modules.append(make_tpq_module(record, dashboard, dataset, dry_run))
+    modules.append(import_tpq_module(record, dashboard, dataset))
 
     digital_takeup = False
     for datum in seasonal_data:
@@ -92,21 +135,17 @@ def import_dashboard(summaries, record, dry_run=False):
             digital_takeup = True
             break
     if digital_takeup:
-        modules.append(make_dtu_module(record, dashboard, dataset, dry_run))
+        modules.append(import_dtu_module(record, dashboard, dataset))
 
     for idx, module in enumerate(modules):
         # Order is 1-indexed
         module.order = idx + 1
-        if dry_run:
-            # Use any old dashboard for its UUID.
-            module.dashboard = Dashboard.objects.first()
-            module.full_clean()
-        else:
+        if not dry_run:
             try:
                 module.save()
                 log.debug('Added module: {}'.format(module.slug))
-            except IntegrityError:
-                log.debug('Module already exists: {}'.format(module.slug))
+            except IntegrityError as e:
+                log.error('Error saving module {}: {}'.format(module.slug, str(e)))
 
 
 def get_dataset():
@@ -115,44 +154,15 @@ def get_dataset():
         data_type__name='summaries')
 
 
-def create_dashboard(record, dry_run=False):
-    """
-    Retrieve or create dashboard config for the record.
-    """
-
-    dashboard = Dashboard()
-    dashboard.title = record['name']
-    dashboard.slug = record['slug']
-    dashboard.description = record['description']
-    dashboard.description_extra = record['description_extra']
-    dashboard.costs = record['costs']
-    dashboard.other_notes = record['other_notes']
-
-    if record.get('agency'):
-        key = 'agency'
-    else:
-        key = 'department'
+def get_or_create_module(dashboard, module_slug):
     try:
-        organisation = Node.objects.get(abbreviation=record[key]['abbr'])
-    except Node.DoesNotExist:
-        if not dry_run:
-            log.warn(
-                'Organisation not found for record : {}'\
-                        .format(record['slug']))
-    if record['high_volume']:
-        dashboard.dashboard_type = 'high-volume-transaction'
-    else:
-        dashboard.dashboard_type = 'transaction'
-    dashboard.published = False
-    if dry_run:
-        dashboard.full_clean()
-    else:
-        dashboard.save()
-    return dashboard
+        module = Module.objects.get(dashboard=dashboard, slug=module_slug)
+    except Module.DoesNotExist:
+        module = Module()
+    return module
 
 
-def make_module(dashboard, dataset, attributes, dry_run=False):
-    module = Module()
+def set_module_attributes(module, dashboard, dataset, attributes):
     module.type = ModuleType.objects.get(name=attributes['module_type'])
     module.title = attributes['title']
     module.slug = attributes['slug']
@@ -163,14 +173,14 @@ def make_module(dashboard, dataset, attributes, dry_run=False):
     return module
 
 
-def make_tc_module(record, dashboard, dataset, dry_run=False):
+def import_tc_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'kpi',
         'title': 'Total cost',
         'slug': 'total-cost',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:descending'
@@ -185,17 +195,18 @@ def make_tc_module(record, dashboard, dataset, dry_run=False):
             'classes': 'cols3',
         },
     }
-    return make_module(dashboard, dataset, attributes, dry_run)
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
-def make_cpt_module(record, dashboard, dataset, dry_run=False):
+def import_cpt_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'kpi',
         'title': 'Cost per transaction',
         'slug': 'cost-per-transaction',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:descending'
@@ -209,17 +220,18 @@ def make_cpt_module(record, dashboard, dataset, dry_run=False):
             'classes': 'cols3',
         },
     }
-    return make_module(dashboard, dataset, attributes, dry_run)
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
-def make_cpt_module(record, dashboard, dataset, dry_run=False):
+def import_cpt_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'kpi',
         'title': 'Cost per transaction',
         'slug': 'cost-per-transaction',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:descending'
@@ -233,17 +245,18 @@ def make_cpt_module(record, dashboard, dataset, dry_run=False):
             'classes': 'cols3',
         },
     }
-    return make_module(dashboard, dataset, attributes, dry_run)
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
-def make_tpy_module(record, dashboard, dataset, dry_run=False):
+def import_tpy_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'kpi',
         'title': 'Transactions per year',
         'slug': 'transactions-per-year',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:descending'
@@ -256,19 +269,20 @@ def make_tpy_module(record, dashboard, dataset, dry_run=False):
                 'sigfigs': 3
             },
             'classes': 'cols3',
-        },
-    }
-    return make_module(dashboard, dataset, attributes, dry_run)
+            },
+        }
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
-def make_tpq_module(record, dashboard, dataset, dry_run=False):
+def import_tpq_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'bar_chart_with_number',
         'title': 'Transactions per quarter',
         'slug': 'transactions-per-quarter',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:ascending'
@@ -278,17 +292,18 @@ def make_tpq_module(record, dashboard, dataset, dry_run=False):
             'axis-period': 'quarter'
         },
     }
-    return make_module(dashboard, dataset, attributes, dry_run)
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
-def make_dtu_module(record, dashboard, dataset, dry_run=False):
+def import_dtu_module(record, dashboard, dataset):
     attributes = {
         'module_type': 'bar_chart_with_number',
         'title': 'Digital take-up',
         'slug': 'digital-take-up-per-quarter',
         'query_params': {
             'filter_by': [
-                'service_id:' + record['slug'],
+                'service_id:' + record['tx_id'],
                 'type:seasonally-adjusted'
             ],
             'sort_by': '_timestamp:ascending'
@@ -302,7 +317,8 @@ def make_dtu_module(record, dashboard, dataset, dry_run=False):
             }
         },
     }
-    return make_module(dashboard, dataset, attributes, dry_run)
+    module = get_or_create_module(dashboard, attributes['slug'])
+    return set_module_attributes(module, dashboard, dataset, attributes)
 
 
 if __name__ == '__main__':
