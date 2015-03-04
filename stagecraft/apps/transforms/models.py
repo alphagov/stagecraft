@@ -35,6 +35,9 @@ class TransformType(models.Model):
         ]
     )
 
+    def __str__(self):
+        return "{}".format(self.name)
+
     def validate(self):
         try:
             Draft3Validator.check_schema(self.schema)
