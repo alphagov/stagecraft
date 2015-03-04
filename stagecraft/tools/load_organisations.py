@@ -1,5 +1,5 @@
 import django
-import cPickle as pickle
+# import cPickle as pickle
 import os
 import requests
 import sys
@@ -7,7 +7,7 @@ from stagecraft.apps.organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.models import Dashboard
 
 from collections import defaultdict
-# from spreadsheets import SpreadsheetMunger
+from spreadsheets import SpreadsheetMunger
 
 
 class WhatHappened:
@@ -82,36 +82,29 @@ def remove_all_dashboard_references_to_orgs():
 
 
 def load_data(username, password):
-    # spreadsheets = SpreadsheetMunger({
-        # 'names_name': 8,
-        # 'names_slug': 9,
-        # 'names_service_name': 6,
-        # 'names_service_slug': 7,
-        # 'names_tx_id_column': 18,
-    # })
-    # transactions_data = spreadsheets.load(username, password)
+    spreadsheets = SpreadsheetMunger({
+        'names_name': 9,
+        'names_slug': 10,
+        'names_service_name': 11,
+        'names_service_slug': 12,
+        'names_tx_id_column': 19,
+    })
+    transactions_data = spreadsheets.load(username, password)
 
     # with open('transactions_data.pickle', 'w') as data_file:
-    # pickle.dump(transactions_data, data_file)
+    #     pickle.dump(transactions_data, data_file)
 
-    with open('transactions_data.pickle', 'r') as data_file:
-        transactions_data = pickle.load(data_file)
+    # with open('transactions_data.pickle', 'r') as data_file:
+    #     transactions_data = pickle.load(data_file)
 
-    # govuk_organisations = get_govuk_organisations()
+    govuk_organisations = get_govuk_organisations()
 
     # with open('govuk_organisations.pickle', 'w') as org_file:
-        # pickle.dump(govuk_organisations, org_file)
+    #     pickle.dump(govuk_organisations, org_file)
 
-    with open('govuk_organisations.pickle', 'r') as org_file:
-        govuk_organisations = pickle.load(org_file)
+    # with open('govuk_organisations.pickle', 'r') as org_file:
+    #     govuk_organisations = pickle.load(org_file)
 
-    # import json
-    # with open('thing.json', 'w') as f:
-    # f.write(json.dumps([org for org in govuk_organisations if org['web_url'] == 'https://www.gov.uk/government/organisations/crown-prosecution-service']))  # noqa
-    # with open('thing2.json', 'w') as f:
-    # f.write(json.dumps([org for org in govuk_organisations if org['web_url'] == 'https://www.gov.uk/government/organisations/attorney-generals-office']))  # noqa
-    # with open('thing3.json', 'w') as f:
-    # f.write(json.dumps(list(set([org['format'] for org in govuk_organisations]))))  # noqa
     return transactions_data, govuk_organisations
 
 
@@ -471,27 +464,26 @@ def main():
 
     happened = load_organisations(username, password)
     expected_happenings = {
-        'dashboards_at_start': 874,
-        'dashboards_at_end': 874,
-        'total_nodes_before': 0,
-        'total_nodes_after':  1467,
-        'organisations': 894,
-        'transactions': 785,
-        'created_nodes': 1467,
-        'existing_nodes': 7,
-        'unable_to_find_or_create_nodes': 96,
-        'unable_existing_nodes_diff_details': 3,
-        'unable_data_error_nodes': 93,
-        'duplicate_services': 347,
-        'duplicate_transactions': 547,
+        'link_to_parents_not_found': 90,
+        'duplicate_services': 32,
+        'unable_data_error_nodes': 3,
+        'total_parents': 1406,
+        'total_nodes_after': 1876,
+        'transactions': 790,
         'duplicate_dep_or_agency_abbreviations': 3,
-        'link_to_parents_not_found': 85,
+        'transactions_not_associated_with_dashboards': 697,
+        'organisations': 893,
+        'total_nodes_before': 0,
         'link_to_parents_found': 700,
         'transactions_associated_with_dashboards': 93,
-        'transactions_not_associated_with_dashboards': 692,
-        'total_parents_found': 1178,
-        'total_parents': 1329
-    }
+        'duplicate_transactions': 551,
+        'dashboards_at_start': 874,
+        'existing_nodes': 7,
+        'unable_to_find_or_create_nodes': 6,
+        'total_parents_found': 1373,
+        'created_nodes': 1876,
+        'dashboards_at_end': 874,
+        'unable_existing_nodes_diff_details': 3}
     for key, things in happened.items():
         print key
         print len(things)
@@ -503,28 +495,35 @@ def main():
     print len(set(happened['unable_data_error_nodes_msgs']))
     print '^'
 
+    new_happened_counts = {}
+    expected = True
     for key, things in happened.items():
         if key in expected_happenings:
+            new_happened_counts[key] = len(things)
             print "tracking"
             print key
             print "^"
             if not expected_happenings[key] == len(things):
-                raise Exception("{} should have been {} but was {}".format(
-                    key, expected_happenings[key], len(things)))
+                expected = False
+                # raise Exception("{} should have been {} but was {}".format(
+                #     key, expected_happenings[key], len(things)))
         else:
             print "something happened we aren't tracking:"
             print key
             print "^"
+    if not expected:
+        raise Exception("should have been {} but was {}".format(
+            expected_happenings, new_happened_counts))
 
     if not len(set(happened['unable_existing_nodes_diff_details_msgs'])) == 3:
         raise Exception("{} should have been {} but was {}".format(
             'unable_existing_nodes_diff_details_msgs',
             3,
             len(set(happened['unable_existing_nodes_diff_details_msgs']))))
-    if not len(set(happened['unable_data_error_nodes_msgs'])) == 5:
+    if not len(set(happened['unable_data_error_nodes_msgs'])) == 1:
         raise Exception("{} should have been {} but was {}".format(
             'unable_data_error_nodes_msgs',
-            5,
+            1,
             len(set(happened['unable_data_error_nodes_msgs']))))
 
 if __name__ == '__main__':
