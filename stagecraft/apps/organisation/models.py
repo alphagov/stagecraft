@@ -38,6 +38,9 @@ class NodeType(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     name = models.CharField(max_length=256, unique=True)
 
+    def __str__(self):
+        return "{}".format(self.name)
+
 
 class Node(models.Model):
     objects = NodeManager()
@@ -49,6 +52,9 @@ class Node(models.Model):
         null=True, blank=True)
     typeOf = models.ForeignKey(NodeType)
     parents = models.ManyToManyField('self', symmetrical=False)
+
+    def __str__(self):
+        return "{}".format(self.name)
 
     def get_ancestors(self, include_self=True):
         return Node.objects.ancestors_of(self, include_self)
