@@ -8,9 +8,28 @@ import unittest
 
 from mock import patch, Mock, call
 
-result_path = 'stagecraft/tools/fixtures/spreadsheet_munging_result.json'
-with open(result_path, 'r') as f:
-    spreadsheets_data = json.loads(f.read())
+MERGED_RECORDS = [
+    {
+        "name":"Registrations to use online \
+        training and resources on workplace relations",
+        "service":{
+            "name":"Training and resources on workplace relations",
+            "slug":"training-resources-on-workplace-relations"
+        },
+        "agency":{
+            "abbr":"CPS",
+            "name":"Crown Prosecution Service",
+            "slug":"cps"
+        },
+        "tx_id":"bis-acas-elearning-registrations",
+        "department":{
+            "abbr":"AGO",
+            "name":"Attorney General's Office",
+            "slug":"ago"
+        },
+        "slug":"registrations"
+    }
+]
 
 tx_path = ("/performance/transactions-explorer"
            "/service-details/"
@@ -36,7 +55,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get().status_code = 200
         # to prevent the above being counted as a call
         mock_get.reset_mock()
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
             [tx_path, spotlight_path]
@@ -49,7 +68,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get().status_code = 404
         # to prevent the above being counted as a call
         mock_get.reset_mock()
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
         ]))
@@ -60,7 +79,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get().status_code = 301
         # to prevent the above being counted as a call
         mock_get.reset_mock()
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
         ]))
@@ -74,13 +93,13 @@ class RedirectWriterTests(unittest.TestCase):
                                       " CODE 501 FOR {}".format(
                                           tx_full_url))
         with self.assertRaisesRegexp(Exception, expected_exception_message):
-            generate(spreadsheets_data)
+            generate(MERGED_RECORDS)
 
     @patch('requests.get')
     def test_redirects_produced_when_target_pages_exist(self, mock_get):
         mock_get.side_effect = ordered_responses(200)
 
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
             [tx_path, spotlight_path]
@@ -90,7 +109,7 @@ class RedirectWriterTests(unittest.TestCase):
     def test_no_redirect_if_no_existing_target_page(self, mock_get):
         mock_get.side_effect = ordered_responses(404)
 
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
         ]))
@@ -99,7 +118,7 @@ class RedirectWriterTests(unittest.TestCase):
     def test_no_redirect_if_target_already_redirected(self, mock_get):
         mock_get.side_effect = ordered_responses(301)
 
-        redirects = generate(spreadsheets_data)
+        redirects = generate(MERGED_RECORDS)
         assert_that(redirects, equal_to([
             ['source', 'destination'],
         ]))
@@ -112,7 +131,7 @@ class RedirectWriterTests(unittest.TestCase):
                                       " CODE 501 FOR {}".format(
                                           spotlight_full_url))
         with self.assertRaisesRegexp(Exception, expected_exception_message):
-            generate(spreadsheets_data)
+            generate(MERGED_RECORDS)
 
     def test_redirect_csv_can_be_written(self):
         try:
