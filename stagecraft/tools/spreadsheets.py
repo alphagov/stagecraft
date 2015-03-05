@@ -123,8 +123,8 @@ class SpreadsheetMunger:
                          [('tx_id', tx_id)]))
             except KeyError:
                 print(
-                    'Failed to find names spreadsheet record for {}'\
-                            .format(tx_id))
+                    'Failed to find names spreadsheet record for {}'
+                    .format(tx_id))
 
         return merged
 
@@ -137,7 +137,7 @@ class SpreadsheetMunger:
         except IOError:
             tx_worksheet = account.open_by_key(
                 '0AiLXeWvTKFmBdFpxdEdHUWJCYnVMS0lnUHJDelFVc0E')\
-                        .worksheet('TX_Data')
+                .worksheet('TX_Data')
             all_values = tx_worksheet.get_all_values()
 
             with open('tx_worksheet.pickle', 'wb') as pickled:
@@ -157,7 +157,7 @@ class SpreadsheetMunger:
         except IOError:
             tx_worksheet = account.open_by_key(
                 '1jwJBNgKCOn5PN_rC2VDK9iwBSaP0s7KrUjQY_Hpj-V8')\
-                        .worksheet('Sheet1')
+                .worksheet('Sheet1')
             all_values = tx_worksheet.get_all_values()
 
             with open('names_worksheet.pickle', 'wb') as pickled:
@@ -167,7 +167,6 @@ class SpreadsheetMunger:
         for row in all_values[1:]:
             rows.append(self._parse_names_row(row))
         return rows
-
 
     def load(self, username, password):
         tx = self.load_tx_worksheet(username, password)

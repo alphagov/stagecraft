@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Module.parent'
         db.add_column(u'dashboards_module', 'parent',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dashboards.Module'], null=True, blank=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(
+                          to=orm['dashboards.Module'], null=True, blank=True),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Module.parent'
         db.delete_column(u'dashboards_module', 'parent_id')
-
 
     models = {
         'dashboards.dashboard': {

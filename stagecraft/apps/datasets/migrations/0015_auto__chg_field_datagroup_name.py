@@ -10,12 +10,14 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'DataGroup.name'
-        db.alter_column(u'datasets_datagroup', 'name', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=60))
+        db.alter_column(u'datasets_datagroup', 'name', self.gf(
+            'django.db.models.fields.SlugField')(unique=True, max_length=60))
 
     def backwards(self, orm):
 
         # Changing field 'DataGroup.name'
-        db.alter_column(u'datasets_datagroup', 'name', self.gf('django.db.models.fields.SlugField')(max_length=50, unique=True))
+        db.alter_column(u'datasets_datagroup', 'name', self.gf(
+            'django.db.models.fields.SlugField')(max_length=50, unique=True))
 
     models = {
         u'datasets.backdropuser': {
