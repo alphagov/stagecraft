@@ -319,8 +319,6 @@ def associate_parents(tx, org_dict, typeOf):
 def create_nodes(nodes_dict):
     created_nodes = []
     abbr_or_name_to_uuid = {}
-    total_parents = []
-    total_parents_found = []
     for key_or_abbr, node_dict in nodes_dict.items():
         node = get_or_create_node(node_dict)
         if node:
@@ -329,6 +327,12 @@ def create_nodes(nodes_dict):
             if node.name:
                 abbr_or_name_to_uuid[node.name] = node.id
             created_nodes.append((node, node_dict['parents']))
+    save_parent_associations(created_nodes, abbr_or_name_to_uuid)
+
+
+def save_parent_associations(created_nodes, abbr_or_name_to_uuid):
+    total_parents = []
+    total_parents_found = []
     for node, parents in created_nodes:
         parent_uuids = []
         for parent in parents:
@@ -470,17 +474,7 @@ types_dict = {
 }
 
 
-def main():
-    try:
-        username = os.environ['GOOGLE_USERNAME']
-        password = os.environ['GOOGLE_PASSWORD']
-    except KeyError:
-        print("Please supply as environment variables:")
-        print("username (GOOGLE_USERNAME)")
-        print("password (GOOGLE_PASSWORD)")
-        sys.exit(1)
-
-    happened = load_organisations(username, password)
+def report_what_happened(happened):
     expected_happenings = {
         'link_to_parents_not_found': 90,
         'duplicate_services': 551,
@@ -540,6 +534,19 @@ def main():
             'unable_data_error_nodes_msgs',
             1,
             len(set(happened['unable_data_error_nodes_msgs']))))
+
+
+def main():
+    try:
+        username = os.environ['GOOGLE_USERNAME']
+        password = os.environ['GOOGLE_PASSWORD']
+    except KeyError:
+        print("Please supply as environment variables:")
+        print("username (GOOGLE_USERNAME)")
+        print("password (GOOGLE_PASSWORD)")
+        sys.exit(1)
+    happened = load_organisations(username, password)
+    report_what_happened(happened)
 
 if __name__ == '__main__':
     main()
