@@ -169,7 +169,7 @@ def set_module_attributes(module, dashboard, dataset, attributes):
     module.title = attributes['title']
     module.slug = attributes['slug']
     module.dashboard = dashboard
-    module.query_params = attributes['query_params']
+    module.query_parameters = attributes['query_params']
     module.options = attributes['options']
     module.data_set = dataset
     return module
