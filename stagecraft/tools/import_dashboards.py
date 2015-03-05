@@ -5,6 +5,7 @@ import sys
 import requests
 
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from .spreadsheets import SpreadsheetMunger
 
@@ -44,10 +45,16 @@ def import_dashboards(summaries, dry_run=False, all_records=False):
     records = loader.load(username, password)
     log.debug('Loaded {} records'.format(len(records)))
 
+    failed_dashboards = []
     for record in records:
         if all_records or not record['high_volume']:
             loader.sanitise_record(record)
-            import_dashboard(record, summaries, dry_run)
+            try:
+                import_dashboard(record, summaries, dry_run)
+            except ValidationError:
+                failed_dashboards.append(record)
+
+    log.error('Failed dashboards: {}'.format(failed_dashboards))
 
 
 def import_dashboard(record, summaries, dry_run=False):
