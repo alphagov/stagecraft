@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import sys
@@ -5,6 +6,7 @@ import sys
 import requests
 
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from .spreadsheets import SpreadsheetMunger
 
@@ -22,7 +24,8 @@ handler.setLevel(logging.DEBUG)
 log.addHandler(handler)
 
 
-def import_dashboards(summaries, dry_run=False, all_records=False):
+def import_dashboards(summaries, update_all=False,
+                      dry_run=True, publish=False):
     try:
         username = os.environ['GOOGLE_USERNAME']
         password = os.environ['GOOGLE_PASSWORD']
@@ -33,39 +36,47 @@ def import_dashboards(summaries, dry_run=False, all_records=False):
 
     loader = SpreadsheetMunger(positions={
         'names_description': 8,
-        'names_name': 11,
-        'names_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
         'names_notes': 17,
         'names_other_notes': 18,
         'names_tx_id': 19,
     })
-    records = loader.load_tx_worksheet(username, password)
+    records = loader.load(username, password)
     log.debug('Loaded {} records'.format(len(records)))
 
+    failed_dashboards = []
     for record in records:
-        if all_records or not record['high_volume']:
+        if update_all or not record['high_volume']:
             loader.sanitise_record(record)
-            import_dashboard(record, summaries, dry_run)
+            try:
+                import_dashboard(record, summaries, dry_run, publish)
+            except ValidationError:
+                failed_dashboards.append(record)
+
+    log.error('Failed dashboards: {}'.format(failed_dashboards))
 
 
-def import_dashboard(record, summaries, dry_run=False):
-
-    log.debug(record)
-    try:
-        dashboard = Dashboard.objects.get(slug=record['tx_id'])
-        log.debug('Retrieved dashboard: {}'.format(record['tx_id']))
-    except Dashboard.DoesNotExist:
-        dashboard = Dashboard()
-        log.debug('Creating dashboard: {}'.format(record['tx_id']))
+def set_dashboard_attributes(dashboard, record, dry_run, publish):
 
     dashboard.title = record['name']
     # Only set slug on new dashboards
     if dashboard.pk is None:
         dashboard.slug = record['tx_id']
-    dashboard.description = record['description']
-    dashboard.description_extra = record['description_extra']
-    dashboard.costs = record['costs']
-    dashboard.other_notes = record['other_notes']
+    if record.get('description'):
+        dashboard.description = record['description']
+    if record.get('description_extra'):
+        dashboard.description_extra = record['description_extra']
+    if record.get('costs'):
+        dashboard.costs = record['costs']
+    if record.get('other_notes'):
+        dashboard.other_notes = record['other_notes']
+    if record.get('customer_type'):
+        dashboard.customer_type = record['customer_type']
+    if record.get('business_model'):
+        dashboard.business_model = record['business_model']
 
     if dashboard.organisation is None:
         if record.get('agency'):
@@ -78,17 +89,33 @@ def import_dashboard(record, summaries, dry_run=False):
         except Node.DoesNotExist:
             if not dry_run:
                 log.warn('Organisation not found for record : {}' \
-                        .format(record['tx_id']))
+                    .format(record['tx_id']))
 
     if record['high_volume']:
         dashboard.dashboard_type = 'high-volume-transaction'
     else:
         dashboard.dashboard_type = 'transaction'
 
+    if publish:
+        dashboard.published = True
     # Don't modify published status if it exists.
-    if dashboard.published is None:
+    elif dashboard.published is None:
         dashboard.published = False
 
+    return dashboard
+
+
+def import_dashboard(record, summaries, dry_run=True, publish=False):
+
+    log.debug(record)
+    try:
+        dashboard = Dashboard.objects.get(slug=record['tx_id'])
+        log.debug('Retrieved dashboard: {}'.format(record['tx_id']))
+    except Dashboard.DoesNotExist:
+        dashboard = Dashboard()
+        log.debug('Creating dashboard: {}'.format(record['tx_id']))
+
+    dashboard = set_dashboard_attributes(dashboard, record, dry_run, publish)
     if dry_run:
         dashboard.full_clean()
     else:
@@ -98,34 +125,32 @@ def import_dashboard(record, summaries, dry_run=False):
     import_modules(dashboard, dataset, record, summaries)
 
 
-def import_modules(dashboard, dataset, record, summaries):
+def determine_modules_for_dashboard(summaries, tx_id):
 
-    modules = []
+    """
+    Inspect the summary data for a given tx_id and determine
+    whether modules should be created for the different data types.
+    """
 
-    service_data = [
-        data for data in summaries if data['service_id'] == record['tx_id']]
-    quarterly_data = [
-        datum for datum in service_data if datum['type'] == 'quarterly']
-    seasonal_data = [
-        datum for datum in service_data \
-                if datum['type'] == 'seasonally-adjusted']
-
-    # Order in which modules are appended is significant
-    # as it will affect how the dashboard displays.
-    modules.append(import_tpy_module(record, dashboard, dataset))
+    module_types = {
+        'transactions_per_year': True,
+        'transactions_per_quarter': True
+    }
+    service_data = [data for data in summaries if data['service_id'] == tx_id]
+    quarterly_data = [datum for datum in service_data
+                      if datum['type'] == 'quarterly']
+    seasonal_data = [datum for datum in service_data
+                     if datum['type'] == 'seasonally-adjusted']
 
     for datum in seasonal_data:
         if datum.get('total_cost') is not None:
-            modules.append(import_tc_module(record, dashboard, dataset))
+            module_types['total_cost'] = True
             break
 
     for datum in seasonal_data:
         if datum.get('cost_per_transaction') is not None:
-            modules.append(
-                import_cpt_module(record, dashboard, dataset))
+            module_types['cost_per_transaction'] = True
             break
-
-    modules.append(import_tpq_module(record, dashboard, dataset))
 
     digital_takeup = False
     for datum in seasonal_data:
@@ -137,6 +162,27 @@ def import_modules(dashboard, dataset, record, summaries):
             digital_takeup = True
             break
     if digital_takeup:
+        module_types['digital_takeup'] = True
+
+    return module_types
+
+
+def import_modules(dashboard, dataset, record, summaries):
+
+    module_types = determine_modules_for_dashboard(summaries, record['tx_id'])
+    modules = []
+
+    # Order in which modules are appended is significant
+    # as it will affect how the dashboard displays.
+    if module_types.get('transactions_per_year'):
+        modules.append(import_tpy_module(record, dashboard, dataset))
+    if module_types.get('total_cost'):
+        modules.append(import_tc_module(record, dashboard, dataset))
+    if module_types.get('cost_per_transaction'):
+        modules.append(import_cpt_module(record, dashboard, dataset))
+    if module_types.get('transactions_per_year'):
+        modules.append(import_tpq_module(record, dashboard, dataset))
+    if module_types.get('digital_takeup'):
         modules.append(import_dtu_module(record, dashboard, dataset))
 
     for idx, module in enumerate(modules):
@@ -147,7 +193,8 @@ def import_modules(dashboard, dataset, record, summaries):
                 module.save()
                 log.debug('Added module: {}'.format(module.slug))
             except IntegrityError as e:
-                log.error('Error saving module {}: {}'.format(module.slug, str(e)))
+                log.error(
+                    'Error saving module {}: {}'.format(module.slug, str(e)))
 
 
 def get_dataset():
@@ -324,18 +371,38 @@ def import_dtu_module(record, dashboard, dataset):
 
 
 if __name__ == '__main__':
-    dry_run = True
-    if len(sys.argv) == 2:
-        if sys.argv[1] == '--commit':
-            dry_run = False
-        else:
-            log.fatal('Please specify --commit to create dashboards')
-            sys.exit(1)
-    try:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--all",
+                        help="update all (not just low volume) dashboards",
+                        action="store_true")
+    parser.add_argument("--commit",
+                        help="save changes to database",
+                        action="store_true")
+    parser.add_argument("--publish",
+                        help="publish all dashboards",
+                        action="store_true")
+    args = parser.parse_args()
+    if args.all:
+        log.info("Updating all dashboards")
+        update_all = True
+    else:
+        update_all = False
+    if args.commit:
+        log.info("Committing changes")
+        dry_run = False
+    else:
+        dry_run = True
+    if args.publish:
+        log.info("Publishing all dashboards")
+        publish = True
+    else:
+        publish = False
+
+    if os.getenv('SUMMARIES_URL'):
         summaries = requests.get(os.getenv('SUMMARIES_URL')).json()['data']
-    except KeyError:
+    else:
         log.fatal(
             "Please set SUMMARIES_URL to the endpoint for transactions data")
         sys.exit(1)
 
-    import_dashboards(summaries, dry_run)
+    import_dashboards(summaries, update_all, dry_run, publish)
