@@ -87,10 +87,10 @@ def remove_all_dashboard_references_to_orgs():
 
 def load_data(username, password):
     spreadsheets = SpreadsheetMunger({
-        'names_name': 9,
-        'names_slug': 10,
-        'names_service_name': 11,
-        'names_service_slug': 12,
+        'names_name': 11,
+        'names_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
         'names_tx_id_column': 19,
     })
     transactions_data = spreadsheets.load(username, password)
@@ -383,8 +383,18 @@ def get_or_create_node(node_dict):
 
 
 def associate_with_dashboard(transaction_dict):
-    transaction = Node.objects.filter(
-        name=transaction_name(transaction_dict)).first()
+    try:
+        transaction = Node.objects.filter(
+            name=transaction_name(transaction_dict)).first()
+    except django.db.utils.DataError as e:
+        print("Couldn't save utf-8 decoded string {},"
+              "  error was {}. Trying again with {}.".format(
+                  transaction_name(transaction_dict).encode(
+                      'utf-8'),
+                  e.message,
+                  transaction_name_latin1(transaction_dict)))
+        transaction = Node.objects.filter(
+            name=transaction_name_latin1(transaction_dict)).first()
     dashboards = []
     if transaction:
         # switch to get if not published
@@ -423,6 +433,10 @@ def service_slug(tx):
 
 def transaction_name(tx):
     return tx['name'].encode('utf-8').decode('utf-8')
+
+
+def transaction_name_latin1(tx):
+    return tx['name'].encode('latin1', 'ignore').decode('latin1')
 
 
 def transaction_slug(tx):
@@ -469,9 +483,9 @@ def main():
     happened = load_organisations(username, password)
     expected_happenings = {
         'link_to_parents_not_found': 90,
-        'duplicate_services': 32,
+        'duplicate_services': 551,
         'unable_data_error_nodes': 3,
-        'total_parents': 1406,
+        'total_parents': 1924,
         'total_nodes_after': 1876,
         'transactions': 790,
         'duplicate_dep_or_agency_abbreviations': 3,
@@ -480,11 +494,11 @@ def main():
         'total_nodes_before': 0,
         'link_to_parents_found': 700,
         'transactions_associated_with_dashboards': 93,
-        'duplicate_transactions': 551,
+        'duplicate_transactions': 32,
         'dashboards_at_start': 874,
         'existing_nodes': 7,
         'unable_to_find_or_create_nodes': 6,
-        'total_parents_found': 1363,
+        'total_parents_found': 1881,
         'created_nodes': 1876,
         'dashboards_at_end': 874,
         'unable_existing_nodes_diff_details': 3}
