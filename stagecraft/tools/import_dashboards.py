@@ -33,13 +33,15 @@ def import_dashboards(summaries, dry_run=False, all_records=False):
 
     loader = SpreadsheetMunger(positions={
         'names_description': 8,
-        'names_name': 11,
-        'names_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
         'names_notes': 17,
         'names_other_notes': 18,
         'names_tx_id': 19,
     })
-    records = loader.load_tx_worksheet(username, password)
+    records = loader.load(username, password)
     log.debug('Loaded {} records'.format(len(records)))
 
     for record in records:

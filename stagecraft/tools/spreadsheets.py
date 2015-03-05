@@ -29,8 +29,10 @@ class SpreadsheetMunger:
         self.tx_tx_id_column = positions.get('tx_tx_id_column', 6)
 
         self.names_description = positions['names_description']
-        self.names_name = positions['names_name']
-        self.names_slug = positions['names_slug']
+        self.names_transaction_name = positions['names_transaction_name']
+        self.names_transaction_slug = positions['names_transaction_slug']
+        self.names_service_name = positions['names_service_name']
+        self.names_service_slug = positions['names_service_slug']
         self.names_notes = positions['names_notes']
         self.names_other_notes = positions['names_other_notes']
         self.names_tx_id = positions['names_tx_id']
@@ -83,59 +85,45 @@ class SpreadsheetMunger:
 
         return {
             'tx_id': row[self.names_tx_id],
-            'name': row[self.names_name],
+            'name': row[self.names_transaction_name],
+            'slug': row[self.names_transaction_slug][1:],
             'description': row[self.names_description],
             # description-extra is not in the new spreadsheet
-            'slug': row[self.names_slug][1:], # cut leading slash
             'costs': row[self.names_notes],
             'other_notes': row[self.names_other_notes],
+            'service': {
+                'name': row[self.names_service_name],
+                'slug': row[self.names_service_slug][1:]
+            },
+            'transaction': {
+                'name': row[self.names_transaction_name],
+                'slug': row[self.names_transaction_slug][1:],
+            }
         }
 
     def _parse_rows(self, worksheet, parse_fn, tx_id_column):
         return {r[tx_id_column]: parse_fn(r)
                 for r in worksheet.get_all_values()[1:]}
 
-    def load_tx_worksheet(self, username, password):
-        account = gspread.login(username, password)
-
-        try:
-            with open('tx_worksheet.pickle', 'rb') as pickled:
-                all_values = pickle.load(pickled)
-        except IOError:
-            tx_worksheet = account.open_by_key(
-                '0AiLXeWvTKFmBdFpxdEdHUWJCYnVMS0lnUHJDelFVc0E')\
-                        .worksheet('TX_Data')
-            all_values = tx_worksheet.get_all_values()
-
-            with open('tx_worksheet.pickle', 'wb') as pickled:
-                pickle.dump(all_values, pickled, pickle.HIGHEST_PROTOCOL)
-
+    def load_tx_worksheet(self, account):
+        all_values = account.open_by_key(
+            '0AiLXeWvTKFmBdFpxdEdHUWJCYnVMS0lnUHJDelFVc0E') \
+            .worksheet('TX_Data').get_all_values()
         rows = []
         for row in all_values[1:]:
             rows.append(self._parse_tx_row(row))
         return rows
 
-    def load_names_worksheet(self, username, password):
-        account = gspread.login(username, password)
-
-        try:
-            with open('names_worksheet.pickle', 'rb') as pickled:
-                all_values = pickle.load(pickled)
-        except IOError:
-            tx_worksheet = account.open_by_key(
-                '1jwJBNgKCOn5PN_rC2VDK9iwBSaP0s7KrUjQY_Hpj-V8')\
-                        .worksheet('Sheet1')
-            all_values = tx_worksheet.get_all_values()
-
-            with open('names_worksheet.pickle', 'wb') as pickled:
-                pickle.dump(all_values, pickled, pickle.HIGHEST_PROTOCOL)
-
+    def load_names_worksheet(self, account):
+        all_values = account.open_by_key(
+            '1jwJBNgKCOn5PN_rC2VDK9iwBSaP0s7KrUjQY_Hpj-V8')\
+            .worksheet('Sheet1').get_all_values()
         rows = []
         for row in all_values[1:]:
             rows.append(self._parse_names_row(row))
         return rows
 
-    def _merge(self, tx, names):
+    def merge(self, tx, names):
         # Records are supplied as rows, so convert to dict keyed by tx_id.
         tx_dict = {}
         for record in tx:
@@ -198,6 +186,22 @@ class SpreadsheetMunger:
             record['tx_id'] = tx_id
 
     def load(self, username, password):
-        tx = self.load_tx_worksheet(username, password)
-        names = self.load_names_worksheet(username, password)
-        return self._merge(tx, names)
+        account = gspread.login(username, password)
+
+        try:
+            with open('tx_values.pickle', 'rb') as pickled:
+                tx = pickle.load(pickled)
+        except IOError:
+            tx = self.load_tx_worksheet(account)
+            with open('tx_values.pickle', 'wb') as pickled:
+                pickle.dump(tx, pickled, pickle.HIGHEST_PROTOCOL)
+
+        try:
+            with open('names_values.pickle', 'rb') as pickled:
+                names = pickle.load(pickled)
+        except IOError:
+            names = self.load_names_worksheet(account)
+            with open('names_values.pickle', 'wb') as pickled:
+                pickle.dump(names, pickled, pickle.HIGHEST_PROTOCOL)
+
+        return self.merge(tx, names)
