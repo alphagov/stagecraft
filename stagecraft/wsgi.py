@@ -12,4 +12,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
                       "stagecraft.settings.production")
 
 from django.core.wsgi import get_wsgi_application
+import gc
+gc.set_debug(gc.DEBUG_STATS)
 application = get_wsgi_application()
