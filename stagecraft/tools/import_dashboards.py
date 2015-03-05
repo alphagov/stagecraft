@@ -59,7 +59,9 @@ def import_dashboard(record, summaries, dry_run=False):
         log.debug('Creating dashboard: {}'.format(record['tx_id']))
 
     dashboard.title = record['name']
-    dashboard.slug = record['tx_id']
+    # Only set slug on new dashboards
+    if dashboard.pk is None:
+        dashboard.slug = record['tx_id']
     dashboard.description = record['description']
     dashboard.description_extra = record['description_extra']
     dashboard.costs = record['costs']
