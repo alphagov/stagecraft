@@ -62,8 +62,8 @@ def import_dashboard(summaries, record, dry_run=False):
     quarterly_data = [
         datum for datum in service_data if datum['type'] == 'quarterly']
     seasonal_data = [
-        datum for datum in service_data \
-                if datum['type'] == 'seasonally-adjusted']
+        datum for datum in service_data
+        if datum['type'] == 'seasonally-adjusted']
 
     # Order in which modules are appended is significant
     # as it will affect how the dashboard displays.
@@ -137,8 +137,8 @@ def create_dashboard(record, dry_run=False):
     except Node.DoesNotExist:
         if not dry_run:
             log.warn(
-                'Organisation not found for record : {}'\
-                        .format(record['slug']))
+                'Organisation not found for record : {}'
+                .format(record['slug']))
     if record['high_volume']:
         dashboard.dashboard_type = 'high-volume-transaction'
     else:

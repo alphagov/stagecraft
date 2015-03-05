@@ -4,6 +4,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -17,7 +18,7 @@ class Migration(DataMigration):
         )
         for data_set in data_sets:
             data_set.capped_size = 4194304
-            data_set.save();
+            data_set.save()
 
     def backwards(self, orm):
         "Write your backwards methods here."
