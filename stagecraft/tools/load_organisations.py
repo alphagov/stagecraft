@@ -7,7 +7,11 @@ from stagecraft.apps.organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.models import Dashboard
 
 from collections import defaultdict
-from spreadsheets import SpreadsheetMunger
+
+if sys.version_info >= (3, 0, 0):
+    from .spreadsheets import SpreadsheetMunger
+else:
+    from spreadsheets import SpreadsheetMunger
 
 
 class WhatHappened:
@@ -215,8 +219,10 @@ def build_department_and_agency_dict_keyed_off_govuk_id(organisations):
     # We do this here though to to get the full org graph even when orgs are
     # not associated with a transaction in txex
 
-    # name will be overwritten with the renamed value if found
     # slug will be overwritten with the renamed value if found
+    # - what it is called in the transactions explorer is correct for redirects
+    # name and abbreviation should come from the org api
+    # - this is the source of truth for gov.
     for org in organisations:
         org_id_dict[org['id']] = {
             'name': org['title'],
@@ -259,8 +265,8 @@ def key_department_and_agency_dict_off_abbreviation_or_name(
                     org_dict[slugify(org['abbreviation'])])
             abbrs_twice[slugify(org['abbreviation'])].append(
                 org)
-            print 'Using name as key for second with abbr:'
-            print org
+            print('Using name as key for second with abbr:')
+            print(org)
             org_dict[slugify(org['name'])] = org
         else:
             # if there is an abbreviation use it
@@ -295,13 +301,11 @@ def associate_parents(tx, org_dict, typeOf):
     if has_abbreviation_for_type(tx, typeOf) and parent_by_abbreviation:
         parent = parent_by_abbreviation
         parent = add_type_to_parent(parent, typeOf)
-        parent['name'] = tx[typeOf]['name']
         parent['slug'] = tx[typeOf]['slug']
         parent_identifier = slugify(parent['abbreviation'])
     elif has_name_for_type(tx, typeOf) and parent_by_name:
         parent = parent_by_name
         parent = add_type_to_parent(parent, typeOf)
-        parent['name'] = tx[typeOf]['name']
         parent['slug'] = tx[typeOf]['slug']
         parent_identifier = slugify(parent['name'])
     else:
@@ -410,7 +414,7 @@ def slugify(string):
 
 
 def service_name(tx):
-    return tx['service']['name'].encode('utf-8')
+    return tx['service']['name'].encode('utf-8').decode('utf-8')
 
 
 def service_slug(tx):
@@ -418,7 +422,7 @@ def service_slug(tx):
 
 
 def transaction_name(tx):
-    return tx['name'].encode('utf-8')
+    return tx['name'].encode('utf-8').decode('utf-8')
 
 
 def transaction_slug(tx):
@@ -457,9 +461,9 @@ def main():
         username = os.environ['GOOGLE_USERNAME']
         password = os.environ['GOOGLE_PASSWORD']
     except KeyError:
-        print "Please supply as environment variables:"
-        print "username (GOOGLE_USERNAME)"
-        print "password (GOOGLE_PASSWORD)"
+        print("Please supply as environment variables:")
+        print("username (GOOGLE_USERNAME)")
+        print("password (GOOGLE_PASSWORD)")
         sys.exit(1)
 
     happened = load_organisations(username, password)
@@ -480,37 +484,34 @@ def main():
         'dashboards_at_start': 874,
         'existing_nodes': 7,
         'unable_to_find_or_create_nodes': 6,
-        'total_parents_found': 1373,
+        'total_parents_found': 1363,
         'created_nodes': 1876,
         'dashboards_at_end': 874,
         'unable_existing_nodes_diff_details': 3}
     for key, things in happened.items():
-        print key
-        print len(things)
-        print '^'
-    print 'unable_existing_nodes_diff_details_msgs'
-    print len(set(happened['unable_existing_nodes_diff_details_msgs']))
-    print '^'
-    print 'unable_data_error_nodes_msgs'
-    print len(set(happened['unable_data_error_nodes_msgs']))
-    print '^'
+        print(key)
+        print(len(things))
+        print('^')
+    print('unable_existing_nodes_diff_details_msgs')
+    print(len(set(happened['unable_existing_nodes_diff_details_msgs'])))
+    print('^')
+    print('unable_data_error_nodes_msgs')
+    print(len(set(happened['unable_data_error_nodes_msgs'])))
+    print('^')
 
     new_happened_counts = {}
     expected = True
     for key, things in happened.items():
         if key in expected_happenings:
             new_happened_counts[key] = len(things)
-            print "tracking"
-            print key
-            print "^"
             if not expected_happenings[key] == len(things):
                 expected = False
-                # raise Exception("{} should have been {} but was {}".format(
-                #     key, expected_happenings[key], len(things)))
+                print("{} should have been {} but was {}".format(
+                    key, expected_happenings[key], len(things)))
         else:
-            print "something happened we aren't tracking:"
-            print key
-            print "^"
+            print("something happened we aren't tracking:")
+            print(key)
+            print("^")
     if not expected:
         raise Exception("should have been {} but was {}".format(
             expected_happenings, new_happened_counts))
