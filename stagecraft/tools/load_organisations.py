@@ -87,11 +87,14 @@ def remove_all_dashboard_references_to_orgs():
 
 def load_data(username, password):
     spreadsheets = SpreadsheetMunger({
-        'names_name': 11,
-        'names_slug': 12,
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
         'names_service_name': 9,
         'names_service_slug': 10,
-        'names_tx_id_column': 19,
+        'names_tx_id': 19,
+        'names_other_notes': 17,
+        'names_notes': 3,
+        'names_description': 8
     })
     transactions_data = spreadsheets.load(username, password)
 
