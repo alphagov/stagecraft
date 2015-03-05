@@ -13,5 +13,16 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
 
 from django.core.wsgi import get_wsgi_application
 import gc
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+
+
+class writer(object):
+    def write(self, data):
+        logger.info(data)
+
+sys.stderr = writer()
 gc.set_debug(gc.DEBUG_STATS)
 application = get_wsgi_application()
