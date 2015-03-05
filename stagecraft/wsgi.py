@@ -16,7 +16,7 @@ import gc
 import logging
 import sys
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('gunicorn.error')
 
 
 class writer(object):
