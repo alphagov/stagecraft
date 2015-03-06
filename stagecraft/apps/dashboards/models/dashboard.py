@@ -4,6 +4,8 @@ from uuidfield import UUIDField
 
 from stagecraft.apps.organisation.views import NodeView
 
+from stagecraft.libs.timing.timer import timer
+
 
 def list_to_tuple_pairs(elements):
     return tuple([(element, element) for element in elements])
@@ -180,16 +182,24 @@ class Dashboard(models.Model):
         return related_pages_dict
 
     def spotlightify(self, request_slug=None):
+        log_time = timer('beginning spotlightify in model')
         base_dict = self.spotlightify_base_dict()
+        log_time('base_dict in model')
         base_dict['modules'] = [
             m.spotlightify()
             for m in self.module_set.filter(parent=None).order_by('order')]
+        log_time('finding all modules in model')
         base_dict['relatedPages'] = self.related_pages_dict()
+        log_time('finding all relatedPages in model')
         if self.department():
             base_dict['department'] = self.department().spotlightify()
+        log_time('finding department in model')
         if self.agency():
             base_dict['agency'] = self.agency().spotlightify()
-        return get_modules_or_tabs(request_slug, base_dict)
+        log_time('finding department in model')
+        modules_or_tabs = get_modules_or_tabs(request_slug, base_dict)
+        log_time('finding modules or tabs in model')
+        return modules_or_tabs
 
     def serialize(self):
         serialized = {}
