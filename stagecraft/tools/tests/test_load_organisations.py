@@ -190,21 +190,42 @@ class LoadOrganisationsTestCase(TestCase):
 # this is the intermediate data format built up from external data
 # it is then used to actually create and update things in the database.
 expected_result = {
-    "Registrations to use online training and resources"
+    "registrations to use online training and resources"
     " on workplace relations": {
         'name': "Registrations to use online training and resources"
                 " on workplace relations",
         'slug': 'registrations',
         'abbreviation': None,
         'typeOf': 'transaction',
-        'parents': ['Training and resources on workplace relations']
+        'parents': ['training and resources on workplace relations']
     },
-    'Training and resources on workplace relations': {
+    'training and resources on workplace relations': {
         'name': 'Training and resources on workplace relations',
         'slug': 'training-resources-on-workplace-relations',
         'abbreviation': None,
         'typeOf': 'service',
         'parents': [u'cps']
+    },
+    'crown prosecution service': {
+        'name': 'Crown Prosecution Service',
+        'slug': 'crown-prosecution-service',
+        'abbreviation': 'CPS',
+        'typeOf': 'agency',
+        'parents': ['ago', 'foo']
+    },
+    "attorney general's office": {
+        'name': "Attorney General's Office",
+        'slug': "attorney-generals-office",
+        'abbreviation': 'AGO',
+        'typeOf': 'department',
+        'parents': []
+    },
+    'foo thing': {
+        'name': "Foo thing",
+        'slug': u'foo-thing',
+        'abbreviation': 'foo',
+        'typeOf': 'department',
+        'parents': []
     },
     u'cps': {
         'name': u'Crown Prosecution Service',
@@ -283,6 +304,27 @@ def test_build_up_node_dict():
 
 def test_add_departments_and_agencies_to_org_dict():
     expected_result = {
+        'crown prosecution service': {
+            'name': 'Crown Prosecution Service',
+            'slug': 'crown-prosecution-service',
+            'abbreviation': 'CPS',
+            'typeOf': 'department',
+            'parents': ['ago', 'foo']
+        },
+        "attorney general's office": {
+            'name': "Attorney General's Office",
+            'slug': "attorney-generals-office",
+            'abbreviation': 'AGO',
+            'typeOf': 'department',
+            'parents': []
+        },
+        'foo thing': {
+            'name': "Foo thing",
+            'slug': u'foo-thing',
+            'abbreviation': 'foo',
+            'typeOf': 'department',
+            'parents': []
+        },
         'cps': {
             'name': 'Crown Prosecution Service',
             'slug': 'crown-prosecution-service',

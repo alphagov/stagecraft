@@ -148,7 +148,7 @@ def add_departments_and_agencies_to_org_dict(org_dict, organisations):
         organisations)
     org_id_dict = assign_parents_to_departments_and_agencies(
         organisations, org_id_dict)
-    org_dict = key_department_and_agency_dict_off_abbreviation_or_name(
+    org_dict = key_department_and_agency_dict_off_abbreviation_and_name(
         org_dict,
         org_id_dict)
     return org_dict
@@ -161,19 +161,19 @@ def add_transactions_and_services_to_org_dict(org_dict, transactions):
     more_than_one_tx = []
     more_than_one_service = []
     for tx in transactions:
-        if transaction_name(tx) in org_dict:
+        if slugify(transaction_name(tx)) in org_dict:
             more_than_one_tx.append(transaction_name(tx))
-        if service_name(tx) in org_dict:
+        if slugify(service_name(tx)) in org_dict:
             more_than_one_service.append(service_name(tx))
 
-        org_dict[transaction_name(tx)] = {
+        org_dict[slugify(transaction_name(tx))] = {
             'name': transaction_name(tx),
             'slug': transaction_slug(tx),
             'abbreviation': None,
             'typeOf': 'transaction',
             'parents': [service_name(tx)]
         }
-        org_dict[service_name(tx)] = {
+        org_dict[slugify(service_name(tx))] = {
             'name': service_name(tx),
             'slug': service_slug(tx),
             'abbreviation': None,
@@ -182,6 +182,10 @@ def add_transactions_and_services_to_org_dict(org_dict, transactions):
         }
     WHAT_HAPPENED.this_happened('duplicate_services', more_than_one_service)
     WHAT_HAPPENED.this_happened('duplicate_transactions', more_than_one_tx)
+    more_than_one_tx_not_none = [tx for tx in more_than_one_tx
+                                 if tx and not tx == 'NONE']
+    WHAT_HAPPENED.this_happened(
+        'duplicate_transactions_not_none', more_than_one_tx_not_none)
     return org_dict
 
 
@@ -210,6 +214,9 @@ def add_parents_to_organisations_and_correct_types(org_dict, transactions):
             successfully_linked.append(link)
         else:
             failed_to_link.append(link)
+    print set(
+        [intended_parent['name']
+         for intended_parent, parent in failed_to_link])
     WHAT_HAPPENED.this_happened('link_to_parents_found', successfully_linked)
     WHAT_HAPPENED.this_happened('link_to_parents_not_found', failed_to_link)
     return org_dict
@@ -253,7 +260,7 @@ def assign_parents_to_departments_and_agencies(organisations, org_id_dict):
     return org_id_dict
 
 
-def key_department_and_agency_dict_off_abbreviation_or_name(
+def key_department_and_agency_dict_off_abbreviation_and_name(
         org_dict, org_id_dict):
     # now the structure of the gov.uk org graph is replicated,
     # create a new dict keyed off the abbreviation for use in linking
@@ -268,15 +275,30 @@ def key_department_and_agency_dict_off_abbreviation_or_name(
                     org_dict[slugify(org['abbreviation'])])
             abbrs_twice[slugify(org['abbreviation'])].append(
                 org)
+            print("Existing:")
+            print(org_dict[slugify(org['abbreviation'])])
+            print("New:")
             print('Using name as key for second with abbr:')
             print(org)
             org_dict[slugify(org['name'])] = org
+        elif slugify(org['name']) in org_dict:
+            # this could be the place for case statements to
+            # decide on a better names but for now just record any problems
+            if not abbrs_twice[slugify(org['name'])]:
+                abbrs_twice[slugify(org['name'])].append(
+                    org_dict[slugify(org['name'])])
+            abbrs_twice[slugify(org['name'])].append(
+                org)
+            print("Existing name:")
+            print(org_dict[slugify(org['name'])])
+            print("New name:")
+            print(org)
         else:
             # if there is an abbreviation use it
             # otherwise use the name
             if slugify(org['abbreviation']):
                 org_dict[slugify(org['abbreviation'])] = org
-            else:
+            if slugify(org['name']):
                 org_dict[slugify(org['name'])] = org
 
     WHAT_HAPPENED.this_happened(
@@ -312,9 +334,23 @@ def associate_parents(tx, org_dict, typeOf):
         parent['slug'] = tx[typeOf]['slug']
         parent_identifier = slugify(parent['name'])
     else:
+        # can't match these parent agencies or departments
+        if(not tx[typeOf]['name'] == 'Licensing authorities' and
+           not tx[typeOf]['name'] == 'Arts Council' and
+           not tx[typeOf]['name'] == "Planning Portal / Department"
+                                     " for Communities and Local Government"):
+            keys = [key for key, org in org_dict.items()]
+
+            def match(string):
+                return [key for key in keys if string in key.lower()]
+            print("Something has gone wrong and a parent"
+                  " {} was not found unexpectedly:".format(
+                      tx[typeOf]))
+            import pdb
+            pdb.set_trace()
         return (False, (tx[typeOf], None))
 
-    org_dict[service_name(tx)]['parents'].append(
+    org_dict[slugify(service_name(tx))]['parents'].append(
         parent_identifier)
     return (True, (tx[typeOf], parent))
 
@@ -425,7 +461,7 @@ def associate_with_dashboard(transaction_dict):
 
 def slugify(string):
     if string:
-        return string.lower()
+        return string.lower().strip()
     else:
         return string
 
@@ -479,26 +515,27 @@ types_dict = {
 
 def report_what_happened(happened):
     expected_happenings = {
-        'link_to_parents_not_found': 90,
-        'duplicate_services': 551,
-        'unable_data_error_nodes': 3,
-        'total_parents': 1924,
-        'total_nodes_after': 1876,
+        'link_to_parents_not_found': 16,
+        'duplicate_services': 561,
+        'unable_data_error_nodes': 4,
+        'total_parents': 2354,
+        'total_nodes_after': 1875,
         'transactions': 790,
         'duplicate_dep_or_agency_abbreviations': 3,
         'transactions_not_associated_with_dashboards': 697,
-        'organisations': 893,
+        'organisations': 894,
         'total_nodes_before': 0,
-        'link_to_parents_found': 700,
+        'link_to_parents_found': 774,
         'transactions_associated_with_dashboards': 93,
         'duplicate_transactions': 32,
         'dashboards_at_start': 874,
-        'existing_nodes': 7,
-        'unable_to_find_or_create_nodes': 6,
-        'total_parents_found': 1881,
-        'created_nodes': 1876,
+        'existing_nodes': 6,
+        'unable_to_find_or_create_nodes': 9,
+        'total_parents_found': 2244,
+        'created_nodes': 1875,
         'dashboards_at_end': 874,
-        'unable_existing_nodes_diff_details': 3}
+        'duplicate_transactions_not_none': 0,
+        'unable_existing_nodes_diff_details': 5}
     for key, things in happened.items():
         print(key)
         print(len(things))
