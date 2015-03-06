@@ -1,6 +1,9 @@
+import os
 import sys
 import csv
 import requests
+
+from .spreadsheets import SpreadsheetMunger
 
 columns = ['source', 'destination']
 tx_url = '/performance/transactions-explorer/service-details/'
@@ -62,3 +65,24 @@ def write(list_of_lists):
         # python 2 does not support a newline argument
         with open('redirects.csv', 'w') as csvfile:
             _write_csv(csvfile)
+
+
+if __name__ == '__main__':
+    try:
+        username = os.environ['GOOGLE_USERNAME']
+        password = os.environ['GOOGLE_PASSWORD']
+    except KeyError:
+        print("Please supply username (GOOGLE_USERNAME)"
+            "and password (GOOGLE_PASSWORD) as environment variables")
+        sys.exit(1)
+
+    munger = SpreadsheetMunger({
+        'names_name': 9,
+        'names_slug': 10,
+        'names_service_name': 11,
+        'names_service_slug': 12,
+        'names_tx_id_column': 19,
+    })
+    results = munger.load(username, password)
+    list_of_rows = generate(results)
+    write(list_of_rows)
