@@ -1,11 +1,10 @@
+from ..spreadsheets import SpreadsheetMunger
 import json
 
 from mock import patch, Mock
 from hamcrest import (
     assert_that, has_entries
 )
-
-from .spreadsheets import SpreadsheetMunger
 
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
