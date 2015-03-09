@@ -43,7 +43,7 @@ find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 pip install -r requirements/ci.txt --use-mirrors
 
 if [ -z "$NO_AUTOPEP8" ]; then
-  autopep8 -i -r stagecraft
+  autopep8 -i -r stagecraft --exclude '00*.py'
 fi
 
 # run style check

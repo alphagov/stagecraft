@@ -6,7 +6,7 @@ addons:
   postgresql: "9.3"
 env:
   matrix:
-    - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://postgres:@localhost:5432/stagecraft
+    - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://postgres:@localhost:5432/stagecraft NO_AUTOPEP8=1
   global:
     # NOTE: contains GH_TOKEN=xxx from github user gds-pp-ci
     secure: AnhgvS32/AMPi8rl9L9xh/2Xmt1459jXs13eiJI4kHtSGP/n2gkZtfKTiU9wezNqI5tVk4fYYltJNjvk5ZGkiEm/z5vpp8urRHUcGejZaa6ziyzFALpftuI5/5TF/dnlowQdFjh4Tcx4crZ1u5l4z5eJoxUSd4x9hk4d8/Tnjj8=
