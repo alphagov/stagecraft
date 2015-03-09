@@ -83,7 +83,7 @@ class Dashboard(models.Model):
     )
     page_type = models.CharField(max_length=80, default='dashboard')
     published = models.BooleanField()
-    title = models.CharField(max_length=80)
+    title = models.CharField(max_length=256)
     description = models.CharField(max_length=500, blank=True)
     description_extra = models.CharField(max_length=400, blank=True)
     costs = models.CharField(max_length=1500, blank=True)
@@ -112,6 +112,20 @@ class Dashboard(models.Model):
     organisation = models.ForeignKey(
         'organisation.Node', blank=True, null=True)
 
+    # Denormalise org tree for querying ease.
+    department_cache = models.ForeignKey(
+        'organisation.Node', blank=True, null=True,
+        related_name='dashboards_owned_by_department')
+    agency_cache = models.ForeignKey(
+        'organisation.Node', blank=True, null=True,
+        related_name='dashboards_owned_by_agency')
+    service_cache = models.ForeignKey(
+        'organisation.Node', blank=True, null=True,
+        related_name='dashboards_owned_by_service')
+    transaction_cache = models.ForeignKey(
+        'organisation.Node', blank=True, null=True,
+        related_name='dashboards_owned_by_transaction')
+
     spotlightify_base_fields = [
         'business_model',
         'costs',
@@ -136,7 +150,8 @@ class Dashboard(models.Model):
 
     @classmethod
     def list_for_spotlight(cls):
-        dashboards = Dashboard.objects.filter(published=True)
+        dashboards = Dashboard.objects.filter(published=True)\
+            .select_related('department_cache', 'agency_cache')
 
         def spotlightify_for_list(item):
             return item.spotlightify_for_list()
@@ -147,19 +162,19 @@ class Dashboard(models.Model):
 
     def spotlightify_for_list(self):
         base_dict = self.list_base_dict()
-        if self.department():
-            base_dict['department'] = self.department().spotlightify()
-        if self.agency():
-            base_dict['agency'] = self.agency().spotlightify()
+        if self.department_cache is not None:
+            base_dict['department'] = self.department_cache.spotlightify()
+        if self.agency_cache is not None:
+            base_dict['agency'] = self.agency_cache.spotlightify()
         return base_dict
 
-    @timeit
     def spotlightify_base_dict(self):
         base_dict = {}
         for field in self.spotlightify_base_fields:
             base_dict[field.replace('_', '-')] = getattr(self, field)
         return base_dict
 
+    @timeit
     def list_base_dict(self):
         base_dict = {}
         for field in self.list_base_fields:
@@ -269,23 +284,42 @@ class Dashboard(models.Model):
     class Meta:
         app_label = 'dashboards'
 
+    def organisations(self):
+        department = None
+        agency = None
+        if self.organisation is not None:
+            for node in self.organisation.get_ancestors(include_self=False):
+                if node.typeOf.name == 'department':
+                    department = node
+                if node.typeOf.name == 'agency':
+                    agency = node
+        return department, agency
+
     def agency(self):
-        if not self.organisation:
-            return None
-        if self.organisation.typeOf.name == 'agency':
-            return self.organisation
+        if self.organisation is not None:
+            if self.organisation.typeOf.name == 'agency':
+                return self.organisation
+            for node in self.organisation.get_ancestors():
+                if node.typeOf.name == 'agency':
+                    return node
         return None
 
     def department(self):
-        agency = self.agency()
-        if agency:
-            parent = agency.parents.first()
-            if not parent:
-                raise ValueError
+        if self.agency() is not None:
+            dept = None
+            for node in self.agency().get_ancestors(include_self=False):
+                if node.typeOf.name == 'department':
+                    dept = node
+            if dept is not None:
+                return dept
             else:
-                return parent
+                raise ValueError
         else:
-            return self.organisation
+            if self.organisation is not None:
+                for node in self.organisation.get_ancestors():
+                    if node.typeOf.name == 'department':
+                        return node
+        return None
 
 
 class Link(models.Model):

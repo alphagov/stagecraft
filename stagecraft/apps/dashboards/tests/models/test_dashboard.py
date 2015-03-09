@@ -23,13 +23,16 @@ class DashboardTestCase(TransactionTestCase):
 
     def test_class_level_list_for_spotlight_returns_minimal_json_array(self):
         dashboard_two = DashboardFactory()
-        dashboard_two.organisation = AgencyWithDepartmentFactory()
+        organisation = AgencyWithDepartmentFactory()
+        dashboard_two.organisation = organisation
+        dashboard_two.department_cache = organisation.parents.first()
+        dashboard_two.agency_cache = organisation
         dashboard_two.validate_and_save()
         DashboardFactory(published=False)
         list_for_spotlight = Dashboard.list_for_spotlight()
         assert_that(list_for_spotlight['page-type'], equal_to('browse'))
         assert_that(len(list_for_spotlight['items']), equal_to(2))
-        assert_that(list_for_spotlight['items'][1],
+        assert_that(list_for_spotlight['items'][0],
                     has_entries({
                         'slug': starts_with('slug'),
                         'title': 'title',
@@ -43,7 +46,7 @@ class DashboardTestCase(TransactionTestCase):
                             'abbr': starts_with('abbreviation')
                         })
                     }))
-        assert_that(list_for_spotlight['items'][0],
+        assert_that(list_for_spotlight['items'][1],
                     has_entries({
                         'slug': starts_with('slug'),
                         'title': 'title',

@@ -13,9 +13,10 @@ from stagecraft.apps.dashboards.tests.factories.factories import(
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
 
 from ..load_organisations import(
+    key_govuk_org_dict_by_abbreviation,
     load_organisations,
-    add_departments_and_agencies_to_org_dict,
-    build_up_node_dict,
+    create_govuk_org_dict,
+    create_org_dict,
     WHAT_HAPPENED,
     create_nodes)
 
@@ -142,10 +143,10 @@ class LoadOrganisationsTestCase(TestCase):
             equal_to(0))
         assert_that(len(what_happened['link_to_parents_found']), equal_to(1))
         assert_that(
-            len(what_happened['transactions_associated_with_dashboards']),
+            len(what_happened['records_matched_with_dashboards']),
             equal_to(1))
         assert_that(
-            len(what_happened['transactions_not_associated_with_dashboards']),
+            len(what_happened['records_not_matched_with_dashboards']),
             equal_to(0))
 
         # ensure we are clearing between runs
@@ -181,10 +182,10 @@ class LoadOrganisationsTestCase(TestCase):
             equal_to(0))
         assert_that(len(what_happened['link_to_parents_found']), equal_to(1))
         assert_that(
-            len(what_happened['transactions_associated_with_dashboards']),
+            len(what_happened['records_matched_with_dashboards']),
             equal_to(1))
         assert_that(
-            len(what_happened['transactions_not_associated_with_dashboards']),
+            len(what_happened['records_not_matched_with_dashboards']),
             equal_to(0))
 
 # this is the intermediate data format built up from external data
@@ -277,7 +278,7 @@ def test_create_nodes():
 
 
 def test_build_up_node_dict():
-    result = build_up_node_dict(tx_fixture, govuk_fixture)
+    result = create_org_dict(tx_fixture, govuk_fixture)
     assert_that(result, equal_to(expected_result))
 
 
@@ -305,6 +306,6 @@ def test_add_departments_and_agencies_to_org_dict():
             'parents': []
         }
     }
-    org_dict = {}
-    result = add_departments_and_agencies_to_org_dict(org_dict, govuk_fixture)
+    govuk_org_dict = create_govuk_org_dict(govuk_fixture)
+    result = key_govuk_org_dict_by_abbreviation(govuk_org_dict)
     assert_that(result, equal_to(expected_result))

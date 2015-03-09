@@ -7,9 +7,9 @@ from hamcrest import (
 
 from stagecraft.apps.dashboards.models import Dashboard
 
-from .spreadsheets import SpreadsheetMunger
-from .import_dashboards import (set_dashboard_attributes,
-                                determine_modules_for_dashboard)
+from ..spreadsheets import SpreadsheetMunger
+from ..import_dashboards import (set_dashboard_attributes,
+                                 determine_modules_for_dashboard)
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
     tx_worksheet = json.loads(f.read())
@@ -44,14 +44,14 @@ def test_attributes_from_record():
     record = munger.merge(tx, names)[0]
 
     dashboard = Dashboard()
-    dashboard = set_dashboard_attributes(dashboard, record, True, False)
+    dashboard = set_dashboard_attributes(dashboard, record, False)
 
     assert_that(dashboard, has_properties({
         'title': record['name'],
         'description': record['description'],
         'costs': record['costs'],
         'other_notes': record['other_notes'],
-        'dashboard_type': 'transaction',
+        'dashboard_type': 'high-volume-transaction',
         'customer_type': record['customer_type'],
         'business_model': record['business_model'],
         'published': False
@@ -76,7 +76,7 @@ def test_published_unmodified():
     }
     dashboard = Dashboard()
     dashboard.published = True
-    dashboard = set_dashboard_attributes(dashboard, record, True, False)
+    dashboard = set_dashboard_attributes(dashboard, record, False)
 
     assert_that(dashboard, has_properties({
         'title': record['name'],
@@ -101,7 +101,7 @@ def test_unset_published_modified():
         'high_volume': False
     }
     dashboard = Dashboard()
-    dashboard = set_dashboard_attributes(dashboard, record, True, False)
+    dashboard = set_dashboard_attributes(dashboard, record, False)
 
     assert_that(dashboard, has_properties({
         'title': record['name'],
@@ -126,7 +126,7 @@ def test_update_published():
         'high_volume': False
     }
     dashboard = Dashboard()
-    dashboard = set_dashboard_attributes(dashboard, record, True, True)
+    dashboard = set_dashboard_attributes(dashboard, record, True)
 
     assert_that(dashboard, has_properties({
         'title': record['name'],
