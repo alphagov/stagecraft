@@ -3,13 +3,13 @@ import json
 from mock import patch, Mock
 from hamcrest import (
     assert_that, has_properties, has_entries
-    )
+)
 
 from stagecraft.apps.dashboards.models import Dashboard
 
 from .spreadsheets import SpreadsheetMunger
 from .import_dashboards import (set_dashboard_attributes,
-    determine_modules_for_dashboard)
+                                determine_modules_for_dashboard)
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
     tx_worksheet = json.loads(f.read())
@@ -171,7 +171,7 @@ def test_digital_takeup_present_quarterly():
             'service_id': 'tx_id',
             'type': 'quarterly',
             'digital_takeup': 240542,
-            }
+        }
     ]
     module_types = determine_modules_for_dashboard(summaries, 'tx_id')
 
@@ -179,7 +179,7 @@ def test_digital_takeup_present_quarterly():
         'transactions_per_year': True,
         'transactions_per_quarter': True,
         'digital_takeup': True,
-        }))
+    }))
 
 
 def test_total_cost_present():

@@ -14,6 +14,7 @@ from stagecraft.apps.datasets.models import DataSet
 
 from .dashboard import Dashboard
 
+
 class ModuleManager(models.Manager):
 
     def get_queryset(self):

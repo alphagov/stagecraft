@@ -31,6 +31,7 @@ def ordered_responses(spotlight_code):
 
 
 class RedirectWriterTests(unittest.TestCase):
+
     @patch('requests.get')
     def test_redirects_produced_when_source_pages_exist(self, mock_get):
         mock_get().status_code = 200

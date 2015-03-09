@@ -28,15 +28,16 @@ def test_merge():
     })
 
     mock_account = Mock()
-    mock_account.open_by_key().worksheet().get_all_values.return_value = tx_worksheet
+    mock_account.open_by_key().worksheet(
+    ).get_all_values.return_value = tx_worksheet
     tx = munger.load_tx_worksheet(mock_account)
 
     mock_account = Mock()
-    mock_account.open_by_key().worksheet().get_all_values.return_value = names_worksheet
+    mock_account.open_by_key().worksheet(
+    ).get_all_values.return_value = names_worksheet
     names = munger.load_names_worksheet(mock_account)
 
     result = munger.merge(tx, names)
     result_path = 'stagecraft/tools/fixtures/spreadsheet_munging_result.json'
     with open(result_path, 'r') as f:
         assert_that(result[0], has_entries(json.loads(f.read())[0]))
-
