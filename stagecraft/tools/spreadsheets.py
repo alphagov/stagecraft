@@ -196,7 +196,8 @@ class SpreadsheetMunger:
             record['description'] = description
 
         if record.get('description_extra'):
-            description_extra = self._replace_unicode(record['description_extra'])
+            description_extra = self._replace_unicode(
+                record['description_extra'])
             if len(description_extra) > 400:
                 description_extra = description_extra[:400]
             record['description_extra'] = description_extra

@@ -88,8 +88,8 @@ def set_dashboard_attributes(dashboard, record, dry_run, publish):
             dashboard.organisation = org
         except Node.DoesNotExist:
             if not dry_run:
-                log.warn('Organisation not found for record : {}' \
-                    .format(record['tx_id']))
+                log.warn('Organisation not found for record : {}'
+                         .format(record['tx_id']))
 
     if record['high_volume']:
         dashboard.dashboard_type = 'high-volume-transaction'
@@ -126,7 +126,6 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
 
 
 def determine_modules_for_dashboard(summaries, tx_id):
-
     """
     Inspect the summary data for a given tx_id and determine
     whether modules should be created for the different data types.
@@ -318,8 +317,8 @@ def import_tpy_module(record, dashboard, dataset):
                 'sigfigs': 3
             },
             'classes': 'cols3',
-            },
-        }
+        },
+    }
     module = get_or_create_module(dashboard, attributes['slug'])
     return set_module_attributes(module, dashboard, dataset, attributes)
 

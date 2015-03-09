@@ -73,7 +73,7 @@ if __name__ == '__main__':
         password = os.environ['GOOGLE_PASSWORD']
     except KeyError:
         print("Please supply username (GOOGLE_USERNAME)"
-            "and password (GOOGLE_PASSWORD) as environment variables")
+              "and password (GOOGLE_PASSWORD) as environment variables")
         sys.exit(1)
 
     munger = SpreadsheetMunger({

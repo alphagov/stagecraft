@@ -20,6 +20,7 @@ logger = logging.getLogger('gunicorn.error')
 
 
 class writer(object):
+
     def write(self, data):
         logger.info(data)
 

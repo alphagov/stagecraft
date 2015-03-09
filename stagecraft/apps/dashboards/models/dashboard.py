@@ -4,6 +4,8 @@ from uuidfield import UUIDField
 
 from stagecraft.apps.organisation.views import NodeView
 
+from stagecraft.libs.timing.timer import timeit
+
 
 def list_to_tuple_pairs(elements):
     return tuple([(element, element) for element in elements])
@@ -151,6 +153,7 @@ class Dashboard(models.Model):
             base_dict['agency'] = self.agency().spotlightify()
         return base_dict
 
+    @timeit
     def spotlightify_base_dict(self):
         base_dict = {}
         for field in self.spotlightify_base_fields:
@@ -163,6 +166,7 @@ class Dashboard(models.Model):
             base_dict[field.replace('_', '-')] = getattr(self, field)
         return base_dict
 
+    @timeit
     def related_pages_dict(self):
         related_pages_dict = {}
         transaction_link = self.get_transaction_link()
@@ -179,17 +183,17 @@ class Dashboard(models.Model):
         )
         return related_pages_dict
 
+    @timeit
     def spotlightify(self, request_slug=None):
         base_dict = self.spotlightify_base_dict()
-        base_dict['modules'] = [
-            m.spotlightify()
-            for m in self.module_set.filter(parent=None).order_by('order')]
+        base_dict['modules'] = self.spotlightify_modules()
         base_dict['relatedPages'] = self.related_pages_dict()
         if self.department():
-            base_dict['department'] = self.department().spotlightify()
+            base_dict['department'] = self.spotlightify_department()
         if self.agency():
-            base_dict['agency'] = self.agency().spotlightify()
-        return get_modules_or_tabs(request_slug, base_dict)
+            base_dict['agency'] = self.spotlightify_agency()
+        modules_or_tabs = get_modules_or_tabs(request_slug, base_dict)
+        return modules_or_tabs
 
     def serialize(self):
         serialized = {}
@@ -213,6 +217,19 @@ class Dashboard(models.Model):
     def serialized_modules(self):
         return [m.serialize()
                 for m in self.module_set.filter(parent=None).order_by('order')]
+
+    @timeit
+    def spotlightify_modules(self):
+        return [m.spotlightify() for m in
+                self.module_set.filter(parent=None).order_by('order')]
+
+    @timeit
+    def spotlightify_agency(self):
+        return self.agency().spotlightify()
+
+    @timeit
+    def spotlightify_department(self):
+        return self.department().spotlightify()
 
     def update_transaction_link(self, title, url):
         transaction_link = self.get_transaction_link()
@@ -296,6 +313,7 @@ class Link(models.Model):
         app_label = 'dashboards'
 
 
+@timeit
 def get_modules_or_tabs(request_slug, dashboard_json):
     # first part will always be empty as we never end the dashboard slug with
     # a slash
