@@ -20,6 +20,7 @@ from jsonschema.compat import str_types
 from jsonschema.exceptions import ValidationError
 
 from .transaction import atomic_view
+from django.db.models import Q
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ class ResourceView(View):
     schema = {}
     sub_resources = {}
     list_filters = {}
+    any_of_multiple_values_filter = {}
 
     def list(self, request, **kwargs):
         user = kwargs.get('user', None)
@@ -65,6 +67,17 @@ class ResourceView(View):
             additional_filters['backdropuser'] = BackdropUser.objects.filter(
                 email=user['email'])
 
+        query_set = self.model.objects
+        query_set = self.filter_by_list_filters(
+            query_set,
+            request,
+            additional_filters)
+        query_set = self.filter_by_any_of_multiple_value_filter(
+            query_set,
+            request)
+        return query_set.order_by('pk')
+
+    def filter_by_list_filters(self, query_set, request, additional_filters):
         filter_items = [
             (model_filter, request.GET.get(query_filter, None))
             for (query_filter, model_filter) in self.list_filters.items()
@@ -73,7 +86,22 @@ class ResourceView(View):
         # Used to filter by, for instance, backdrop user
         filter_args = dict(filter_args.items() + additional_filters.items())
 
-        return self.model.objects.filter(**filter_args).order_by('pk')
+        return query_set.filter(**filter_args).order_by('pk')
+
+    def filter_by_any_of_multiple_value_filter(self, query_set, request):
+        filter_items = None
+        for (query_filter,
+             model_filter) in self.any_of_multiple_values_filter.items():
+            for value in request.GET.getlist(query_filter):
+                if filter_items:
+                    filter_items |= Q(**{model_filter: value})
+                else:
+                    filter_items = Q(**{model_filter: value})
+
+        if filter_items:
+            return query_set.filter(filter_items)
+        else:
+            return query_set
 
     def by_id(self, request, id, user=None):
         get_args = {self.id_field: id}
