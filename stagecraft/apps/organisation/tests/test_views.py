@@ -24,6 +24,16 @@ class NodeViewsTestCase(TestCase):
             id='f9510fef-a879-4cf8-bcfb-9e0871579f5a',
             name='Department',
         )
+        agency = NodeTypeFactory(
+            id='6f5aadb2-3bec-447f-87fd-c68f8c5ac2e8',
+            name='Agency',
+        )
+        NodeFactory(
+            name='no name',
+            id='9df09a3f-2ed6-46f3-8c5c-c42b860b98a6',
+            abbreviation=None,
+            typeOf=agency,
+        )
 
         cheese = NodeFactory(
             id='f59bddcc-4494-46f8-a2c9-884030fa3087',
@@ -57,7 +67,7 @@ class NodeViewsTestCase(TestCase):
         )
         resp_json = json.loads(resp.content)
 
-        assert_that(len(resp_json), equal_to(2))
+        assert_that(len(resp_json), equal_to(3))
         assert_that(
             resp_json,
             has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
@@ -65,6 +75,27 @@ class NodeViewsTestCase(TestCase):
         assert_that(
             resp_json,
             has_item(has_entry('id', 'f59bddcc-4494-46f8-a2c9-884030fa3087'))
+        )
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', '9df09a3f-2ed6-46f3-8c5c-c42b860b98a6'))
+        )
+
+    def test_list_nodes_filter_by_type(self):
+        resp = self.client.get(
+            '/organisation/node?type=Department&type=Agency',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(2))
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', 'f59bddcc-4494-46f8-a2c9-884030fa3087'))
+        )
+        assert_that(
+            resp_json,
+            has_item(has_entry('id', '9df09a3f-2ed6-46f3-8c5c-c42b860b98a6'))
         )
 
     def test_list_nodes_filter_by_name(self):
@@ -80,7 +111,7 @@ class NodeViewsTestCase(TestCase):
             has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
         )
 
-    def test_list_nodes_filter_by_name(self):
+    def test_list_nodes_filter_by_abbr(self):
         resp = self.client.get(
             '/organisation/node?abbreviation=BR',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
@@ -105,6 +136,15 @@ class NodeViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', 'edc9aa07-f45f-4d93-9f9c-d9d760f08019'))
         )
+
+    def test_list_nodes_filter_by_all(self):
+        resp = self.client.get(
+            '/organisation/node?name=Brie&&abbreviation=BR&type=Department',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token'
+        )
+        resp_json = json.loads(resp.content)
+
+        assert_that(len(resp_json), equal_to(0))
 
     def test_list_nodes_filter_by_both_is_and(self):
         resp = self.client.get(
@@ -341,7 +381,6 @@ class NodeTypeViewsTestCase(TestCase):
             id='f9510fef-a879-4cf8-bcfb-9e0871579f5a',
             name='Department',
         )
-
         cheese = NodeFactory(
             id='f59bddcc-4494-46f8-a2c9-884030fa3087',
             name='Cheese',
@@ -414,7 +453,7 @@ class NodeTypeViewsTestCase(TestCase):
         resp = self.client.post(
             '/organisation/type',
             data=json.dumps({
-                'name': 'Agency'
+                'name': 'Bagency'
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
@@ -423,7 +462,7 @@ class NodeTypeViewsTestCase(TestCase):
 
         resp_json = json.loads(resp.content)
         assert_that(resp_json, has_key('id'))
-        assert_that(resp_json, has_entry('name', 'Agency'))
+        assert_that(resp_json, has_entry('name', 'Bagency'))
 
     def test_add_type_bad_json(self):
         resp = self.client.post(

@@ -74,6 +74,10 @@ class NodeView(ResourceView):
         'abbreviation': 'abbreviation__iexact',
     }
 
+    any_of_multiple_values_filter = {
+        'type': 'typeOf__name',
+    }
+
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(NodeView, self).get(request, **kwargs)
