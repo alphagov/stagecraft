@@ -82,6 +82,15 @@ class NodeView(ResourceView):
     def get(self, request, **kwargs):
         return super(NodeView, self).get(request, **kwargs)
 
+    def list(self, request, **kwargs):
+        '''
+        Override ResourceView's list function (called by its 'get' function)
+        so that the retrieval of all nodes can be optimised
+        by eager loading type associations.
+        '''
+        queryset = super(NodeView, self).list(request, **kwargs)
+        return queryset.select_related('typeOf')
+
     @method_decorator(permission_required('organisation'))
     def post(self, user, request, **kwargs):
         return super(NodeView, self).post(user, request, **kwargs)
@@ -121,7 +130,7 @@ class NodeView(ResourceView):
             model.parents.add(parent_node)
 
     @staticmethod
-    def serialize(model, resolve_parent=True):
+    def serialize(model):
         node = {
             'id': str(model.id),
             'type': NodeTypeView.serialize(model.typeOf),
@@ -132,16 +141,6 @@ class NodeView(ResourceView):
             node['abbreviation'] = model.abbreviation
         else:
             node['abbreviation'] = model.name
-
-        if resolve_parent:
-            parent = model.parents.first()
-            if parent is not None:
-                node['parent'] = NodeView.serialize(
-                    parent,
-                    resolve_parent=False
-                )
-            else:
-                node['parent'] = None
 
         return node
 
