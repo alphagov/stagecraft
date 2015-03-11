@@ -220,7 +220,6 @@ class NodeViewsTestCase(TestCase):
         assert_that(resp_json, has_key('id'))
         assert_that(resp_json['name'], equal_to('Edam'))
         assert_that(resp_json['abbreviation'], equal_to('ED'))
-        assert_that(resp_json['parent']['name'], equal_to('Cheese'))
         assert_that(resp_json['type']['name'], equal_to('Thing'))
 
     def test_add_node_bad_json(self):
@@ -313,24 +312,6 @@ class NodeViewsTestCase(TestCase):
             content_type='application/json')
 
         assert_that(resp.status_code, equal_to(400))
-
-    def test_add_node_with_no_parent(self):
-        resp = self.client.post(
-            '/organisation/node',
-            data=json.dumps({
-                'name': 'Edam',
-                'slug': 'abc',
-                'abbreviation': 'ED',
-                'type_id': 'ea72e3e1-13b8-4bf6-9ffb-7cd0d2f168d4'
-            }),
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
-            content_type='application/json')
-
-        assert_that(resp.status_code, equal_to(200))
-
-        resp_json = json.loads(resp.content)
-
-        assert_that(resp_json, has_entry('parent', None))
 
     def test_add_node_with_no_abbr(self):
         resp = self.client.post(
