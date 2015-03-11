@@ -82,15 +82,6 @@ class NodeView(ResourceView):
     def get(self, request, **kwargs):
         return super(NodeView, self).get(request, **kwargs)
 
-    def list(self, request, **kwargs):
-        '''
-        Override ResourceView's list function (called by its 'get' function)
-        so that the retrieval of all nodes can be optimised
-        by eager loading type associations.
-        '''
-        queryset = super(NodeView, self).list(request, **kwargs)
-        return queryset.select_related('typeOf')
-
     @method_decorator(permission_required('organisation'))
     def post(self, user, request, **kwargs):
         return super(NodeView, self).post(user, request, **kwargs)
