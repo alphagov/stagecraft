@@ -34,6 +34,10 @@ class NodeManager(models.Manager):
         ORDER BY node_parents.depth DESC
         ''', [node.id])
 
+    def get_queryset(self):
+        return super(NodeManager, self).get_queryset().select_related(
+            'typeOf')
+
 
 class NodeType(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
