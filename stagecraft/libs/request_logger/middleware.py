@@ -56,8 +56,8 @@ class AdditionalFieldsFilter(logging.Filter):
     def filter(self, record):
         request = get_current_request()
         if request:
-            record.__dict__['request_method'] = request.method,
-            record.__dict__['http_host'] = request.META.get('HTTP_HOST'),
-            record.__dict__['http_path'] = request.get_full_path(),
-            record.__dict__['request_id'] = request.META.get('HTTP_REQUEST_ID')
+            record.request_method = request.method,
+            record.http_host = request.META.get('HTTP_HOST'),
+            record.http_path = request.get_full_path(),
+            record.request_id = request.META.get('HTTP_REQUEST_ID')
         return 1
