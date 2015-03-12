@@ -113,6 +113,11 @@ LOGGING = {
             'fmt': '{"extra": {"@tags": ["application", "stagecraft"]}}',
         },
     },
+    'filters': {
+        'additional_fields': {
+            '()': 'stagecraft.libs.request_logger.middleware.AdditionalFieldsFilter',  # noqa
+        }
+    },
     'handlers': {
         'null': {
             'level': 'DEBUG',
@@ -141,6 +146,7 @@ LOGGING = {
             'maxBytes': 4 * 1024 * 1024,
             'backupCount': 2,
             'formatter': 'logstash_json',
+            'filters': ['additional_fields'],
         },
         'console': {
             'level': 'INFO',
