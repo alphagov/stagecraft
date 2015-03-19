@@ -1,6 +1,6 @@
 import os
 import json
-from .redirects import generate, write
+from ..redirects import generate, write
 from hamcrest import (
     assert_that, equal_to
 )

@@ -1,15 +1,7 @@
-import logging
 import pickle
 import string
 
 import gspread
-
-
-log = logging.getLogger(__name__)
-log.setLevel(logging.ERROR)
-handler = logging.StreamHandler()
-handler.setLevel(logging.ERROR)
-log.addHandler(handler)
 
 
 REPLACE_TABLE = {
@@ -98,21 +90,26 @@ class SpreadsheetMunger:
         record = {}
         record['tx_id'] = row[self.names_tx_id]
 
-        if row[self.names_transaction_name]:
+        # If a record does not have a transaction, the service name/slug is
+        # used.
+        if row[self.names_transaction_name] and \
+                row[self.names_transaction_slug]:
             record['name'] = row[self.names_transaction_name]
-        elif row[self.names_service_name]:
-            record['name'] = row[self.names_service_name]
-        else:
-            log.error('Missing name for {}'.format(row[self.names_tx_id]))
-            return None
-
-        if row[self.names_transaction_slug]:
             record['slug'] = row[self.names_transaction_slug][1:]
-        elif row[self.names_service_slug]:
-            record['slug'] = row[self.names_service_slug]
-        else:
-            log.error('Missing slug for {}'.format(row[self.names_tx_id]))
-            return None
+            record['transaction'] = {
+                'name': row[self.names_transaction_name],
+                'slug': row[self.names_transaction_slug][1:],
+            }
+
+        if row[self.names_service_name] and \
+                row[self.names_service_slug]:
+            record['service'] = {
+                'name': row[self.names_service_name],
+                'slug': row[self.names_service_slug][1:]
+            }
+            if not record.get('name'):
+                record['name'] = row[self.names_service_name]
+                record['slug'] = row[self.names_service_slug][1:]
 
         if row[self.names_description]:
             record['description'] = row[self.names_description]
@@ -121,18 +118,7 @@ class SpreadsheetMunger:
             record['costs'] = row[self.names_notes]
         if row[self.names_other_notes]:
             record['other_notes'] = row[self.names_other_notes]
-        if row[self.names_service_name] and \
-                row[self.names_service_slug]:
-            record['service'] = {
-                'name': row[self.names_service_name],
-                'slug': row[self.names_service_slug][1:]
-            }
-        if row[self.names_transaction_name] and \
-                row[self.names_transaction_slug]:
-            record['transaction'] = {
-                'name': row[self.names_transaction_name],
-                'slug': row[self.names_transaction_slug][1:],
-            }
+
         return record
 
     def _parse_rows(self, worksheet, parse_fn, tx_id_column):
@@ -154,7 +140,9 @@ class SpreadsheetMunger:
             .worksheet('Sheet1').get_all_values()
         rows = []
         for row in all_values[1:]:
-            rows.append(self._parse_names_row(row))
+            parsed = self._parse_names_row(row)
+            if parsed is not None:
+                rows.append(parsed)
         return rows
 
     def merge(self, tx, names):
@@ -178,15 +166,17 @@ class SpreadsheetMunger:
             except KeyError:
                 unmerged.append(tx_id)
         if unmerged:
-            log.error("There were unmerged records: {}".format(unmerged))
+            print("There were unmerged records:")
+            for record in unmerged:
+                print(record)
         return merged
 
     def sanitise_record(self, record):
 
         if record.get('name'):
             name = self._replace_unicode(record['name'])
-            if len(name) > 80:
-                name = name[:80]
+            if len(name) > 256:
+                name = name[:256]
             record['name'] = name
 
         if record.get('description'):
@@ -229,7 +219,7 @@ class SpreadsheetMunger:
         if record.get('tx_id'):
             tx_id = self._replace_unicode(record['tx_id'])
             if len(tx_id) > 90:
-                log.warn('Truncated slug: {} to {}'.format(tx_id, tx_id[:90]))
+                print('Truncated slug: {} to {}'.format(tx_id, tx_id[:90]))
                 tx_id = tx_id[:90]
             record['tx_id'] = tx_id
 

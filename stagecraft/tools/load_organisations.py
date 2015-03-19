@@ -1,17 +1,15 @@
-import django
-# import cPickle as pickle
 import os
 import requests
 import sys
-from stagecraft.apps.organisation.models import Node, NodeType
-from stagecraft.apps.dashboards.models import Dashboard
 
 from collections import defaultdict
 
-if sys.version_info >= (3, 0, 0):
-    from .spreadsheets import SpreadsheetMunger
-else:
-    from spreadsheets import SpreadsheetMunger
+from django.db.utils import DataError, IntegrityError
+
+from stagecraft.apps.organisation.models import Node, NodeType
+from stagecraft.apps.dashboards.models import Dashboard
+
+from .spreadsheets import SpreadsheetMunger
 
 
 class WhatHappened:
@@ -36,53 +34,27 @@ class WhatHappened:
 WHAT_HAPPENED = WhatHappened()
 
 
-def load_organisations(username, password):
-    WHAT_HAPPENED.this_happened(
-        'dashboards_at_start',
-        [dashboard for dashboard in Dashboard.objects.all()])
-    # we only care about transactions, everything else loses their org
-    remove_all_dashboard_references_to_orgs()
-    WHAT_HAPPENED.this_happened(
-        'total_nodes_before', [node for node in Node.objects.all()])
-    transactions_data, govuk_organisations = load_data(username, password)
+def get_govuk_organisations():
+    """
+    Fetch organisations from the GOV.UK API. This is the canonical source.
+    """
 
-    # remove any orgs from the list from GOV.UK where they have shut down
-    govuk_organisations = \
-        [org for org in govuk_organisations if org[
-            'details']['closed_at'] is None]
+    def get_page(page):
+        response = requests.get(
+            'https://www.gov.uk/api/organisations?page={}'.format(page))
+        return response.json()
 
-    WHAT_HAPPENED.this_happened('organisations', govuk_organisations)
-    WHAT_HAPPENED.this_happened('transactions', transactions_data)
+    first_page = get_page(1)
+    results = first_page['results']
 
-    nodes_dict = build_up_node_dict(transactions_data, govuk_organisations)
+    for page_num in range(2, first_page['pages'] + 1):
+        page = get_page(page_num)
+        results = results + page['results']
 
-    create_nodes(nodes_dict)
-
-    finished = []
-    bruk = []
-    for transaction in transactions_data:
-        if associate_with_dashboard(transaction):
-            finished.append(transaction)
-        else:
-            bruk.append(transaction)
-    WHAT_HAPPENED.this_happened(
-        'transactions_associated_with_dashboards', finished)
-    WHAT_HAPPENED.this_happened(
-        'transactions_not_associated_with_dashboards', bruk)
-    WHAT_HAPPENED.this_happened(
-        'total_nodes_after',
-        [node for node in Node.objects.all()])
-    WHAT_HAPPENED.this_happened(
-        'dashboards_at_end',
-        [dashboard for dashboards in Dashboard.objects.all()])
-    return WHAT_HAPPENED.happenings
-
-
-def remove_all_dashboard_references_to_orgs():
-    for dashboard in Dashboard.objects.all():
-        dashboard.organisation = None
-        dashboard.save()
-    Node.objects.all().delete()
+    # Remove any organisations that have closed.
+    results = \
+        [org for org in results if org['details']['closed_at'] is None]
+    return results
 
 
 def load_data(username, password):
@@ -96,251 +68,303 @@ def load_data(username, password):
         'names_notes': 3,
         'names_description': 8
     })
-    transactions_data = spreadsheets.load(username, password)
-
-    # with open('transactions_data.pickle', 'w') as data_file:
-    #     pickle.dump(transactions_data, data_file)
-
-    # with open('transactions_data.pickle', 'r') as data_file:
-    #     transactions_data = pickle.load(data_file)
-
-    govuk_organisations = get_govuk_organisations()
-
-    # with open('govuk_organisations.pickle', 'w') as org_file:
-    #     pickle.dump(govuk_organisations, org_file)
-
-    # with open('govuk_organisations.pickle', 'r') as org_file:
-    #     govuk_organisations = pickle.load(org_file)
-
-    return transactions_data, govuk_organisations
+    records = spreadsheets.load(username, password)
+    govuk_response = get_govuk_organisations()
+    return records, govuk_response
 
 
-def get_govuk_organisations():
-    def get_page(page):
-        response = requests.get(
-            'https://www.gov.uk/api/organisations?page={}'.format(page))
-        return response.json()
+def load_organisations(username, password):
+    WHAT_HAPPENED.this_happened(
+        'dashboards_at_start', list(Dashboard.objects.all()))
 
-    first_page = get_page(1)
-    results = first_page['results']
+    # Remove existing refs to organisations from dashboards.
+    remove_dashboard_refs_to_orgs()
 
-    for page_num in range(2, first_page['pages'] + 1):
-        page = get_page(page_num)
-        results = results + page['results']
+    WHAT_HAPPENED.this_happened(
+        'total_nodes_before', [node for node in Node.objects.all()])
+    records, govuk_response = load_data(username, password)
 
-    return results
+    WHAT_HAPPENED.this_happened('organisations', govuk_response)
+    WHAT_HAPPENED.this_happened('transactions', records)
 
+    org_dict = create_org_dict(records, govuk_response)
+    create_nodes(org_dict)
 
-def build_up_node_dict(transactions, organisations):
-    org_dict = {}
-    org_dict = add_departments_and_agencies_to_org_dict(
-        org_dict, organisations)
-    org_dict = add_transactions_and_services_to_org_dict(
-        org_dict, transactions)
-    org_dict = add_parents_to_organisations_and_correct_types(
-        org_dict, transactions)
-
-    return org_dict
-
-
-def add_departments_and_agencies_to_org_dict(org_dict, organisations):
-    org_id_dict = build_department_and_agency_dict_keyed_off_govuk_id(
-        organisations)
-    org_id_dict = assign_parents_to_departments_and_agencies(
-        organisations, org_id_dict)
-    org_dict = key_department_and_agency_dict_off_abbreviation_or_name(
-        org_dict,
-        org_id_dict)
-    return org_dict
-
-
-def add_transactions_and_services_to_org_dict(org_dict, transactions):
-    """
-    go through each transaction and build dict with names as keys
-    """
-    more_than_one_tx = []
-    more_than_one_service = []
-    for tx in transactions:
-        if transaction_name(tx) in org_dict:
-            more_than_one_tx.append(transaction_name(tx))
-        if service_name(tx) in org_dict:
-            more_than_one_service.append(service_name(tx))
-
-        org_dict[transaction_name(tx)] = {
-            'name': transaction_name(tx),
-            'slug': transaction_slug(tx),
-            'abbreviation': None,
-            'typeOf': 'transaction',
-            'parents': [service_name(tx)]
-        }
-        org_dict[service_name(tx)] = {
-            'name': service_name(tx),
-            'slug': service_slug(tx),
-            'abbreviation': None,
-            'typeOf': 'service',
-            'parents': []
-        }
-    WHAT_HAPPENED.this_happened('duplicate_services', more_than_one_service)
-    WHAT_HAPPENED.this_happened('duplicate_transactions', more_than_one_tx)
-    return org_dict
-
-
-def add_parents_to_organisations_and_correct_types(org_dict, transactions):
-    """
-    go through again
-    """
-    successfully_linked = []
-    failed_to_link = []
-    for tx in transactions:
-        """
-        ***THIS IS ASSUMING AGENCIES ARE ALWAYS JUNIOR TO DEPARTMENTS****
-        """
-        # if there is an agency then get the thing by abbreviation
-        if tx["agency"] and (tx['agency']['abbr'] or tx['agency']['name']):
-            success, link = associate_parents(
-                tx, org_dict, 'agency')
-        # if there is a department and no agency
-        elif tx['department']:
-            # if there is a thing for abbreviation then add it's abbreviation to parents  # noqa
-            success, link = associate_parents(
-                tx, org_dict, 'department')
+    succeeded = []
+    failed = []
+    for record in records:
+        if associate_with_dashboard(record):
+            succeeded.append(record)
         else:
-            raise Exception("transaction with no department or agency!")
-        if success:
-            successfully_linked.append(link)
-        else:
-            failed_to_link.append(link)
-    WHAT_HAPPENED.this_happened('link_to_parents_found', successfully_linked)
-    WHAT_HAPPENED.this_happened('link_to_parents_not_found', failed_to_link)
-    return org_dict
+            failed.append(record)
+    WHAT_HAPPENED.this_happened(
+        'records_matched_with_dashboards', succeeded)
+    WHAT_HAPPENED.this_happened(
+        'records_not_matched_with_dashboards', failed)
+    WHAT_HAPPENED.this_happened(
+        'total_nodes_after', list(Node.objects.all()))
+    WHAT_HAPPENED.this_happened(
+        'dashboards_at_end', list(Dashboard.objects.all()))
+    return WHAT_HAPPENED.happenings
 
 
-def build_department_and_agency_dict_keyed_off_govuk_id(organisations):
-    org_id_dict = {}
-    # note, typeOf will be overwritten with more certain information
-    # based on iterating through all tx rows in build_up_node_dict.
-    # We do this here though to to get the full org graph even when orgs are
-    # not associated with a transaction in txex
+def remove_dashboard_refs_to_orgs():
+    for dashboard in Dashboard.objects.all():
+        # TODO: re-associate non TxEx dashboards to organisations.
+        dashboard.organisation = None
+        dashboard.transaction_cache = None
+        dashboard.service_cache = None
+        dashboard.agency_cache = None
+        dashboard.department_cache = None
+        dashboard.save()
+    Node.objects.all().delete()
 
-    # slug will be overwritten with the renamed value if found
-    # - what it is called in the transactions explorer is correct for redirects
-    # name and abbreviation should come from the org api
-    # - this is the source of truth for gov.
+
+def create_org_dict(records, govuk_response):
+
+    # Query GOV.UK for depts and agencies.
+    govuk_org_dict = create_govuk_org_dict(govuk_response)
+    govuk_org_dict = key_govuk_org_dict_by_abbreviation(govuk_org_dict)
+
+    # Load the spreadsheet records for services/transactions.
+    full_org_dict = add_records_to_org_dict(govuk_org_dict, records)
+    full_org_dict = add_parents_to_records(full_org_dict, records)
+    return full_org_dict
+
+
+def create_govuk_org_dict(organisations):
+
+    # Build dictionary keyed by org ID from GOV.UK API response.
+    govuk_org_dict = {}
     for org in organisations:
-        org_id_dict[org['id']] = {
+        govuk_org_dict[org['id']] = {
             'name': org['title'],
             'slug': org['details']['slug'],
             'abbreviation': org['details']['abbreviation'],
             'typeOf': types_dict[org['format']],
             'parents': []
         }
-    return org_id_dict
 
-
-def assign_parents_to_departments_and_agencies(organisations, org_id_dict):
-    # assign parents, all at least have name
+    # Iterate organisations again, assigning parents.
     for org in organisations:
         for parent in org['parent_organisations']:
-            abbr = org_id_dict[parent['id']]['abbreviation']
+            abbr = govuk_org_dict[parent['id']]['abbreviation']
             if abbr:
-                parent_abbreviation = abbr
-            elif org_id_dict[parent['id']]['name']:
-                parent_abbreviation = org_id_dict[parent['id']]['name']
+                parent_abbr = abbr
+            elif govuk_org_dict[parent['id']]['name']:
+                parent_abbr = govuk_org_dict[parent['id']]['name']
 
-            org_id_dict[org['id']]['parents'].append(
-                slugify(parent_abbreviation))
+            govuk_org_dict[org['id']]['parents'].append(
+                (parent_abbr.lower()))
 
-    return org_id_dict
+    return govuk_org_dict
 
 
-def key_department_and_agency_dict_off_abbreviation_or_name(
-        org_dict, org_id_dict):
-    # now the structure of the gov.uk org graph is replicated,
-    # create a new dict keyed off the abbreviation for use in linking
-    # to the tx data.
-    abbrs_twice = defaultdict(list)
-    for org_id, org in org_id_dict.items():
-        if slugify(org['abbreviation']) in org_dict:
-            # this could be the place for case statements to
-            # decide on a better names but for now just record any problems
-            if not abbrs_twice[slugify(org['abbreviation'])]:
-                abbrs_twice[slugify(org['abbreviation'])].append(
-                    org_dict[slugify(org['abbreviation'])])
-            abbrs_twice[slugify(org['abbreviation'])].append(
-                org)
-            print('Using name as key for second with abbr:')
-            print(org)
-            org_dict[slugify(org['name'])] = org
+def key_govuk_org_dict_by_abbreviation(govuk_org_dict):
+    """
+    Create dictionary keyed on dept/agency abbreviation for matching
+    against abbreviations in the transactions explorer spreadsheet.
+    """
+
+    org_dict = {}
+    duplicates = defaultdict(list)
+    for org_id, org in govuk_org_dict.items():
+        # If the abbreviation is already in the dict, record the
+        # organisation as a duplicate.
+        if org['abbreviation'].lower() in org_dict:
+            if not duplicates.get([org['abbreviation'].lower()]):
+                duplicates[org['abbreviation'].lower()].append(
+                    org_dict[org['abbreviation'].lower()])
+            duplicates[org['abbreviation'].lower()].append(org)
+            org_dict[org['name'].lower()] = org
         else:
-            # if there is an abbreviation use it
-            # otherwise use the name
-            if slugify(org['abbreviation']):
-                org_dict[slugify(org['abbreviation'])] = org
+            # If organisation does not have an abbreviation, use the name
+            # as the key.
+            if org['abbreviation'].lower():
+                org_dict[org['abbreviation'].lower()] = org
             else:
-                org_dict[slugify(org['name'])] = org
+                org_dict[org['name'].lower()] = org
 
     WHAT_HAPPENED.this_happened(
-        'duplicate_dep_or_agency_abbreviations',
-        [(abbr, tx) for abbr, tx in abbrs_twice.items()])
+        'duplicate_dept_or_agency_abbreviations',
+        [(abbr, tx) for abbr, tx in duplicates.items()])
     return org_dict
 
 
-def associate_parents(tx, org_dict, typeOf):
-    def matching_org(org_dict, key):
-        if key in org_dict:
-            return org_dict[key]
+def add_records_to_org_dict(org_dict, records):
+    """
+    Iterate records and create organisation entries for the service
+    and/or transaction.
+    """
 
-    def has_attr_for_type(tx, typeOf, attr_key):
-        return tx[typeOf][attr_key]
+    duplicate_transactions = []
+    duplicate_services = []
+    for record in records:
+        if transaction_name(record) in org_dict:
+            duplicate_transactions.append(transaction_name(record))
+        if service_name(record) is not None and\
+                service_name(record) in org_dict:
+            duplicate_services.append(service_name(record))
 
-    def has_name_for_type(tx, typeOf):
-        return has_attr_for_type(tx, typeOf, 'name')
+        if service_name(record) is not None:
+            org_dict[service_name(record)] = {
+                'name': service_name(record),
+                'slug': service_slug(record),
+                'abbreviation': None,
+                'typeOf': 'service',
+                'parents': []
+            }
+            org_dict[transaction_name(record)] = {
+                'name': transaction_name(record),
+                'slug': transaction_slug(record),
+                'abbreviation': None,
+                'typeOf': 'transaction',
+                'parents': [service_name(record)]
+            }
+        else:
+            org_dict[transaction_name(record)] = {
+                'name': transaction_name(record),
+                'slug': transaction_slug(record),
+                'abbreviation': None,
+                'typeOf': 'service',
+                'parents': []
+            }
 
-    def has_abbreviation_for_type(tx, typeOf):
-        return has_attr_for_type(tx, typeOf, 'abbr')
-    parent_by_name = matching_org(org_dict, slugify(tx[typeOf]['name']))
-    parent_by_abbreviation = matching_org(
-        org_dict, slugify(tx[typeOf]['abbr']))
-    if has_abbreviation_for_type(tx, typeOf) and parent_by_abbreviation:
-        parent = parent_by_abbreviation
-        parent = add_type_to_parent(parent, typeOf)
-        parent['slug'] = tx[typeOf]['slug']
-        parent_identifier = slugify(parent['abbreviation'])
-    elif has_name_for_type(tx, typeOf) and parent_by_name:
+    WHAT_HAPPENED.this_happened('duplicate_services', duplicate_services)
+    WHAT_HAPPENED.this_happened('duplicate_transactions',
+                                duplicate_transactions)
+    return org_dict
+
+
+def add_parents_to_records(org_dict, records):
+    """
+    Add parent organisation(s) to the spreadsheet records.
+    """
+
+    successfully_linked = []
+    failed_to_link = []
+
+    for record in records:
+        # Assumes departments are always parents of agencies.
+        success = False
+        if record.get('agency'):
+            success, link = associate_record_parents(
+                record, org_dict, 'agency')
+        elif record.get('department'):
+            success, link = associate_record_parents(
+                record, org_dict, 'department')
+        else:
+            print(
+                "Failed on record with no department or agency: {}"
+                .format(record['name']))
+        if success:
+            successfully_linked.append(link)
+        else:
+            failed_to_link.append(link)
+
+    WHAT_HAPPENED.this_happened('link_to_parents_found', successfully_linked)
+    WHAT_HAPPENED.this_happened('link_to_parents_not_found', failed_to_link)
+    return org_dict
+
+
+def associate_record_parents(record, org_dict, typeOf):
+    """
+    Associate parent dept/agencies to a record using the org_dict. typeOf
+    is 'department' or 'agency'.
+    """
+
+    parent_by_abbr = org_dict.get(record[typeOf]['abbr'].lower())
+    parent_by_name = org_dict.get(record[typeOf]['name'].lower())
+
+    if record[typeOf].get('abbr') and parent_by_abbr:
+        parent = parent_by_abbr
+        parent['typeOf'] = typeOf
+        parent['slug'] = record[typeOf]['slug']
+        parent_identifier = parent['abbreviation'].lower()
+    elif record[typeOf].get('name') and parent_by_name:
         parent = parent_by_name
-        parent = add_type_to_parent(parent, typeOf)
-        parent['slug'] = tx[typeOf]['slug']
-        parent_identifier = slugify(parent['name'])
+        parent['typeOf'] = typeOf
+        parent['slug'] = record[typeOf]['slug']
+        parent_identifier = parent['name'].lower()
     else:
-        return (False, (tx[typeOf], None))
+        return False, (record[typeOf], None)
 
-    org_dict[service_name(tx)]['parents'].append(
-        parent_identifier)
-    return (True, (tx[typeOf], parent))
+    # Add the dept/agency as the parent of the record (service or transaction).
+    if service_name(record) is not None:
+        org_dict[service_name(record)]['parents'].append(
+            parent_identifier)
+    else:
+        org_dict[transaction_name(record)]['parents'].append(
+            parent_identifier)
+    return True, (record[typeOf], parent)
 
 
-def create_nodes(nodes_dict):
+def create_nodes(org_dict):
     created_nodes = []
-    abbr_or_name_to_uuid = {}
-    for key_or_abbr, node_dict in nodes_dict.items():
+    key_to_uuid = {}
+    for key, node_dict in org_dict.items():
         node = get_or_create_node(node_dict)
         if node:
             if node.abbreviation:
-                abbr_or_name_to_uuid[node.abbreviation] = node.id
+                key_to_uuid[node.abbreviation] = node.id
             if node.name:
-                abbr_or_name_to_uuid[node.name] = node.id
+                key_to_uuid[node.name] = node.id
             created_nodes.append((node, node_dict['parents']))
-    save_parent_associations(created_nodes, abbr_or_name_to_uuid)
+    save_parent_associations(created_nodes, key_to_uuid)
 
 
-def save_parent_associations(created_nodes, abbr_or_name_to_uuid):
+def get_or_create_node(node_dict):
+    node_type, _ = NodeType.objects.get_or_create(name=node_dict['typeOf'])
+    try:
+        defaults = {
+            'typeOf': node_type
+        }
+        if node_dict.get('abbreviation'):
+            defaults['abbreviation'] = node_dict['abbreviation'].lower()
+        node, created = Node.objects.get_or_create(
+            name=node_dict['name'],
+            slug=node_dict['slug'],
+            defaults=defaults
+        )
+
+        if created:
+            WHAT_HAPPENED.add_to_what_happened(
+                'created_nodes', [node_dict])
+        elif(node_dict not in WHAT_HAPPENED.get('created_nodes')
+             and node_dict not in WHAT_HAPPENED.get('existing_nodes')):
+            WHAT_HAPPENED.add_to_what_happened('existing_nodes', [node_dict])
+
+    except DataError as e:
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_data_error_nodes', [e])
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_data_error_nodes_msgs', [e.message])
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_to_find_or_create_nodes', [node_dict])
+        return False
+    except IntegrityError as e:
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_existing_nodes_diff_details', [e])
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_existing_nodes_diff_details_msgs', [e.message])
+        WHAT_HAPPENED.add_to_what_happened(
+            'unable_to_find_or_create_nodes', [node_dict])
+        return False
+    return node
+
+
+def save_parent_associations(created_nodes, key_to_uuid):
     total_parents = []
     total_parents_found = []
     for node, parents in created_nodes:
         parent_uuids = []
         for parent in parents:
-            if parent in abbr_or_name_to_uuid:
-                parent_uuids.append(abbr_or_name_to_uuid[parent])
+            if parent in key_to_uuid:
+                # Prevent a node being its own parent.
+                if node.id == key_to_uuid[parent]:
+                    print("A node tried to be its own parent: {}".format(node))
+                else:
+                    parent_uuids.append(key_to_uuid[parent])
         total_parents += parents
         total_parents_found += parent_uuids
         if parent_uuids:
@@ -350,92 +374,56 @@ def save_parent_associations(created_nodes, abbr_or_name_to_uuid):
     WHAT_HAPPENED.this_happened('total_parents', total_parents)
 
 
-def get_or_create_node(node_dict):
-    node_type, _ = NodeType.objects.get_or_create(name=node_dict['typeOf'])
+def associate_with_dashboard(record):
     try:
-        defaults = {
-            'typeOf': node_type
-        }
-        if slugify(node_dict['abbreviation']):
-            defaults['abbreviation'] = slugify(node_dict['abbreviation'])
-        node, created = Node.objects.get_or_create(
-            name=node_dict['name'],
-            defaults=defaults
-        )
+        transaction = Node.objects.get(name=record['name'])
+    except DataError as e:
+        print("Couldn't get org with name {}, error was {}. ",
+              "Trying again with {}".
+              format(transaction_name(record).encode('utf-8'),
+                     e.message, transaction_name_latin1(record)))
+        transaction = Node.objects.get(name=record['name']).first()
 
-        if created:
-            WHAT_HAPPENED.add_to_what_happened(
-                'created_nodes', [node_dict])
-        elif(node_dict not in WHAT_HAPPENED.get('created_nodes')
-             and node_dict not in WHAT_HAPPENED.get('existing_nodes')):
-            WHAT_HAPPENED.add_to_what_happened(
-                'existing_nodes', [node_dict])
-    # integrity error are existing with slightly different stuff.
-    # data errors are too long field
-    except(django.db.utils.DataError, django.db.utils.IntegrityError) as e:
-        if e.__class__ == django.db.utils.IntegrityError:
-            WHAT_HAPPENED.add_to_what_happened(
-                'unable_existing_nodes_diff_details', [e])
-            WHAT_HAPPENED.add_to_what_happened(
-                'unable_existing_nodes_diff_details_msgs', [e.message])
-        elif e.__class__ == django.db.utils.DataError:
-            WHAT_HAPPENED.add_to_what_happened(
-                'unable_data_error_nodes', [e])
-            WHAT_HAPPENED.add_to_what_happened(
-                'unable_data_error_nodes_msgs', [e.message])
-        WHAT_HAPPENED.add_to_what_happened(
-            'unable_to_find_or_create_nodes', [node_dict])
-        return False
-    return node
-
-
-def associate_with_dashboard(transaction_dict):
-    try:
-        transaction = Node.objects.filter(
-            name=transaction_name(transaction_dict)).first()
-    except django.db.utils.DataError as e:
-        print("Couldn't save utf-8 decoded string {},"
-              "  error was {}. Trying again with {}.".format(
-                  transaction_name(transaction_dict).encode(
-                      'utf-8'),
-                  e.message,
-                  transaction_name_latin1(transaction_dict)))
-        transaction = Node.objects.filter(
-            name=transaction_name_latin1(transaction_dict)).first()
     dashboards = []
-    if transaction:
-        # switch to get if not published
-        dashboards = Dashboard.objects.by_tx_id(transaction_dict['tx_id'])
+    if transaction is not None:
+        dashboards = Dashboard.objects.by_tx_id(record['tx_id'])
         for dashboard in dashboards:
-            # do this even if there is an existing dashboard
             existing_org = dashboard.organisation
             dashboard.organisation = transaction
+            # Denormalise so we can query easily later.
+            for node in transaction.get_ancestors():
+                if node.typeOf.name == 'department':
+                    dashboard.department_cache = node
+                elif node.typeOf.name == 'agency':
+                    dashboard.agency_cache = node
+                elif node.typeOf.name == 'service':
+                    dashboard.service_cache = node
+                elif node.typeOf.name == 'transaction':
+                    dashboard.transaction_cache = node
             dashboard.save()
-            # but say if the ancestors do not contain the old one.
-            if(existing_org and existing_org not in
-               [org for org in dashboard.organisation.get_ancestors()]):
-                print("existing org {} for dashboard {}"
+
+            # Log if the new parents do not contain the dashboard's old
+            # organisation.
+            if existing_org and existing_org not in \
+               list(dashboard.organisation.get_ancestors()):
+                print("Existing org {} for dashboard {}"
                       "not in new ancestors {}".format(
-                          existing_org.name,
-                          dashboard.title,
+                          existing_org.name, dashboard.title,
                           [org.name for org
                            in dashboard.organisation.get_ancestors()]))
-    return [dashboard for dashboard in dashboards]
-
-
-def slugify(string):
-    if string:
-        return string.lower()
-    else:
-        return string
+    return dashboards
 
 
 def service_name(tx):
-    return tx['service']['name'].encode('utf-8').decode('utf-8')
+    if tx.get('service'):
+        return tx['service']['name'].encode('utf-8').decode('utf-8')
+    return None
 
 
 def service_slug(tx):
-    return tx['service']['slug']
+    if tx.get('service'):
+        return tx['service']['slug']
+    return None
 
 
 def transaction_name(tx):
@@ -502,13 +490,10 @@ def report_what_happened(happened):
     for key, things in happened.items():
         print(key)
         print(len(things))
-        print('^')
     print('unable_existing_nodes_diff_details_msgs')
     print(len(set(happened['unable_existing_nodes_diff_details_msgs'])))
-    print('^')
     print('unable_data_error_nodes_msgs')
     print(len(set(happened['unable_data_error_nodes_msgs'])))
-    print('^')
 
     new_happened_counts = {}
     expected = True
@@ -522,7 +507,6 @@ def report_what_happened(happened):
         else:
             print("something happened we aren't tracking:")
             print(key)
-            print("^")
     if not expected:
         raise Exception("should have been {} but was {}".format(
             expected_happenings, new_happened_counts))
@@ -539,17 +523,14 @@ def report_what_happened(happened):
             len(set(happened['unable_data_error_nodes_msgs']))))
 
 
-def main():
+if __name__ == '__main__':
     try:
         username = os.environ['GOOGLE_USERNAME']
         password = os.environ['GOOGLE_PASSWORD']
     except KeyError:
         print("Please supply as environment variables:")
-        print("username (GOOGLE_USERNAME)")
-        print("password (GOOGLE_PASSWORD)")
+        print("GOOGLE_USERNAME")
+        print("GOOGLE_PASSWORD")
         sys.exit(1)
     happened = load_organisations(username, password)
     report_what_happened(happened)
-
-if __name__ == '__main__':
-    main()

@@ -126,6 +126,7 @@ class NodeView(ResourceView):
             'id': str(model.id),
             'type': NodeTypeView.serialize(model.typeOf),
             'name': model.name,
+            'slug': model.slug,
         }
 
         if model.abbreviation is not None:
