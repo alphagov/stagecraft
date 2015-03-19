@@ -13,4 +13,4 @@ from stagecraft.libs.authorization.http import permission_required
 @never_cache
 def invalidate(user, request, uid):
     OAuthUser.objects.purge_user(uid)
-    return HttpResponse('ok')
+    return HttpResponse(status=204)

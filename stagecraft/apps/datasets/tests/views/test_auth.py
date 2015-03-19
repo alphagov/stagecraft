@@ -36,7 +36,7 @@ class OAuthInvalidateTestCase(TestCase):
             resp = self.client.post(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
-            assert_that(resp.status_code, equal_to(200))
+            assert_that(resp.status_code, equal_to(204))
             assert_that(
                 OAuthUser.objects.get_by_access_token('the-token'),
                 is_(None))
@@ -47,7 +47,7 @@ class OAuthInvalidateTestCase(TestCase):
             resp = self.client.put(
                 '/auth/gds/api/users/the-uid',
                 HTTP_AUTHORIZATION='Bearer correct-token')
-            assert_that(resp.status_code, equal_to(200))
+            assert_that(resp.status_code, equal_to(204))
             assert_that(
                 OAuthUser.objects.get_by_access_token('the-token'),
                 is_(None))
@@ -68,7 +68,7 @@ class OAuthInvalidateTestCase(TestCase):
             resp = self.client.post(
                 '/auth/gds/api/users/the-uid/reauth',
                 HTTP_AUTHORIZATION='Bearer correct-token')
-            assert_that(resp.status_code, equal_to(200))
+            assert_that(resp.status_code, equal_to(204))
 
     def test_subsequent_requests_are_unauthorized(self):
         self._create_oauth_user()
