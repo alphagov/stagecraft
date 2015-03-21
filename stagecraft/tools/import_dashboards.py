@@ -99,8 +99,9 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
     else:
         dashboard.save()
 
-    dataset = get_dataset()
-    import_modules(dashboard, dataset, record, summaries)
+    if dashboard.pk is None:
+        dataset = get_dataset()
+        import_modules(dashboard, dataset, record, summaries)
 
 
 def determine_modules_for_dashboard(summaries, tx_id):
