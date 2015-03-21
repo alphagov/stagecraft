@@ -61,8 +61,6 @@ def set_dashboard_attributes(dashboard, record, publish):
         dashboard.slug = record['tx_id']
     if record.get('description'):
         dashboard.description = record['description']
-    if record.get('description_extra'):
-        dashboard.description_extra = record['description_extra']
     if record.get('costs'):
         dashboard.costs = record['costs']
     if record.get('other_notes'):
@@ -73,6 +71,7 @@ def set_dashboard_attributes(dashboard, record, publish):
         dashboard.business_model = record['business_model']
     # Set type to high volume to distinguish from manually built dashboards.
     dashboard.dashboard_type = 'high-volume-transaction'
+    dashboard.description_extra = ''
 
     if publish:
         dashboard.published = True
