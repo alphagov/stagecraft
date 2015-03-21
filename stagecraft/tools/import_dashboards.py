@@ -32,8 +32,8 @@ def import_dashboards(summaries, update_all=False,
         'names_service_slug': 10,
         'names_transaction_name': 11,
         'names_transaction_slug': 12,
-        'names_notes': 17,
-        'names_other_notes': 18,
+        'names_notes': 18,
+        'names_other_notes': 17,
         'names_tx_id': 19,
     })
     records = loader.load(username, password)
