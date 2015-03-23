@@ -15,10 +15,8 @@ from django.core.wsgi import get_wsgi_application
 import gc
 import logging
 import sys
-from stagecraft.libs.patches.db import patch
 
 logger = logging.getLogger('gunicorn.error')
-patch()
 
 
 class writer(object):
