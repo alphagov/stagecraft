@@ -124,17 +124,17 @@ class Dashboard(models.Model):
         self.service_cache = None
         self.transaction_cache = None
 
-        for n in node.get_ancestors(include_self=True):
-            if n.typeOf.name == 'department':
-                self.department_cache = n
-            elif n.typeOf.name == 'agency':
-                self.agency_cache = n
-            elif n.typeOf.name == 'service':
-                self.service_cache = n
-            elif n.typeOf.name == 'transaction':
-                self.transaction_cache = n
-
         self._organisation = node
+        if node is not None:
+            for n in node.get_ancestors(include_self=True):
+                if n.typeOf.name == 'department':
+                    self.department_cache = n
+                elif n.typeOf.name == 'agency':
+                    self.agency_cache = n
+                elif n.typeOf.name == 'service':
+                    self.service_cache = n
+                elif n.typeOf.name == 'transaction':
+                    self.transaction_cache = n
 
     # Denormalise org tree for querying ease.
     department_cache = models.ForeignKey(
