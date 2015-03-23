@@ -102,8 +102,9 @@ def govuk_graph(entries):
 
     for entry in entries:
         node_slug = entry['details']['slug']
+        node_id = 'govuk-{}'.format(node_slug).lower()
         nodes.add(make_node(
-            node_slug,
+            node_id,
             entry['title'],
             node_slug,
             entry['details']['abbreviation'],
@@ -111,9 +112,10 @@ def govuk_graph(entries):
         ))
 
         for child in entry['child_organisations']:
+            child_id = 'govuk-{}'.format(child['id'].split('/')[-1]).lower()
             edges.add((
-                node_slug,
-                child['id'].split('/')[-1],
+                node_id,
+                child_id,
             ))
 
     return nodes, edges
@@ -148,49 +150,12 @@ def govuk_node_for_record(record, by_title, by_abbr):
     return node
 
 
-# There are when we have an agency prentending to be a service
-BAD_RECORDS = [
-    'bis-export-control-organisation-spire-electronic-licensing-system',
-    'bis-applications-for-space-for-all-community-sponsorship-awards',
-    'decc-licence-applications',
-    'decc-mining-reports',
-    'decc-permits',
-    'decc-statutory-development-plan-consultation',
-    'decc-statutory-planning-application-consultation',
-    'dcms-apply-for-lottery-funding',
-    'dh-application-withdrawal',
-    'dh-cancellation-by-providers',
-    'dh-cancellations-by-registered-managers',
-    'dh-change-or-remove-suspension',
-    'dh-changes-to-registration-for-providers',
-    'dh-changes-to-registration-for-registered-managers',
-    'dh-notifications',
-    'dh-registration-for-registered-managers',
-    'dh-registrations-for-providers',
-    'dcms-english-heritage-commercial-income-generation-activities',
-    'dcms-english-heritage-grant-applications',
-    'mod-digital-sales-tool',
-    'dh-body-donation-packs-sent-via-post',
-    'dh-corrective-preventative-action-capa',
-    'dh-inspections',
-    'dh-licence-variations',
-    'dh-licensing-applications',
-    'dh-preparation-process-dossiers-ppds',
-    'dh-self-service-online-portal',
-]
-
-
 def transactions_graph(records, by_title, by_abbr):
     nodes = set()
     edges = set()
     node_to_transactions = defaultdict(list)
 
     for record in records:
-        if record['tx_id'] in BAD_RECORDS:
-            print "can't do {} as it is down as a service and a agency"\
-                .format(record['tx_id'])
-            continue
-
         parent_node = govuk_node_for_record(record, by_title, by_abbr)
 
         if 'service' not in record:
@@ -198,19 +163,21 @@ def transactions_graph(records, by_title, by_abbr):
         else:
             service = record['service']
             service_slug = service['slug']
+            service_id = 'service-{}'.format(service_slug).lower()
 
             nodes.add(make_node(
-                service_slug,
+                service_id,
                 service['name'],
-                service['slug'],
+                service_slug,
                 None,
                 'service',
             ))
-            edges.add((parent_node[0], service_slug))
+            edges.add((parent_node[0], service_id))
 
             if 'transaction' in record:
                 transaction = record['transaction']
-                transaction_id = service_slug + '-' + transaction['slug']
+                transaction_id = 'transaction-{}-{}'.format(
+                    service_slug, transaction['slug']).lower()
 
                 nodes.add(make_node(
                     transaction_id,
@@ -219,10 +186,10 @@ def transactions_graph(records, by_title, by_abbr):
                     None,
                     'transaction',
                 ))
-                edges.add((service_slug, transaction_id))
+                edges.add((service_id, transaction_id))
                 node_to_transactions[transaction_id].append(record['tx_id'])
             else:
-                node_to_transactions[service_slug].append(record['tx_id'])
+                node_to_transactions[service_id].append(record['tx_id'])
 
     return nodes, edges, node_to_transactions
 
@@ -290,7 +257,7 @@ def create_edge(parent_id, child_id):
     cursor = connection.cursor()
     cursor.execute(
         'INSERT INTO organisation_node_parents(from_node_id, to_node_id) VALUES(%s,%s);',  # noqa
-        [parent_id, child_id]
+        [child_id, parent_id]
     )
 
 
@@ -384,10 +351,15 @@ if __name__ == '__main__':
         print("GOOGLE_PASSWORD")
         sys.exit(1)
 
+    print 'Loading organisations'
     nodes, edges, nodes_to_transactions = load_organisations(
         username, password)
+    print 'Clearing organisations'
     past_relations = clear_organisation_relations()
+    print 'Creating nodes'
     nodes_to_db = create_nodes(nodes, edges, node_types())
+    print 'Linking transactions'
     dashboards_linked = link_transactions(nodes_to_transactions, nodes_to_db)
+    print 'Linking outstanding dashboards'
     link_remaining(
         past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))
