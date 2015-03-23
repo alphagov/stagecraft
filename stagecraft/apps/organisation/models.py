@@ -53,14 +53,14 @@ class Node(models.Model):
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     name = models.CharField(max_length=256, unique=True)
     abbreviation = models.CharField(
-        max_length=50, unique=True,
+        max_length=50,
         null=True, blank=True)
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
         message='Slug can only contain lower case letters, numbers or hyphens'
     )
     slug = models.CharField(
-        max_length=90,
+        max_length=150,
         validators=[
             slug_validator
         ],
