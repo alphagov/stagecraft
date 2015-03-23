@@ -126,7 +126,8 @@ def index_nodes(nodes, field_index):
         value = node[field_index]
 
         if value in indexed:
-            print 'Overwriting node in index. [node[{}]: {}]'.format(field_index, value)
+            print 'Overwriting node in index. [node[{}]: {}]'\
+                .format(field_index, value)
 
         if value is not None and value != '':
             indexed[value.lower()] = node
@@ -135,7 +136,8 @@ def index_nodes(nodes, field_index):
 
 
 def govuk_node_for_record(record, by_title, by_abbr):
-    parent_org = record['agency'] if 'agency' in record else record['department']
+    parent_org = record[
+        'agency'] if 'agency' in record else record['department']
     abbr = parent_org['abbr'].lower()
     title = parent_org['name'].lower()
 
@@ -185,7 +187,8 @@ def transactions_graph(records, by_title, by_abbr):
 
     for record in records:
         if record['tx_id'] in BAD_RECORDS:
-            print "can't do {} as it is down as a service and a agency".format(record['tx_id'])
+            print "can't do {} as it is down as a service and a agency"\
+                .format(record['tx_id'])
             continue
 
         parent_node = govuk_node_for_record(record, by_title, by_abbr)
@@ -231,7 +234,8 @@ def load_organisations(username, password):
     by_title = index_nodes(govuk_nodes, 1)
     by_abbr = index_nodes(govuk_nodes, 3)
 
-    tx_nodes, tx_edges, node_to_transactions = transactions_graph(records, by_title, by_abbr)
+    tx_nodes, tx_edges, node_to_transactions = transactions_graph(
+        records, by_title, by_abbr)
 
     nodes = govuk_nodes | tx_nodes
     edges = govuk_edges | tx_edges
@@ -243,7 +247,9 @@ def load_organisations(username, password):
     print govuk_edges & tx_edges
 
     print 'Nodes with multiple tx dashboards'
-    pprint([(node_id, transactions) for node_id, transactions in node_to_transactions.items() if len(transactions) > 1], width=1)
+    pprint([(node_id, transactions) for node_id,
+            transactions in node_to_transactions.items()
+            if len(transactions) > 1], width=1)
 
     return nodes, edges, node_to_transactions
 
@@ -283,7 +289,7 @@ def node_types():
 def create_edge(parent_id, child_id):
     cursor = connection.cursor()
     cursor.execute(
-        'INSERT INTO organisation_node_parents(from_node_id, to_node_id) VALUES(%s,%s);',
+        'INSERT INTO organisation_node_parents(from_node_id, to_node_id) VALUES(%s,%s);',  # noqa
         [parent_id, child_id]
     )
 
@@ -296,8 +302,10 @@ def create_nodes(nodes, edges, type_to_NodeType):
             print 'slug too long "{}"'.format(slug)
             slug = slug[:150]
         db_node = Node(
-            name=node[1].decode('utf-8').encode('latin1', 'ignore').decode('latin1'),
-            slug=slug.decode('utf-8').encode('latin1', 'ignore').decode('latin1'),
+            name=node[1].decode(
+                'utf-8').encode('latin1', 'ignore').decode('latin1'),
+            slug=slug.decode(
+                'utf-8').encode('latin1', 'ignore').decode('latin1'),
             abbreviation=node[3],
             typeOf=type_to_NodeType[node[4]],
         )
@@ -369,8 +377,10 @@ if __name__ == '__main__':
         print("GOOGLE_PASSWORD")
         sys.exit(1)
 
-    nodes, edges, nodes_to_transactions = load_organisations(username, password)
+    nodes, edges, nodes_to_transactions = load_organisations(
+        username, password)
     past_relations = clear_organisation_relations()
     nodes_to_db = create_nodes(nodes, edges, node_types())
     dashboards_linked = link_transactions(nodes_to_transactions, nodes_to_db)
-    link_remaining(past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))
+    link_remaining(
+        past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))

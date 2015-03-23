@@ -110,7 +110,8 @@ class Dashboard(models.Model):
     )
     tagline = models.CharField(max_length=400, blank=True)
     _organisation = models.ForeignKey(
-        'organisation.Node', blank=True, null=True, db_column='organisation_id')
+        'organisation.Node', blank=True, null=True,
+        db_column='organisation_id')
 
     @property
     def organisation(self):
