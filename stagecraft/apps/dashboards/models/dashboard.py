@@ -109,8 +109,31 @@ class Dashboard(models.Model):
         default=straplines[0]
     )
     tagline = models.CharField(max_length=400, blank=True)
-    organisation = models.ForeignKey(
-        'organisation.Node', blank=True, null=True)
+    _organisation = models.ForeignKey(
+        'organisation.Node', blank=True, null=True, db_column='organisation_id')
+
+    @property
+    def organisation(self):
+        return self._organisation
+
+    @organisation.setter
+    def organisation(self, node):
+        self.department_cache = None
+        self.agency_cache = None
+        self.service_cache = None
+        self.transaction_cache = None
+
+        for n in node.get_ancestors(include_self=True):
+            if n.typeOf.name == 'department':
+                self.department_cache = n
+            elif n.typeOf.name == 'agency':
+                self.agency_cache = n
+            elif n.typeOf.name == 'service':
+                self.service_cache = n
+            elif n.typeOf.name == 'transaction':
+                self.transaction_cache = n
+
+        self._organisation = node
 
     # Denormalise org tree for querying ease.
     department_cache = models.ForeignKey(
