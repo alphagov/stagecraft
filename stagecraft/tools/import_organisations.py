@@ -128,8 +128,8 @@ def index_nodes(nodes, field_index):
         value = node[field_index]
 
         if value in indexed:
-            print 'Overwriting node in index. [node[{}]: {}]'\
-                .format(field_index, value)
+            print('Overwriting node in index. [node[{}]: {}]'.format(
+                field_index, value))
 
         if value is not None and value != '':
             indexed[value.lower()] = node
@@ -159,7 +159,8 @@ def transactions_graph(records, by_title, by_abbr):
         parent_node = govuk_node_for_record(record, by_title, by_abbr)
 
         if 'service' not in record:
-            print "'{}' doesn't have a service attached".format(record['name'])
+            print("'{}' doesn't have a service attached".format(
+                record['name']))
         else:
             service = record['service']
             service_slug = service['slug']
@@ -207,13 +208,13 @@ def load_organisations(username, password):
     nodes = govuk_nodes | tx_nodes
     edges = govuk_edges | tx_edges
 
-    print 'Duplicated nodes'
-    print govuk_nodes & tx_nodes
+    print('Duplicated nodes')
+    print(govuk_nodes & tx_nodes)
 
-    print 'Duplicated edges'
-    print govuk_edges & tx_edges
+    print('Duplicated edges')
+    print(govuk_edges & tx_edges)
 
-    print 'Nodes with multiple tx dashboards'
+    print('Nodes with multiple tx dashboards')
     pprint([(node_id, transactions) for node_id,
             transactions in node_to_transactions.items()
             if len(transactions) > 1], width=1)
@@ -266,7 +267,7 @@ def create_nodes(nodes, edges, type_to_NodeType):
     for node in nodes:
         slug = node[2]
         if len(slug) > 150:
-            print 'slug too long "{}"'.format(slug)
+            print('slug too long "{}"'.format(slug))
             slug = slug[:150]
         db_node = Node(
             name=node[1].decode(
@@ -285,8 +286,8 @@ def create_nodes(nodes, edges, type_to_NodeType):
 
         if parent_node and child_node:
             if parent_node.id == child_node.id:
-                print "Skipping self-referencing edge: {}"\
-                    .format(parent_node.slug)
+                print("Skipping self-referencing edge: {}".format(
+                    parent_node.slug))
             else:
                 create_edge(parent_node.id, child_node.id)
 
@@ -310,7 +311,7 @@ def link_transactions(nodes_to_transactions, nodes_to_db):
             except Dashboard.DoesNotExist:
                 dashboards = list(Dashboard.objects.by_tx_id(transaction))
                 if len(dashboards) == 0:
-                    print 'Ahh no dashboards for {}'.format(transaction)
+                    print('Ahh no dashboards for {}'.format(transaction))
                 else:
                     for dashboard in dashboards:
                         dashboard.organisation = db_node
@@ -325,11 +326,11 @@ def link_remaining(past_relations, dashboards_linked, nodes_to_db, by_abbr):
         try:
             dashboard = Dashboard.objects.get(id=id)
         except Dashboard.DoesNotExist:
-            print 'Lost a dashboard: {}'.format(id)
+            print('Lost a dashboard: {}'.format(id))
         if id not in dashboards_linked:
             if 'abbr' not in node or node['abbr'] is None:
-                print 'could not find an org for {}'.format(dashboard.slug)
-                print node
+                print('could not find an org for {}'.format(dashboard.slug))
+                print(node)
             else:
                 new_node = by_abbr.get(node['abbr'].lower(), None)
                 if new_node:
@@ -337,8 +338,9 @@ def link_remaining(past_relations, dashboards_linked, nodes_to_db, by_abbr):
                     dashboard.organisation = db_node
                     dashboard.save()
                 else:
-                    print 'could not find an org for {}'.format(dashboard.slug)
-                    print node
+                    print('could not find an org for {}'.format(
+                        dashboard.slug))
+                    print(node)
 
 
 if __name__ == '__main__':
@@ -351,15 +353,15 @@ if __name__ == '__main__':
         print("GOOGLE_PASSWORD")
         sys.exit(1)
 
-    print 'Loading organisations'
+    print('Loading organisations')
     nodes, edges, nodes_to_transactions = load_organisations(
         username, password)
-    print 'Clearing organisations'
+    print('Clearing organisations')
     past_relations = clear_organisation_relations()
-    print 'Creating nodes'
+    print('Creating nodes')
     nodes_to_db = create_nodes(nodes, edges, node_types())
-    print 'Linking transactions'
+    print('Linking transactions')
     dashboards_linked = link_transactions(nodes_to_transactions, nodes_to_db)
-    print 'Linking outstanding dashboards'
+    print('Linking outstanding dashboards')
     link_remaining(
         past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))
