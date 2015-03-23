@@ -48,10 +48,13 @@ class NodeType(models.Model):
 
 
 class Node(models.Model):
+    class Meta:
+        unique_together = ('name', 'slug', 'typeOf')
+
     objects = NodeManager()
 
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=256)
     abbreviation = models.CharField(
         max_length=50,
         null=True, blank=True)
