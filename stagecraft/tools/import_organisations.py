@@ -317,7 +317,11 @@ def create_nodes(nodes, edges, type_to_NodeType):
         child_node = nodes_to_db.get(edge[1], None)
 
         if parent_node and child_node:
-            create_edge(parent_node.id, child_node.id)
+            if parent_node.id == child_node.id:
+                print "Skipping self-referencing edge: {}"\
+                    .format(parent_node.slug)
+            else:
+                create_edge(parent_node.id, child_node.id)
 
     return nodes_to_db
 
@@ -351,7 +355,10 @@ def link_transactions(nodes_to_transactions, nodes_to_db):
 
 def link_remaining(past_relations, dashboards_linked, nodes_to_db, by_abbr):
     for id, node in past_relations.items():
-        dashboard = Dashboard.objects.get(id=id)
+        try:
+            dashboard = Dashboard.objects.get(id=id)
+        except Dashboard.DoesNotExist:
+            print 'Lost a dashboard: {}'.format(id)
         if id not in dashboards_linked:
             if 'abbr' not in node or node['abbr'] is None:
                 print 'could not find an org for {}'.format(dashboard.slug)
