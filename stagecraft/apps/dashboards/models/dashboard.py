@@ -4,8 +4,6 @@ from uuidfield import UUIDField
 
 from stagecraft.apps.organisation.views import NodeView
 
-from stagecraft.libs.timing.timer import timeit
-
 
 def list_to_tuple_pairs(elements):
     return tuple([(element, element) for element in elements])
@@ -176,14 +174,12 @@ class Dashboard(models.Model):
             base_dict[field.replace('_', '-')] = getattr(self, field)
         return base_dict
 
-    @timeit
     def list_base_dict(self):
         base_dict = {}
         for field in self.list_base_fields:
             base_dict[field.replace('_', '-')] = getattr(self, field)
         return base_dict
 
-    @timeit
     def related_pages_dict(self):
         related_pages_dict = {}
         transaction_link = self.get_transaction_link()
@@ -200,7 +196,6 @@ class Dashboard(models.Model):
         )
         return related_pages_dict
 
-    @timeit
     def spotlightify(self, request_slug=None):
         base_dict = self.spotlightify_base_dict()
         base_dict['modules'] = self.spotlightify_modules()
@@ -235,16 +230,13 @@ class Dashboard(models.Model):
         return [m.serialize()
                 for m in self.module_set.filter(parent=None).order_by('order')]
 
-    @timeit
     def spotlightify_modules(self):
         return [m.spotlightify() for m in
                 self.module_set.filter(parent=None).order_by('order')]
 
-    @timeit
     def spotlightify_agency(self):
         return self.agency().spotlightify()
 
-    @timeit
     def spotlightify_department(self):
         return self.department().spotlightify()
 
@@ -349,7 +341,6 @@ class Link(models.Model):
         app_label = 'dashboards'
 
 
-@timeit
 def get_modules_or_tabs(request_slug, dashboard_json):
     # first part will always be empty as we never end the dashboard slug with
     # a slash
