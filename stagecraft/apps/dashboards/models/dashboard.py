@@ -237,11 +237,14 @@ class Dashboard(models.Model):
         field_names = [field.name for field, _ in fields]
 
         for field in field_names:
-            value = getattr(self, field)
-            serialized[field] = value
+            if not (field.startswith('_') or field.endswith('_cache')):
+                value = getattr(self, field)
+                serialized[field] = value
 
         if self.organisation:
             serialized['organisation'] = NodeView.serialize(self.organisation)
+        else:
+            serialized['organisation'] = None
 
         serialized['links'] = [link.serialize()
                                for link in self.link_set.all()]
