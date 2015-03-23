@@ -57,6 +57,8 @@ class Dashboard(models.Model):
         '',
         'Business',
         'Individuals',
+        'Business and individuals',
+        'Charity',
     ]
     business_models = [
         '',
@@ -89,7 +91,7 @@ class Dashboard(models.Model):
     costs = models.CharField(max_length=1500, blank=True)
     other_notes = models.CharField(max_length=1000, blank=True)
     customer_type = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=list_to_tuple_pairs(customer_types),
         default=customer_types[0],
         blank=True

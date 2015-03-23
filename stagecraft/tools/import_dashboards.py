@@ -32,8 +32,8 @@ def import_dashboards(summaries, update_all=False,
         'names_service_slug': 10,
         'names_transaction_name': 11,
         'names_transaction_slug': 12,
-        'names_notes': 17,
-        'names_other_notes': 18,
+        'names_notes': 18,
+        'names_other_notes': 17,
         'names_tx_id': 19,
     })
     records = loader.load(username, password)
@@ -61,8 +61,6 @@ def set_dashboard_attributes(dashboard, record, publish):
         dashboard.slug = record['tx_id']
     if record.get('description'):
         dashboard.description = record['description']
-    if record.get('description_extra'):
-        dashboard.description_extra = record['description_extra']
     if record.get('costs'):
         dashboard.costs = record['costs']
     if record.get('other_notes'):
@@ -73,6 +71,7 @@ def set_dashboard_attributes(dashboard, record, publish):
         dashboard.business_model = record['business_model']
     # Set type to high volume to distinguish from manually built dashboards.
     dashboard.dashboard_type = 'high-volume-transaction'
+    dashboard.description_extra = ''
 
     if publish:
         dashboard.published = True
@@ -88,7 +87,11 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
     try:
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
     except Dashboard.DoesNotExist:
-        dashboard = Dashboard()
+        dashboards = list(Dashboard.objects.by_tx_id(record['tx_id']))
+        if len(dashboards) > 0:
+            dashboard = dashboards[0]
+        else:
+            dashboard = Dashboard()
 
     dashboard = set_dashboard_attributes(dashboard, record, publish)
     if dry_run:
@@ -96,8 +99,9 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
     else:
         dashboard.save()
 
-    dataset = get_dataset()
-    import_modules(dashboard, dataset, record, summaries)
+    if dashboard.pk is None:
+        dataset = get_dataset()
+        import_modules(dashboard, dataset, record, summaries)
 
 
 def determine_modules_for_dashboard(summaries, tx_id):

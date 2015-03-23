@@ -206,8 +206,8 @@ class SpreadsheetMunger:
 
         if record.get('customer_type'):
             customer_type = self._replace_unicode(record['customer_type'])
-            if len(customer_type) > 20:
-                customer_type = customer_type[:20]
+            if len(customer_type) > 30:
+                customer_type = customer_type[:30]
             record['customer_type'] = customer_type
 
         if record.get('business_model'):
