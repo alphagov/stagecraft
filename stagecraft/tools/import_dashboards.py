@@ -94,14 +94,16 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
             dashboard = Dashboard()
 
     dashboard = set_dashboard_attributes(dashboard, record, publish)
+
+    if dashboard.pk is None or dashboard.module_set.count() == 0:
+        print('Updating modules on {}'.format(dashboard.slug))
+        dataset = get_dataset()
+        import_modules(dashboard, dataset, record, summaries)
+
     if dry_run:
         dashboard.full_clean()
     else:
         dashboard.save()
-
-    if dashboard.pk is None:
-        dataset = get_dataset()
-        import_modules(dashboard, dataset, record, summaries)
 
 
 def determine_modules_for_dashboard(summaries, tx_id):
