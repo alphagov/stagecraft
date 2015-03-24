@@ -44,7 +44,7 @@ def import_dashboards(summaries, update_all=False,
         if update_all or not record['high_volume']:
             loader.sanitise_record(record)
             try:
-                import_dashboard(record, summaries, dry_run, publish)
+                import_dashboard(record, summaries, dry_run, publish, update_all)
             except (DataError, ValidationError) as e:
                 print(e)
                 failed_dashboards.append(record['tx_id'])
@@ -82,7 +82,7 @@ def set_dashboard_attributes(dashboard, record, publish):
     return dashboard
 
 
-def import_dashboard(record, summaries, dry_run=True, publish=False):
+def import_dashboard(record, summaries, dry_run=True, publish=False, update_all=False):
 
     try:
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
@@ -95,7 +95,7 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
 
     dashboard = set_dashboard_attributes(dashboard, record, publish)
 
-    if dashboard.pk is None or dashboard.module_set.count() == 0:
+    if not update_all or dashboard.pk is None or dashboard.module_set.count() == 0:
         print('Updating modules on {}'.format(dashboard.slug))
         dataset = get_dataset()
         import_modules(dashboard, dataset, record, summaries)
