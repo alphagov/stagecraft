@@ -81,8 +81,8 @@ def set_dashboard_attributes(dashboard, record, publish):
     return dashboard
 
 
-def import_dashboard(record, summaries, dry_run=True, publish=False, update=False):
-
+def import_dashboard(record, summaries, dry_run=True, publish=False,
+                     update=False):
     try:
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
     except Dashboard.DoesNotExist:
