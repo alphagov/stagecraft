@@ -48,19 +48,22 @@ class NodeType(models.Model):
 
 
 class Node(models.Model):
+    class Meta:
+        unique_together = ('name', 'slug', 'typeOf')
+
     objects = NodeManager()
 
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=256)
     abbreviation = models.CharField(
-        max_length=50, unique=True,
+        max_length=50,
         null=True, blank=True)
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
         message='Slug can only contain lower case letters, numbers or hyphens'
     )
     slug = models.CharField(
-        max_length=90,
+        max_length=150,
         validators=[
             slug_validator
         ],

@@ -32,24 +32,6 @@ class NodeTestCase(TestCase):
         c = Node(name='xyz', typeOf=self.node_type)
         assert_raises(ValidationError, lambda: c.full_clean())
 
-    def test_name_must_be_unique(self):
-        a = Node.objects.create(name='abc', typeOf=self.node_type)
-        a.validate_unique()
-
-        b = Node(name='abc', typeOf=self.node_type)
-        assert_raises(ValidationError, lambda: b.validate_unique())
-
-    def test_abbreviation_must_be_unique(self):
-        a = Node.objects.create(
-            name='foo',
-            abbreviation='abc',
-            typeOf=self.node_type
-        )
-        a.validate_unique()
-
-        b = Node(name='bar', abbreviation='abc', typeOf=self.node_type)
-        assert_raises(ValidationError, lambda: b.validate_unique())
-
     def test_requires_typeof(self):
         assert_raises(IntegrityError, lambda: Node.objects.create(name='foo'))
 
