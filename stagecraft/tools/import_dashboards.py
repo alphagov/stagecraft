@@ -383,4 +383,4 @@ if __name__ == '__main__':
         sys.exit(1)
 
     import_dashboards(summaries, update, dry_run, publish)
-    print 'Finished'
+    print('Finished')
