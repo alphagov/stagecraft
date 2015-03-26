@@ -16,7 +16,7 @@ from stagecraft.apps.dashboards.models import ModuleType
 from stagecraft.apps.datasets.models import DataSet
 
 
-def import_dashboards(summaries, update_all=False,
+def import_dashboards(summaries, update=False,
                       dry_run=True, publish=False):
     try:
         username = os.environ['GOOGLE_USERNAME']
@@ -41,13 +41,12 @@ def import_dashboards(summaries, update_all=False,
 
     failed_dashboards = []
     for record in records:
-        if update_all or not record['high_volume']:
-            loader.sanitise_record(record)
-            try:
-                import_dashboard(record, summaries, dry_run, publish)
-            except (DataError, ValidationError) as e:
-                print(e)
-                failed_dashboards.append(record['tx_id'])
+        loader.sanitise_record(record)
+        try:
+            import_dashboard(record, summaries, dry_run, publish, update)
+        except (DataError, ValidationError) as e:
+            print(e)
+            failed_dashboards.append(record['tx_id'])
 
     if failed_dashboards:
         print('Failed dashboards: {}'.format(failed_dashboards))
@@ -82,8 +81,8 @@ def set_dashboard_attributes(dashboard, record, publish):
     return dashboard
 
 
-def import_dashboard(record, summaries, dry_run=True, publish=False):
-
+def import_dashboard(record, summaries, dry_run=True, publish=False,
+                     update=False):
     try:
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
     except Dashboard.DoesNotExist:
@@ -93,15 +92,18 @@ def import_dashboard(record, summaries, dry_run=True, publish=False):
         else:
             dashboard = Dashboard()
 
-    dashboard = set_dashboard_attributes(dashboard, record, publish)
+    if update or not record['high_volume']:
+        dashboard = set_dashboard_attributes(dashboard, record, publish)
+
+    if dashboard.pk is None or dashboard.module_set.count() == 0:
+        print('Updating modules on {}'.format(dashboard.slug))
+        dataset = get_dataset()
+        import_modules(dashboard, dataset, record, summaries)
+
     if dry_run:
         dashboard.full_clean()
     else:
         dashboard.save()
-
-    if dashboard.pk is None:
-        dataset = get_dataset()
-        import_modules(dashboard, dataset, record, summaries)
 
 
 def determine_modules_for_dashboard(summaries, tx_id):
@@ -348,8 +350,8 @@ def import_dtu_module(record, dashboard, dataset):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--all",
-                        help="update all (not just low volume) dashboards",
+    parser.add_argument("--update",
+                        help="update dasbboard attributes",
                         action="store_true")
     parser.add_argument("--commit",
                         help="save changes to database",
@@ -358,11 +360,11 @@ if __name__ == '__main__':
                         help="publish all dashboards",
                         action="store_true")
     args = parser.parse_args()
-    if args.all:
-        print("Updating all dashboards")
-        update_all = True
+    if args.update:
+        print("Updating all dashboard attributes")
+        update = True
     else:
-        update_all = False
+        update = False
     if args.commit:
         print("Committing changes")
         dry_run = False
@@ -380,4 +382,5 @@ if __name__ == '__main__':
         print("Please set SUMMARIES_URL to the endpoint for transactions data")
         sys.exit(1)
 
-    import_dashboards(summaries, update_all, dry_run, publish)
+    import_dashboards(summaries, update, dry_run, publish)
+    print('Finished')
