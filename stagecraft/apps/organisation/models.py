@@ -48,6 +48,7 @@ class NodeType(models.Model):
 
 
 class Node(models.Model):
+
     class Meta:
         unique_together = ('name', 'slug', 'typeOf')
 
@@ -85,4 +86,6 @@ class Node(models.Model):
         else:
             node['abbr'] = self.name
         node['title'] = self.name
+        if self.slug is not None:
+            node['slug'] = self.slug
         return node

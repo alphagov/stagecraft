@@ -7,6 +7,7 @@ from hamcrest import (
 
 from ...models import Link, Dashboard
 from stagecraft.apps.dashboards.tests.factories.factories import(
+    ServiceFactory,
     AgencyFactory,
     AgencyWithDepartmentFactory,
     DashboardFactory,
@@ -23,10 +24,12 @@ class DashboardTestCase(TransactionTestCase):
 
     def test_class_level_list_for_spotlight_returns_minimal_json_array(self):
         dashboard_two = DashboardFactory()
-        organisation = AgencyWithDepartmentFactory()
+        organisation = ServiceFactory()
         dashboard_two.organisation = organisation
-        dashboard_two.department_cache = organisation.parents.first()
-        dashboard_two.agency_cache = organisation
+        dashboard_two.service_cache = organisation
+        agency = organisation.parents.first()
+        dashboard_two.agency_cache = agency
+        dashboard_two.department_cache = agency.parents.first()
         dashboard_two.validate_and_save()
         DashboardFactory(published=False)
         list_for_spotlight = Dashboard.list_for_spotlight()
@@ -43,6 +46,10 @@ class DashboardTestCase(TransactionTestCase):
                         }),
                         'agency': has_entries({
                             'title': starts_with('agency'),
+                            'abbr': starts_with('abbreviation')
+                        }),
+                        'service': has_entries({
+                            'title': starts_with('service'),
                             'abbr': starts_with('abbreviation')
                         })
                     }))
