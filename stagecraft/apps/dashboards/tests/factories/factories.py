@@ -56,6 +56,10 @@ class AgencyTypeFactory(NodeTypeFactory):
     name = 'agency'
 
 
+class ServiceTypeFactory(NodeTypeFactory):
+    name = 'service'
+
+
 class DepartmentFactory(NodeFactory):
     name = factory.Sequence(lambda n: 'department-%s' % n)
     typeOf = factory.SubFactory(DepartmentTypeFactory)
@@ -68,3 +72,9 @@ class AgencyFactory(NodeFactory):
 
 class AgencyWithDepartmentFactory(AgencyFactory):
     parent = factory.SubFactory(DepartmentFactory)
+
+
+class ServiceFactory(NodeFactory):
+    parent = factory.SubFactory(AgencyWithDepartmentFactory)
+    name = factory.Sequence(lambda n: 'service-%s' % n)
+    typeOf = factory.SubFactory(ServiceTypeFactory)

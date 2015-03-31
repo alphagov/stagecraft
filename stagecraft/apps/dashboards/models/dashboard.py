@@ -175,7 +175,8 @@ class Dashboard(models.Model):
     @classmethod
     def list_for_spotlight(cls):
         dashboards = Dashboard.objects.filter(published=True)\
-            .select_related('department_cache', 'agency_cache')
+            .select_related('department_cache', 'agency_cache',
+                            'service_cache')
 
         def spotlightify_for_list(item):
             return item.spotlightify_for_list()
@@ -190,6 +191,8 @@ class Dashboard(models.Model):
             base_dict['department'] = self.department_cache.spotlightify()
         if self.agency_cache is not None:
             base_dict['agency'] = self.agency_cache.spotlightify()
+        if self.service_cache is not None:
+            base_dict['service'] = self.service_cache.spotlightify()
         return base_dict
 
     def spotlightify_base_dict(self):
