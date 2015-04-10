@@ -2,8 +2,10 @@
 /db.sqlite3
 /venv
 /log/*.log
+/log/*.log.*
 /log/*.log.json
-/log/*
+/log/audit/*.log.json
+/log/audit/*.log.json.*
 # Python
 *.pyc
 *.pyo

@@ -1,3 +1,4 @@
+import logging
 import json
 import requests
 
@@ -7,6 +8,8 @@ from stagecraft.libs.views.utils import create_error
 from django.conf import settings
 from django.http import (HttpResponseForbidden, HttpResponse)
 from django_statsd.clients import statsd
+
+audit_logger = logging.getLogger('stagecraft.audit')
 
 
 @statsd.timer('get_user.both')
@@ -93,6 +96,10 @@ def permission_required(permission):
             elif not has_permission:
                 return forbidden(request, 'user lacks permission.')
             else:
+                extra = {}
+                if request.method in ['POST', 'PUT']:
+                    extra['body'] = request.body
+                audit_logger.info('Authorised action', extra=extra)
                 return a_view(user, request, *args, **kwargs)
         return _wrapped_view
     return decorator
