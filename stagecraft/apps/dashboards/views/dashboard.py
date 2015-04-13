@@ -107,6 +107,7 @@ def list_dashboards(user, request):
                 reverse('dashboard', kwargs={'identifier': item.slug})),
             'public-url': '{0}/performance/{1}'.format(
                 settings.GOVUK_ROOT, item.slug),
+            'status': item.status,
             'published': item.published
         })
 

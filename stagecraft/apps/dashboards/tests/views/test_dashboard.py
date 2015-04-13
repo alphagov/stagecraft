@@ -30,7 +30,11 @@ from nose.tools import nottest
 class DashboardViewsListTestCase(TestCase):
 
     def test_list_dashboards_lists_dashboards(self):
-        DashboardFactory(slug='dashboard', title='Dashboard', published=True)
+        DashboardFactory(
+            slug='dashboard',
+            title='Dashboard',
+            status='published'
+        )
         resp = self.client.get(
             '/dashboards',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
