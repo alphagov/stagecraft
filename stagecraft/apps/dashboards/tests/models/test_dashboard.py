@@ -22,6 +22,30 @@ class DashboardTestCase(TransactionTestCase):
     def setUp(self):
         self.dashboard = DashboardFactory()
 
+    def tearDown(self):
+        self.dashboard.delete()
+
+    def test_dashboard_is_unpublished_when_status_is_unpublished(self):
+        self.dashboard.status = 'unpublished'
+        assert_that(self.dashboard.published, is_(False))
+
+    def test_dashboard_is_unpublished_when_status_is_in_review(self):
+        self.dashboard.status = 'in-review'
+        assert_that(self.dashboard.published, is_(False))
+
+    def test_dashboard_is_published_when_status_is_published(self):
+        self.dashboard.status = 'published'
+        assert_that(self.dashboard.published, is_(True))
+
+    def test_publishing_a_dashboard_changes_its_status_to_published(self):
+        dashboard = DashboardFactory(status='unpublished')
+        dashboard.published = True
+        assert_that(dashboard.status, equal_to('published'))
+
+    def test_unpublishing_a_dashboard_changes_its_status_to_unpublished(self):
+        self.dashboard.published = False
+        assert_that(self.dashboard.status, equal_to('unpublished'))
+
     def test_class_level_list_for_spotlight_returns_minimal_json_array(self):
         dashboard_two = DashboardFactory()
         organisation = ServiceFactory()
@@ -39,6 +63,12 @@ class DashboardTestCase(TransactionTestCase):
                     has_entries({
                         'slug': starts_with('slug'),
                         'title': 'title',
+                        'dashboard-type': 'transaction'
+                    }))
+        assert_that(list_for_spotlight['items'][1],
+                    has_entries({
+                        'slug': starts_with('slug'),
+                        'title': 'title',
                         'dashboard-type': 'transaction',
                         'department': has_entries({
                             'title': starts_with('department'),
@@ -52,12 +82,6 @@ class DashboardTestCase(TransactionTestCase):
                             'title': starts_with('service'),
                             'abbr': starts_with('abbreviation')
                         })
-                    }))
-        assert_that(list_for_spotlight['items'][1],
-                    has_entries({
-                        'slug': starts_with('slug'),
-                        'title': 'title',
-                        'dashboard-type': 'transaction'
                     }))
 
     def test_spotlightify_no_modules(self):

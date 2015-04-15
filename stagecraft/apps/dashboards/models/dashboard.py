@@ -22,7 +22,7 @@ class DashboardManager(models.Manager):
             WHERE filters::text = %s
               AND data_set_id=(SELECT id FROM datasets_dataset
                                WHERE name='transactional_services_summaries')
-              AND dashboards_dashboard.published=TRUE
+              AND dashboards_dashboard.status='published'
         ''', [filter_string])
 
 
@@ -82,7 +82,10 @@ class Dashboard(models.Model):
         default=dashboard_types[0]
     )
     page_type = models.CharField(max_length=80, default='dashboard')
-    published = models.BooleanField()
+    status = models.CharField(
+        max_length=30,
+        default='unpublished'
+    )
     title = models.CharField(max_length=256)
     description = models.CharField(max_length=500, blank=True)
     description_extra = models.CharField(max_length=400, blank=True)
@@ -112,6 +115,17 @@ class Dashboard(models.Model):
     _organisation = models.ForeignKey(
         'organisation.Node', blank=True, null=True,
         db_column='organisation_id')
+
+    @property
+    def published(self):
+        return self.status == 'published'
+
+    @published.setter
+    def published(self, value):
+        if value is True:
+            self.status = 'published'
+        else:
+            self.status = 'unpublished'
 
     @property
     def organisation(self):
@@ -174,7 +188,7 @@ class Dashboard(models.Model):
 
     @classmethod
     def list_for_spotlight(cls):
-        dashboards = Dashboard.objects.filter(published=True)\
+        dashboards = Dashboard.objects.filter(status='published')\
             .select_related('department_cache', 'agency_cache',
                             'service_cache')
 
@@ -243,6 +257,11 @@ class Dashboard(models.Model):
             if not (field.startswith('_') or field.endswith('_cache')):
                 value = getattr(self, field)
                 serialized[field] = value
+
+        if self.status == 'published':
+            serialized['published'] = True
+        else:
+            serialized['published'] = False
 
         if self.organisation:
             serialized['organisation'] = NodeView.serialize(self.organisation)

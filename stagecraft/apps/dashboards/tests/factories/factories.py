@@ -9,7 +9,7 @@ class DashboardFactory(factory.DjangoModelFactory):
     class Meta:
         model = Dashboard
 
-    published = True
+    status = 'published'
     title = "title"
     slug = factory.Sequence(lambda n: 'slug%s' % n)
 
