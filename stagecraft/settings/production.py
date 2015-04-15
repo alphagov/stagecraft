@@ -60,6 +60,15 @@ LOGGING = {
             'filename': BASE_DIR + "/log/stagecraft.log.json",
             'formatter': 'logstash_json',
         },
+        'json_audit_log': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + "/log/audit/stagecraft.log.json",
+            'maxBytes': 4 * 1024 * 1024,
+            'backupCount': 2,
+            'formatter': 'logstash_json',
+            'filters': ['additional_fields'],
+        },
     },
     'loggers': {
         '': {
@@ -80,6 +89,11 @@ LOGGING = {
         'stagecraft.libs': {
             'handlers': ['logfile', 'json_log'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'stagecraft.audit': {
+            'handlers': ['json_audit_log'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },
