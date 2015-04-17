@@ -7,6 +7,7 @@ import stagecraft.apps.transforms.views as transforms_views
 
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
+from stagecraft.apps.datasets.views import data_group as datagroups_views
 from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
 from stagecraft.apps.dashboards.views import dashboard as dashboard_views
 from stagecraft.apps.dashboards.views import module as module_views
@@ -89,5 +90,8 @@ urlpatterns = patterns(
     resource_url('transform', transforms_views.TransformView),
     resource_url('data-sets',
                  datasets_views.DataSetView,
+                 id_matcher='<name>[\w-]+'),
+    resource_url('data-groups',
+                 datagroups_views.DataGroupView,
                  id_matcher='<name>[\w-]+'),
 )
