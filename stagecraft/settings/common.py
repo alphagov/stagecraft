@@ -65,7 +65,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'reversion',
-    'south',
 
     'stagecraft.apps.datasets',
     'stagecraft.apps.dashboards',

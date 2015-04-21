@@ -165,12 +165,12 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         assert_equal('', data_set.bearer_token)
 
-    def test_that_empty_bearer_token_serializes_to_null(self):
+    def test_that_empty_bearer_token_serializes_to_empty_string(self):
         data_set = DataSet.objects.create(
             data_group=self.data_group1,
             data_type=self.data_type1,
             bearer_token='')
-        assert_equal(None, data_set.serialize()['bearer_token'])
+        assert_equal('', data_set.serialize()['bearer_token'])
 
     def test_clean_raise_immutablefield_name_change(self):
         data_set = DataSet.objects.create(

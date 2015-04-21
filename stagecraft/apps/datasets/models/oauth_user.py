@@ -5,7 +5,8 @@ import logging
 
 from django.db import models, IntegrityError, InternalError
 from django.utils.encoding import python_2_unicode_compatible
-from south.utils.datetime_utils import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from django_statsd.clients import statsd
 
 import dbarray
@@ -19,7 +20,7 @@ class OAuthUserManager(models.Manager):
     def get_by_access_token(self, access_token):
         try:
             oauth_user = self.get(access_token=access_token)
-            if oauth_user.expires_at < datetime.now():
+            if oauth_user.expires_at < timezone.now():
                 oauth_user.delete()
                 return
             return oauth_user
@@ -35,7 +36,7 @@ class OAuthUserManager(models.Manager):
             uid=user['uid'],
             email=user['email'],
             permissions=user['permissions'],
-            expires_at=datetime.now() + timedelta(minutes=15))
+            expires_at=timezone.now() + timedelta(minutes=15))
         try:
             oauth_user.save()
         except IntegrityError:

@@ -202,7 +202,7 @@ class DataSet(models.Model):
         def make_list(string):
             return [x.strip() for x in string.split(',')] if string else []
 
-        token_or_null = self.bearer_token if self.bearer_token != '' else None
+        token_or_null = self.bearer_token
 
         upload_filters_list = make_list(self.upload_filters)
         auto_ids_list = make_list(self.auto_ids)

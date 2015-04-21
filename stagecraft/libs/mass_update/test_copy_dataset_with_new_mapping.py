@@ -55,7 +55,7 @@ class TestDataSetMassUpdate(TestCase):
         # existing data set config comes from fixture
         self.new_dataset_config = {
             u'auto_ids': [u'foo', u'bar', u'baz'],
-            u'bearer_token': None,
+            u'bearer_token': u'',
             u'capped_size': None,
             u'data_group': u'scooters',
             u'data_type': u'a_type',
@@ -70,7 +70,7 @@ class TestDataSetMassUpdate(TestCase):
         }
         self.new_dataset_config_already_exists = {
             u'auto_ids': [u'foo', u'bar', u'baz'],
-            u'bearer_token': None,
+            u'bearer_token': u'',
             u'capped_size': None,
             u'data_group': u'mowers',
             u'data_type': u'realtime',
