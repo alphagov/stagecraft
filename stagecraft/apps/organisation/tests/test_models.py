@@ -1,7 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
-from hamcrest import assert_that, has_entry, has_key, is_not, is_
+from hamcrest import (
+    assert_that, has_entry, has_key, is_not, is_,
+    calling, raises
+)
 from nose.tools import eq_, assert_raises
 
 from ..models import Node, NodeType
@@ -48,6 +51,11 @@ class NodeTestCase(TestCase):
         assert_that(a_node_has_name('1', ancestors_and_self), is_(True))
         assert_that(a_node_has_name('2', ancestors_and_self), is_(True))
         assert_that(a_node_has_name('child', ancestors_and_self), is_(True))
+
+    def test_str_of_unicode_node(self):
+        node = Node.objects.create(name=u'\xe7', typeOf=self.node_type)
+
+        assert_that(calling(str).with_args(node), is_not(raises(ValueError)))
 
 
 class NodeTypeTestCase(TestCase):
