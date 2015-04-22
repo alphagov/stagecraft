@@ -15,16 +15,16 @@ INTERNAL_KEY = [
 # should pass in whole mapping?
 @reversion.create_revision()
 def migrate_data_set(old_attributes, changed_attributes, data_mapping):
-    print("getting existing data set")
+    print("getting existing dataset")
     existing_data_set = get_existing_data_set(old_attributes['data_group'],
                                               old_attributes['data_type'])
     if not existing_data_set:
-        print("no existing datset found, skipping")
+        print("no existing dataset found, skipping")
         return False
     new_data_set_attributes = get_new_attributes(
         serialize_for_update(existing_data_set), changed_attributes)
     print("got new attributes {}".format(new_data_set_attributes))
-    print("creating new dat set with attributes")
+    print("creating new dataset with attributes")
     new_data_set = get_or_create_new_data_set(new_data_set_attributes)
     print("getting old data")
     old_data = get_old_data(old_attributes['data_group'],
@@ -32,8 +32,8 @@ def migrate_data_set(old_attributes, changed_attributes, data_mapping):
     print("converting old data")
     new_data = convert_old_data(old_data, data_mapping)
     serialized_new_data_set = new_data_set.serialize()
-    print("posting data {} to data set {}".format(new_data,
-                                                  serialized_new_data_set))
+    print("posting data {} to dataset {}".format(new_data,
+                                                 serialized_new_data_set))
     post_new_data(serialized_new_data_set['data_group'],
                   serialized_new_data_set['data_type'],
                   serialized_new_data_set['bearer_token'],
