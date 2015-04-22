@@ -48,6 +48,12 @@ class TransformType(models.Model):
 
 
 class Transform(models.Model):
+    class Meta:
+        unique_together = (
+            'type', 'input_group', 'input_type', 'query_parameters',
+            'options', 'output_group', 'output_type',
+        )
+
     id = UUIDField(auto=True, primary_key=True, hyphenate=True)
     type = models.ForeignKey(TransformType)
 
