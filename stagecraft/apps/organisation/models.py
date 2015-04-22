@@ -74,7 +74,7 @@ class Node(models.Model):
     parents = models.ManyToManyField('self', symmetrical=False)
 
     def __str__(self):
-        return "{}".format(self.name)
+        return self.name.encode('utf-8')
 
     def get_ancestors(self, include_self=True):
         return Node.objects.ancestors_of(self, include_self)
