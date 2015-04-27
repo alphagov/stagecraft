@@ -1,0 +1,21 @@
+[  
+  {  
+    "name":"Registrations to use online training and resources on workplace relations",
+    "service":{  
+      "name":"Training and resources on workplace relations",
+      "slug":"training-resources-on-workplace-relations"
+    },
+    "agency":{
+      "abbr": "Crown Prosecution Service",
+      "name":"Crown Prosecution Service",
+      "slug":"crown-prosecution-service"
+    },
+    "tx_id":"bis-acas-elearning-registrations",
+    "department":{  
+      "abbr":"AGO",
+      "name":"Attorney General's Office",
+      "slug":"ago"
+    },
+    "slug":"registrations"
+  }
+]
