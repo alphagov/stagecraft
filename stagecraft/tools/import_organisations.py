@@ -27,7 +27,7 @@ govuk_to_pp_type = {
     "Executive agency": 'agency',
     "Devolved administration": 'agency',
     "Ministerial department": 'department',
-    "Non-ministerial department": 'department',
+    "Non-ministerial department": 'agency',
     "Executive office": 'agency',
     "Civil Service": 'agency',
     "Other": 'agency',
