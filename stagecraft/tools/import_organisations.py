@@ -147,8 +147,25 @@ def govuk_node_for_record(record, by_title, by_abbr):
     title = parent_org['name'].lower()
 
     node = by_abbr.get(abbr, by_title.get(title, None))
-    if node is None and abbr == 'inss':
-        node = by_title['the insolvency service']
+    if node is None:
+        if abbr == 'inss':
+            node = by_title['the insolvency service']
+        elif abbr == 'nmo':
+            node = by_title['national measurement and regulation office']
+        elif abbr == 'tsol':
+            node = by_title['government legal department']
+        elif abbr == 'research councils':
+            node = by_abbr['bis']
+        elif abbr == 'visit england':
+            node = by_title['visitengland']
+        elif abbr == 'arts council':
+            node = by_title['arts council england']
+        elif abbr.startswith('planning portal / department'):
+            node = by_abbr['dclg']
+        elif abbr == 'ha':
+            node = by_title['highways england']
+        elif abbr == 'english heritage':
+            node = by_title['historic england']
 
     return node
 
