@@ -70,16 +70,23 @@ class SpreadsheetMunger:
                 'slug': row[self.tx_department_abbr].lower(),
                 'name': row[self.tx_department_name],
             }
-        if row[self.tx_agency_abbr] \
-                and row[self.tx_agency_name]:
+
+        if row[self.tx_agency_name]:
             agency = {
-                'abbr': row[self.tx_agency_abbr],
-                'slug': row[self.tx_agency_abbr].lower(),
-                'name': row[self.tx_agency_name],
+                'name': row[self.tx_agency_name]
             }
+            if row[self.tx_agency_abbr]:
+                agency['abbr'] = row[self.tx_agency_abbr]
+                agency['slug'] = row[self.tx_agency_abbr].lower()
+            else:
+                agency['abbr'] = row[self.tx_agency_name]
+                agency['slug'] = \
+                    row[self.tx_agency_name].lower().replace(' ', '-')
+
             if(agency['abbr'] != record['department']['abbr']
                     or agency['name'] != record['department']['name']):
                 record['agency'] = agency
+
         high_volume = False
         if row[self.tx_high_volume] == 'yes':
             high_volume = True
