@@ -96,7 +96,9 @@ def permission_required(permission):
             elif not has_permission:
                 return forbidden(request, 'user lacks permission.')
             else:
-                extra = {}
+                extra = {
+                    'token': access_token,
+                }
                 if request.method in ['POST', 'PUT']:
                     extra['body'] = request.body
                 audit_logger.info('Authorised action', extra=extra)
