@@ -35,8 +35,7 @@ urlpatterns = patterns(
         ),
     url(r'^data-sets/(?P<dataset_name>[\w-]+)/users/$', RedirectView.as_view(
         pattern_name='data-sets-users',
-        permanent=True
-    )),
+        permanent=True)),
     url(r'^data-sets/(?P<name>[\w-]+)/dashboard$',
         datasets_views.dashboard,
         name='data-sets-dashboard'),
@@ -94,4 +93,5 @@ urlpatterns = patterns(
     resource_url('data-groups',
                  datagroups_views.DataGroupView,
                  id_matcher='<name>[\w-]+'),
+    resource_url('module', module_views.ModuleView),
 )
