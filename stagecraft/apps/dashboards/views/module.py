@@ -1,4 +1,4 @@
-
+from stagecraft.libs.views.resource import ResourceView
 import json
 
 from django.http import HttpResponse
@@ -71,7 +71,7 @@ def add_module_to_dashboard(dashboard, module_settings, parent_module=None):
     if module_settings.get('id'):
         try:
             module = Module.objects.get(id=module_settings['id'])
-        except Module.DoesNotExist as e:
+        except Module.DoesNotExist:
             msg = 'module with id {} not found'.format(module_settings['id'])
             raise ValueError(make_error(msg))
     else:
@@ -201,3 +201,20 @@ def add_type(user, request):
     module_type.save()
 
     return json_response(module_type.serialize())
+
+
+class ModuleView(ResourceView):
+    model = Module
+
+    @csrf_exempt
+    @never_cache
+    def get(self, request, **kwargs):
+        return super(ModuleView, self).get(request, **kwargs)
+
+    def post(self, request, **kwargs):
+        # block direct creation of modules for now.
+        return HttpResponse('', status=405)
+
+    @staticmethod
+    def serialize(model):
+        return model.serialize()

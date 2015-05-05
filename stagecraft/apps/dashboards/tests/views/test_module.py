@@ -63,6 +63,65 @@ class ModuleViewsTestCase(TestCase):
         cls.module_type.delete()
         cls.dashboard.delete()
 
+    def test_module_only_get(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        delete_resp = self.client.delete(
+            '/module/{}'.format(module1.id),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        put_resp = self.client.put(
+            '/module/{}'.format(module1.id),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
+        post_resp = self.client.post(
+            '/module/{}'.format(module1.id),
+            data=json.dumps({}),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(delete_resp.status_code, equal_to(405))
+        assert_that(put_resp.status_code, equal_to(405))
+        assert_that(post_resp.status_code, equal_to(405))
+
+    def test_get_module_by_uuid(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        resp = self.client.get(
+            '/module/{}'.format(module1.id))
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+
+        resp_json = json.loads(resp.content)
+
+        module_attrs = {
+            u'info': [],
+            u'description': u'',
+            u'parent': None,
+            u'title': u'title',
+            u'data_set': None,
+            u'query_parameters': None,
+            u'modules': [],
+            u'slug': u'module-1',
+            u'options': {},
+            u'dashboard': {
+                u'id': str(module1.dashboard_id)
+            },
+            u'type': {
+                u'id': str(module1.type_id)
+            },
+            u'id': str(module1.id)
+        }
+        assert_that(
+            resp_json,
+            equal_to(module_attrs))
+
     def test_modules_on_dashboard_only_get_post(self):
         delete_resp = self.client.delete(
             '/dashboard/{}/module'.format(self.dashboard.slug),
