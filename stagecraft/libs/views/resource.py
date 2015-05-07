@@ -2,8 +2,7 @@ import json
 import jsonschema
 import logging
 import re
-from stagecraft.apps.datasets.models import(
-    BackdropUser)
+from stagecraft.apps.users.models import User
 
 from django.http import HttpResponse
 from django.conf.urls import url
@@ -64,7 +63,7 @@ class ResourceView(View):
         should_filter = user and (len(set(user['permissions']).intersection(
             unfiltered_roles)) == 0)
         if should_filter:
-            additional_filters['backdropuser'] = BackdropUser.objects.filter(
+            additional_filters['backdropuser'] = User.objects.filter(
                 email=user['email'])
 
         query_set = self.model.objects
