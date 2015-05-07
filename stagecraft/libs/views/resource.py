@@ -32,13 +32,18 @@ UUID_RE = re.compile(UUID_RE_STRING)
 FORMAT_CHECKER = FormatChecker()
 
 
-def resource_url(ident, cls, id_matcher=None):
-    id_matcher = id_matcher if id_matcher else '<id>{}'.format(
-        UUID_RE_STRING)
+def resource_url(ident, cls):
     return url(
-        r'^{}(?:/(?P{})(?:/(?P<sub_resource>[a-z]+))?)?'.format(
-            ident, id_matcher),
+        resource_re_string(ident, cls),
         csrf_exempt(cls.as_view()))
+
+
+def resource_re_string(ident, cls):
+    id_matchers = \
+        ['(?P<{}>{})'.format(k, r) for k, r in cls.id_fields.items()]
+    id_matcher = '({})'.format('|'.join(id_matchers))
+    return r'^{}(?:/{}(?:/(?P<sub_resource>[a-z]+))?)?'.format(
+        ident, id_matcher)
 
 
 @FORMAT_CHECKER.checks('uuid')
@@ -50,7 +55,9 @@ def is_uuid(instance):
 class ResourceView(View):
 
     model = None
-    id_field = 'id'
+    id_fields = {
+        'id': UUID_RE_STRING,
+    }
     generated_id = True
     schema = {}
     sub_resources = {}
@@ -103,8 +110,8 @@ class ResourceView(View):
         else:
             return query_set
 
-    def by_id(self, request, id, user=None):
-        get_args = {self.id_field: id}
+    def by_id(self, request, id_field, id, user=None):
+        get_args = {id_field: id}
 
         try:
             model = self.model.objects.get(**get_args)
@@ -123,12 +130,12 @@ class ResourceView(View):
         pass
 
     def get(self, request, **kwargs):
-        id = kwargs.get(self.id_field, None)
+        id_field, id = self._find_id(kwargs)
         user = kwargs.get('user', None)
         sub_resource = kwargs.get('sub_resource', None)
 
         if id is not None:
-            model = self.by_id(request, id, user=user)
+            model = self.by_id(request, id_field, id, user=user)
             if model is None:
                 return HttpResponse('resource not found', status=404)
             elif sub_resource is not None:
@@ -137,6 +144,15 @@ class ResourceView(View):
                 return self._response(model)
         else:
             return self._response(self.list(request, user=user))
+
+    def _find_id(self, args):
+        for key, regex in self.id_fields.items():
+            compiled_regex = re.compile(regex)
+            if key in args and \
+                    compiled_regex.match(str(args[key])) is not None:
+                return key, args[key]
+
+        return None, None
 
     def _user_missing_model_permission(self, user, model):
         user_is_not_admin = 'admin' not in user['permissions']
@@ -182,12 +198,12 @@ class ResourceView(View):
 
     @method_decorator(atomic_view)
     def put(self, user, request, **kwargs):
-        id = kwargs.get(self.id_field, None)
+        id_field, id = self._find_id(kwargs)
 
         if id is None:
             return HttpResponse('id not provided', status=400)
 
-        model = self.by_id(request, id, user=user)
+        model = self.by_id(request, id_field, id, user=user)
         if model is None:
             return HttpResponse('model not found', status=404)
 

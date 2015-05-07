@@ -16,7 +16,10 @@ from stagecraft.apps.organisation.tests.factories import (
     NodeFactory, NodeTypeFactory
 )
 
-from ..resource import FORMAT_CHECKER, ResourceView
+from ..resource import (
+    FORMAT_CHECKER, ResourceView, resource_re_string,
+    UUID_RE_STRING
+)
 
 
 class FormatCheckerTestCase(TestCase):
@@ -94,10 +97,26 @@ class TestResourceView(ResourceView):
         }
 
 
+class TestResourceViewMultipleIDs(ResourceView):
+
+    model = Node
+    id_fields = {
+        'id': '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+        'slug': '[\w-]+',
+    }
+
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+        }
+
+
 class ResourceViewTestCase(TestCase):
 
-    def get(self, args={}, query={}):
-        view = TestResourceView()
+    def get(self, args={}, query={}, cls=TestResourceView):
+        view = cls()
 
         request = HttpRequest()
         for (k, v) in query.items():
@@ -155,6 +174,31 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(len(json_response), is_(2))
         assert_that(json_response[0]['name'], starts_with('foo-node'))
+
+    def test_resource_re_string_multiple_ids(self):
+        re = resource_re_string('node', TestResourceViewMultipleIDs)
+        assert_that(re, is_(
+            '^node(?:/((?P<id>{})|(?P<slug>[\\w-]+))'
+            '(?:/(?P<sub_resource>[a-z]+))?)?'.format(
+                UUID_RE_STRING)))
+
+    def test_multiple_ids(self):
+        node = NodeFactory(name='foo-node-1', slug='foo-node-1')
+
+        status_code, id_response = self.get(
+            {'id': str(node.id)},
+            cls=TestResourceViewMultipleIDs
+        )
+
+        assert_that(status_code, is_(200))
+
+        status_code, slug_response = self.get(
+            {'slug': node.slug},
+            cls=TestResourceViewMultipleIDs
+        )
+
+        assert_that(status_code, is_(200))
+        assert_that(slug_response, is_(id_response))
 
     def test_list_filters(self):
         NodeFactory(name='foo')

@@ -87,11 +87,7 @@ urlpatterns = patterns(
     resource_url('organisation/type', organisation_views.NodeTypeView),
     resource_url('transform-type', transforms_views.TransformTypeView),
     resource_url('transform', transforms_views.TransformView),
-    resource_url('data-sets',
-                 datasets_views.DataSetView,
-                 id_matcher='<name>[\w-]+'),
-    resource_url('data-groups',
-                 datagroups_views.DataGroupView,
-                 id_matcher='<name>[\w-]+'),
+    resource_url('data-sets', datasets_views.DataSetView),
+    resource_url('data-groups', datagroups_views.DataGroupView),
     resource_url('module', module_views.ModuleView),
 )

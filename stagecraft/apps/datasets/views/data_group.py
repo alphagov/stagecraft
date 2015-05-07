@@ -8,6 +8,9 @@ from stagecraft.libs.authorization.http import permission_required
 
 class DataGroupView(ResourceView):
     model = DataGroup
+    id_fields = {
+        'name': '[\w-]+',
+    }
     list_filters = {
         "name": "name"
     }
