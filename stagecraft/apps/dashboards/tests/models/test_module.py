@@ -4,8 +4,8 @@ from django.test import TestCase
 from jsonschema.exceptions import ValidationError, SchemaError
 from hamcrest import (
     assert_that, equal_to, calling, raises, is_not, has_entry, has_key,
-    contains
-)
+    contains,
+    contains_string, is_)
 
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 
@@ -43,16 +43,12 @@ class ModuleTypeTestCase(TestCase):
             name='foo',
             schema={'properties': 'true'}
         )
-        assert_that(
-            calling(module_type.validate_schema),
-            raises(SchemaError)
-        )
+        err = module_type.validate()
+        assert_that(err, contains_string('schema is invalid'))
 
         module_type.schema = {"type": "string"}
-        assert_that(
-            calling(module_type.validate_schema),
-            is_not(raises(SchemaError))
-        )
+        err = module_type.validate()
+        assert_that(err, is_(None))
 
 
 class ModuleTestCase(TestCase):

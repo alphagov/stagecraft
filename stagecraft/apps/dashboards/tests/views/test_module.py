@@ -556,12 +556,8 @@ class ModuleTypeViewsTestCase(TestCase):
         delete_resp = self.client.delete(
             '/module-type',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        put_resp = self.client.put(
-            '/module-type',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_that(delete_resp.status_code, equal_to(405))
-        assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_types(self):
         ModuleTypeFactory(name="foo", schema={})
@@ -610,7 +606,7 @@ class ModuleTypeViewsTestCase(TestCase):
         resp = self.client.post(
             '/module-type',
             data=json.dumps({
-                'name': 'a-type',
+                'name': 'a_type',
                 'schema': {'type': 'string'},
             }),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
@@ -621,7 +617,7 @@ class ModuleTypeViewsTestCase(TestCase):
         resp_json = json.loads(resp.content)
 
         assert_that(resp_json, has_key('id'))
-        assert_that(resp_json, has_entry('name', 'a-type'))
+        assert_that(resp_json, has_entry('name', 'a_type'))
         assert_that(resp_json, has_entry('schema', {'type': 'string'}))
 
         stored_types = ModuleType.objects.get(id=resp_json['id'])

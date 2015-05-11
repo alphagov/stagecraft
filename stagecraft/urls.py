@@ -66,7 +66,6 @@ urlpatterns = patterns(
         pattern_name='dashboards_for_spotlight',
         permanent=True,
         query_string=True)),
-    url(r'^module-type$', module_views.root_types),
 
     # Dashboard by UUID
     url(r'^dashboard/(?P<identifier>{})/module$'.format(uuid_regexp),
@@ -89,5 +88,6 @@ urlpatterns = patterns(
     resource_url('transform', transforms_views.TransformView),
     resource_url('data-sets', datasets_views.DataSetView),
     resource_url('data-groups', datagroups_views.DataGroupView),
+    resource_url('module-type', module_views.ModuleTypeView),
     resource_url('module', module_views.ModuleView),
 )
