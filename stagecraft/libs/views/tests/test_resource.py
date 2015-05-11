@@ -75,6 +75,11 @@ class TestResourceView(ResourceView):
         "additionalProperties": False,
     }
 
+    was_saved = False
+
+    def update_relationships(self, model, model_json, request):
+        self.was_saved = model.pk is not None
+
     def update_model(self, model, model_json, request):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
@@ -324,3 +329,21 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(put_json_response['name'], is_('foobar'))
         assert_that(put_json_response['id'], post_json_response['id'])
+
+    def test_update_relationships(self):
+        node_type = NodeTypeFactory()
+        view = TestResourceView()
+
+        request = HttpRequest()
+        request.META['CONTENT_TYPE'] = 'application/json'
+        request._body = json.dumps({
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx',
+        })
+
+        response = view.post(None, request)
+
+        assert_that(response, instance_of(HttpResponse))
+        assert_that(response.status_code, is_(200))
+        assert_that(view.was_saved, is_(True))

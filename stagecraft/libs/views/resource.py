@@ -129,6 +129,9 @@ class ResourceView(View):
     def update_model(self, model, model_json, request):
         pass
 
+    def update_relationships(self, model, model_json, request):
+        pass
+
     def get(self, request, **kwargs):
         id_field, id = self._find_id(kwargs)
         user = kwargs.get('user', None)
@@ -173,6 +176,18 @@ class ResourceView(View):
         else:
             return HttpResponse('sub resource not found', status=404)
 
+    def _validate_and_save(self, model):
+        err = self._validate_model(model)
+        if err:
+            return err
+
+        try:
+            model.save()
+        except (DataError, IntegrityError) as err:
+            return HttpResponse('error saving model: {}'.format(err))
+
+        return None
+
     @method_decorator(atomic_view)
     def post(self, user, request, **kwargs):
         model_json, err = self._validate_json(request)
@@ -185,14 +200,17 @@ class ResourceView(View):
         if err:
             return err
 
-        err = self._validate_model(model)
+        err = self._validate_and_save(model)
         if err:
             return err
 
-        try:
-            model.save()
-        except (DataError, IntegrityError) as err:
-            return HttpResponse('error saving model: {}'.format(err))
+        err = self.update_relationships(model, model_json, request)
+        if err:
+            return err
+
+        err = self._validate_and_save(model)
+        if err:
+            return err
 
         return self._response(model)
 
@@ -215,14 +233,13 @@ class ResourceView(View):
         if err:
             return err
 
-        err = self._validate_model(model)
+        err = self.update_relationships(model, model_json, request)
         if err:
             return err
 
-        try:
-            model.save()
-        except (DataError, IntegrityError) as err:
-            return HttpResponse('error saving model: {}'.format(err))
+        err = self._validate_and_save(model)
+        if err:
+            return err
 
         return self._response(model)
 
