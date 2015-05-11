@@ -192,7 +192,7 @@
 },
 {
   "pk": 1,
-  "model": "datasets.backdropuser",
+  "model": "users.user",
   "fields": {
       "email": "some.user@digital.cabinet-office.gov.uk",
       "data_sets": [1, 2, 3, 4]
