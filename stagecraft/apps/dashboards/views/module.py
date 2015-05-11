@@ -215,6 +215,10 @@ class ModuleView(ResourceView):
         # block direct creation of modules for now.
         return HttpResponse('', status=405)
 
+    def put(self, request, **kwargs):
+        # block direct creation of modules for now.
+        return HttpResponse('', status=405)
+
     @staticmethod
     def serialize(model):
         return model.serialize()

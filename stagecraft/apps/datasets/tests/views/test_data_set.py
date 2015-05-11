@@ -706,26 +706,6 @@ class DataSetsViewsTestCase(TestCase):
             json.loads(resp.content)['message'],
             "No data type with name 'wibble' found")
 
-    def test_put_does_nothing(self):
-        data_set = {
-            'data_type': 'type1',
-            'realtime': False,
-            'auto_ids': 'aa,bb',
-            'max_age_expected': 86400,
-            'data_group': 'group1',
-            'upload_filters': 'backdrop.filter.1',
-            'queryable': True,
-            'upload_format': '',
-            'raw_queries_allowed': True,
-            'published': False,
-        }
-        resp = self.client.put(
-            '/data-sets',
-            data=json.dumps(data_set),
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
-            content_type='application/json')
-        assert_equal(resp.status_code, 405)
-
     def test_users_for_nonexistant_dataset_returns_empty_list(self):
         resp = self.client.get(
             '/data-sets/example-data-set/users',

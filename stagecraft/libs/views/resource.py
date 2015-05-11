@@ -163,7 +163,37 @@ class ResourceView(View):
         if err:
             return err
 
-        model = self._get_or_create_model(model_json)
+        model = self.model()
+
+        err = self.update_model(model, model_json, request)
+        if err:
+            return err
+
+        err = self._validate_model(model)
+        if err:
+            return err
+
+        try:
+            model.save()
+        except (DataError, IntegrityError) as err:
+            return HttpResponse('error saving model: {}'.format(err))
+
+        return self._response(model)
+
+    @method_decorator(atomic_view)
+    def put(self, user, request, **kwargs):
+        id = kwargs.get(self.id_field, None)
+
+        if id is None:
+            return HttpResponse('id not provided', status=400)
+
+        model = self.by_id(request, id, user=user)
+        if model is None:
+            return HttpResponse('model not found', status=404)
+
+        model_json, err = self._validate_json(request)
+        if err:
+            return err
 
         err = self.update_model(model, model_json, request)
         if err:
@@ -199,19 +229,6 @@ class ResourceView(View):
                 status=400)
 
         return model_json, None
-
-    def _get_or_create_model(self, model_json):
-        if self.id_field in model_json:
-            id = model_json[self.id_field]
-            try:
-                model = self.model.objects.get(**{self.id_field: id})
-            except self.model.DoesNotExist:
-                return HttpResponse(
-                    'model with id {} not found'.format(id))
-        else:
-            model = self.model()
-
-        return model
 
     def _validate_model(self, model):
         if hasattr(model, 'validate'):

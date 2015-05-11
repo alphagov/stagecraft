@@ -114,14 +114,19 @@ class ResourceViewTestCase(TestCase):
 
         return response.status_code, json_response
 
-    def post(self, body='', content_type='application/json', args={}):
+    def _do(self, action, body, content_type, args):
         view = TestResourceView()
 
         request = HttpRequest()
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
-        response = view.post(None, request, **args)
+        if action == 'POST':
+            response = view.post(None, request, **args)
+        elif action == 'PUT':
+            response = view.put(None, request, **args)
+        else:
+            raise Exception('Invalid action {}'.format(action))
 
         assert_that(response, instance_of(HttpResponse))
 
@@ -131,6 +136,12 @@ class ResourceViewTestCase(TestCase):
             json_response = None
 
         return response.status_code, json_response
+
+    def post(self, body='', content_type='application/json', args={}):
+        return self._do('POST', body, content_type, args)
+
+    def put(self, body='', content_type='application/json', args={}):
+        return self._do('PUT', body, content_type, args)
 
     def tearDown(self):
         Node.objects.all().delete()
@@ -213,18 +224,6 @@ class ResourceViewTestCase(TestCase):
         status_code, _ = self.post(body=json.dumps(post_object))
         assert_that(status_code, is_(400))
 
-    def test_get_or_create(self):
-        node = NodeFactory()
-        view = TestResourceView()
-
-        model = view._get_or_create_model({})
-        assert_that(model.name, is_not(equal_to(node.name)))
-
-        model = view._get_or_create_model({
-            'id': str(node.id),
-        })
-        assert_that(model.name, is_(node.name))
-
     def test_rollsback_on_failure(self):
         node_type = NodeTypeFactory()
         post_object = {
@@ -240,3 +239,44 @@ class ResourceViewTestCase(TestCase):
                 name='save-and-fail-validation'),
             raises(Node.DoesNotExist),
         )
+
+    def test_post_doesnt_update(self):
+        node_type = NodeTypeFactory()
+        post_object = {
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx'
+        }
+        status_code, json_response = self.post(body=json.dumps(post_object))
+
+        assert_that(status_code, is_(200))
+
+        post_object['id'] = json_response['id']
+        post_object['name'] = 'foobar'
+        status_code, json_response = self.post(body=json.dumps(post_object))
+
+        assert_that(status_code, is_(400))
+
+    def test_put(self):
+        node_type = NodeTypeFactory()
+        post_object = {
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx'
+        }
+        status_code, post_json_response = self.post(
+            body=json.dumps(post_object))
+
+        assert_that(status_code, is_(200))
+
+        post_object['name'] = 'foobar'
+        status_code, put_json_response = self.put(
+            body=json.dumps(post_object),
+            args={
+                'id': post_json_response['id'],
+            },
+        )
+
+        assert_that(status_code, is_(200))
+        assert_that(put_json_response['name'], is_('foobar'))
+        assert_that(put_json_response['id'], post_json_response['id'])

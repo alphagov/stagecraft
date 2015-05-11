@@ -49,16 +49,12 @@ class NodeViewsTestCase(TestCase):
         )
         brie.parents.add(cheese)
 
-    def test_root_view_only_get_post(self):
+    def test_root_view_doesnt_delete(self):
         delete_resp = self.client.delete(
-            '/organisation/node',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        put_resp = self.client.put(
             '/organisation/node',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_that(delete_resp.status_code, equal_to(405))
-        assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_nodes(self):
         resp = self.client.get(
@@ -376,16 +372,12 @@ class NodeTypeViewsTestCase(TestCase):
         )
         brie.parents.add(cheese)
 
-    def test_root_view_only_get_post(self):
+    def test_root_view_doesnt_delete(self):
         delete_resp = self.client.delete(
-            '/organisation/type',
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        put_resp = self.client.put(
             '/organisation/type',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_that(delete_resp.status_code, equal_to(405))
-        assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_types(self):
         resp = self.client.get(
