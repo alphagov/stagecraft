@@ -5,7 +5,7 @@ import reversion
 
 from django.core.management.base import BaseCommand, CommandError
 
-from stagecraft.apps.datasets.models import BackdropUser
+from stagecraft.apps.users.models import User
 from stagecraft.apps.datasets.models import DataSet
 
 
@@ -33,12 +33,12 @@ class Command(BaseCommand):
     def save_backdrop_user(self, user):
         email = user['email']
         data_sets = self.get_data_sets_by_names(user['data_sets'])
-        if BackdropUser.objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists():
             self.stdout.write("SKIPPING {} - already exists".format(email))
             return
 
         with reversion.create_revision():
-            user = BackdropUser.objects.create(
+            user = User.objects.create(
                 email=email,
             )
             for data_set in data_sets:
