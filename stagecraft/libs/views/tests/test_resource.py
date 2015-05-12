@@ -16,7 +16,10 @@ from stagecraft.apps.organisation.tests.factories import (
     NodeFactory, NodeTypeFactory
 )
 
-from ..resource import FORMAT_CHECKER, ResourceView
+from ..resource import (
+    FORMAT_CHECKER, ResourceView, resource_re_string,
+    UUID_RE_STRING
+)
 
 
 class FormatCheckerTestCase(TestCase):
@@ -72,6 +75,11 @@ class TestResourceView(ResourceView):
         "additionalProperties": False,
     }
 
+    was_saved = False
+
+    def update_relationships(self, model, model_json, request):
+        self.was_saved = model.pk is not None
+
     def update_model(self, model, model_json, request):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
@@ -94,10 +102,26 @@ class TestResourceView(ResourceView):
         }
 
 
+class TestResourceViewMultipleIDs(ResourceView):
+
+    model = Node
+    id_fields = {
+        'id': '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+        'slug': '[\w-]+',
+    }
+
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+        }
+
+
 class ResourceViewTestCase(TestCase):
 
-    def get(self, args={}, query={}):
-        view = TestResourceView()
+    def get(self, args={}, query={}, cls=TestResourceView):
+        view = cls()
 
         request = HttpRequest()
         for (k, v) in query.items():
@@ -114,14 +138,19 @@ class ResourceViewTestCase(TestCase):
 
         return response.status_code, json_response
 
-    def post(self, body='', content_type='application/json', args={}):
+    def _do(self, action, body, content_type, args):
         view = TestResourceView()
 
         request = HttpRequest()
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
-        response = view.post(None, request, **args)
+        if action == 'POST':
+            response = view.post(None, request, **args)
+        elif action == 'PUT':
+            response = view.put(None, request, **args)
+        else:
+            raise Exception('Invalid action {}'.format(action))
 
         assert_that(response, instance_of(HttpResponse))
 
@@ -131,6 +160,12 @@ class ResourceViewTestCase(TestCase):
             json_response = None
 
         return response.status_code, json_response
+
+    def post(self, body='', content_type='application/json', args={}):
+        return self._do('POST', body, content_type, args)
+
+    def put(self, body='', content_type='application/json', args={}):
+        return self._do('PUT', body, content_type, args)
 
     def tearDown(self):
         Node.objects.all().delete()
@@ -144,6 +179,31 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(len(json_response), is_(2))
         assert_that(json_response[0]['name'], starts_with('foo-node'))
+
+    def test_resource_re_string_multiple_ids(self):
+        re = resource_re_string('node', TestResourceViewMultipleIDs)
+        assert_that(re, is_(
+            '^node(?:/((?P<id>{})|(?P<slug>[\\w-]+))'
+            '(?:/(?P<sub_resource>[a-z]+))?)?'.format(
+                UUID_RE_STRING)))
+
+    def test_multiple_ids(self):
+        node = NodeFactory(name='foo-node-1', slug='foo-node-1')
+
+        status_code, id_response = self.get(
+            {'id': str(node.id)},
+            cls=TestResourceViewMultipleIDs
+        )
+
+        assert_that(status_code, is_(200))
+
+        status_code, slug_response = self.get(
+            {'slug': node.slug},
+            cls=TestResourceViewMultipleIDs
+        )
+
+        assert_that(status_code, is_(200))
+        assert_that(slug_response, is_(id_response))
 
     def test_list_filters(self):
         NodeFactory(name='foo')
@@ -213,18 +273,6 @@ class ResourceViewTestCase(TestCase):
         status_code, _ = self.post(body=json.dumps(post_object))
         assert_that(status_code, is_(400))
 
-    def test_get_or_create(self):
-        node = NodeFactory()
-        view = TestResourceView()
-
-        model = view._get_or_create_model({})
-        assert_that(model.name, is_not(equal_to(node.name)))
-
-        model = view._get_or_create_model({
-            'id': str(node.id),
-        })
-        assert_that(model.name, is_(node.name))
-
     def test_rollsback_on_failure(self):
         node_type = NodeTypeFactory()
         post_object = {
@@ -240,3 +288,62 @@ class ResourceViewTestCase(TestCase):
                 name='save-and-fail-validation'),
             raises(Node.DoesNotExist),
         )
+
+    def test_post_doesnt_update(self):
+        node_type = NodeTypeFactory()
+        post_object = {
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx'
+        }
+        status_code, json_response = self.post(body=json.dumps(post_object))
+
+        assert_that(status_code, is_(200))
+
+        post_object['id'] = json_response['id']
+        post_object['name'] = 'foobar'
+        status_code, json_response = self.post(body=json.dumps(post_object))
+
+        assert_that(status_code, is_(400))
+
+    def test_put(self):
+        node_type = NodeTypeFactory()
+        post_object = {
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx'
+        }
+        status_code, post_json_response = self.post(
+            body=json.dumps(post_object))
+
+        assert_that(status_code, is_(200))
+
+        post_object['name'] = 'foobar'
+        status_code, put_json_response = self.put(
+            body=json.dumps(post_object),
+            args={
+                'id': post_json_response['id'],
+            },
+        )
+
+        assert_that(status_code, is_(200))
+        assert_that(put_json_response['name'], is_('foobar'))
+        assert_that(put_json_response['id'], post_json_response['id'])
+
+    def test_update_relationships(self):
+        node_type = NodeTypeFactory()
+        view = TestResourceView()
+
+        request = HttpRequest()
+        request.META['CONTENT_TYPE'] = 'application/json'
+        request._body = json.dumps({
+            'type_id': str(node_type.id),
+            'name': 'foo',
+            'slug': 'xtx',
+        })
+
+        response = view.post(None, request)
+
+        assert_that(response, instance_of(HttpResponse))
+        assert_that(response.status_code, is_(200))
+        assert_that(view.was_saved, is_(True))

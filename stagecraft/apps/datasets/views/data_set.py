@@ -37,7 +37,9 @@ class DataSetView(ResourceView):
         'data-type': 'data_type__name',
         'data_type': 'data_type__name',
     }
-    id_field = 'name'
+    id_fields = {
+        'name': '[\w-]+',
+    }
     generated_id = False
     schema = {
         "$schema": "http://json-schema.org/schema#",

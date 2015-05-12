@@ -99,6 +99,12 @@ class NodeView(ResourceView):
         except NodeType.DoesNotExist:
             return HttpResponse('no NodeType found', status=400)
 
+        model.name = model_json['name']
+        model.slug = model_json.get('slug', None)
+        model.abbreviation = model_json.get('abbreviation', None)
+        model.typeOf = node_type
+
+    def update_relationships(self, model, model_json, request):
         if 'parent_id' in model_json:
             parent_id = model_json['parent_id']
             if not is_uuid(parent_id):
@@ -108,16 +114,7 @@ class NodeView(ResourceView):
                 parent_node = Node.objects.get(id=parent_id)
             except Node.DoesNotExist:
                 return HttpResponse('parent not found', status=400)
-        else:
-            parent_node = None
 
-        model.name = model_json['name']
-        model.slug = model_json.get('slug', None)
-        model.abbreviation = model_json.get('abbreviation', None)
-        model.typeOf = node_type
-
-        if parent_node is not None:
-            model.save()
             model.parents.add(parent_node)
 
     @staticmethod
