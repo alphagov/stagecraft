@@ -160,8 +160,9 @@ class ResourceView(View):
 
     def _user_missing_model_permission(self, user, model):
         user_is_not_admin = 'admin' not in user['permissions']
-        user_is_not_assigned = model.user_set.filter(
-            email=user['email']).count() == 0
+        user_is_not_assigned = hasattr(model, 'user_set') and \
+            model.user_set.filter(email=user['email']).count() == 0
+
         return user_is_not_admin and user_is_not_assigned
 
     def _get_sub_resource(self, request, sub_resource, model):

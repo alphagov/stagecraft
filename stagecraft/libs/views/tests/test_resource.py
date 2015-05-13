@@ -178,6 +178,21 @@ class ResourceViewTestCase(TestCase):
     def tearDown(self):
         Node.objects.all().delete()
 
+    def test_user_filtering_only_with_user_set(self):
+        node = NodeFactory()
+
+        status_code, json_response = self.get(args={
+            'id': str(node.id),
+            'user': {
+                'permissions': [
+                    'signin',
+                ],
+            },
+        })
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response['name'], is_(node.name))
+
     def test_list(self):
         NodeFactory(name='foo-node-1')
         NodeFactory(name='foo-node-2')
