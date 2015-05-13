@@ -148,10 +148,11 @@ class TestResourceViewMultipleIDs(ResourceView):
 
 class ResourceViewTestCase(TestCase):
 
-    def get(self, args={}, query={}, cls=TestResourceView):
+    def get(self, args={}, query={}, cls=TestResourceView, user=None):
         view = cls()
 
         request = HttpRequest()
+        request.method = 'GET'
         for (k, v) in query.items():
             request.GET[k] = v
 
@@ -170,13 +171,14 @@ class ResourceViewTestCase(TestCase):
         view = TestResourceView()
 
         request = HttpRequest()
+        request.method = action
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
         if action == 'POST':
-            response = view.post(None, request, **args)
+            response = view.post(request, **args)
         elif action == 'PUT':
-            response = view.put(None, request, **args)
+            response = view.put(request, **args)
         else:
             raise Exception('Invalid action {}'.format(action))
 
@@ -203,11 +205,10 @@ class ResourceViewTestCase(TestCase):
 
         status_code, json_response = self.get(args={
             'id': str(node.id),
-            'user': {
-                'permissions': [
-                    'signin',
-                ],
-            },
+        }, user={
+            'permissions': [
+                'signin',
+            ],
         })
 
         assert_that(status_code, is_(200))
@@ -403,6 +404,7 @@ class ResourceViewTestCase(TestCase):
         view = TestResourceView()
 
         request = HttpRequest()
+        request.method = 'POST'
         request.META['CONTENT_TYPE'] = 'application/json'
         request._body = json.dumps({
             'type_id': str(node_type.id),
@@ -410,7 +412,7 @@ class ResourceViewTestCase(TestCase):
             'slug': 'xtx',
         })
 
-        response = view.post(None, request)
+        response = view.post(request)
 
         assert_that(response, instance_of(HttpResponse))
         assert_that(response.status_code, is_(200))

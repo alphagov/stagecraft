@@ -57,13 +57,15 @@ class TransformTypeView(ResourceView):
         "additionalProperties": False,
     }
 
+    permissions = {
+        'get': None,
+        'post': 'transforms',
+        'put': 'transforms',
+    }
+
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(TransformTypeView, self).get(request, **kwargs)
-
-    @method_decorator(permission_required('transforms'))
-    def post(self, user, request, **kwargs):
-        return super(TransformTypeView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json, request):
         model.name = model_json['name']
@@ -135,13 +137,15 @@ class TransformView(ResourceView):
         "additionalProperties": False,
     }
 
+    permissions = {
+        'get': None,
+        'post': 'transforms',
+        'put': 'transforms',
+    }
+
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(TransformView, self).get(request, **kwargs)
-
-    @method_decorator(permission_required('transforms'))
-    def post(self, user, request, **kwargs):
-        return super(TransformView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json, request):
         try:

@@ -15,20 +15,23 @@ class DataGroupView(ResourceView):
         "name": "name"
     }
 
-    @method_decorator(permission_required('signin'))
+    permissions = {
+        'get': 'signin',
+        'post': 'signin',
+        'put': 'signin',
+    }
+
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
-    def get(self, user, request, **kwargs):
-        kwargs['user'] = user
+    def get(self, request, **kwargs):
         return super(DataGroupView, self).get(
             request,
             **kwargs)
 
-    @method_decorator(permission_required('signin'))
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
-    def post(self, user, request, **kwargs):
-        return super(DataGroupView, self).post(user, request, **kwargs)
+    def post(self, request, **kwargs):
+        return super(DataGroupView, self).post(request, **kwargs)
 
     def update_model(self, model, model_json, request):
         for (key, value) in model_json.items():

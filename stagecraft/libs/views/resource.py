@@ -3,6 +3,7 @@ import jsonschema
 import logging
 import re
 from stagecraft.apps.users.models import User
+from stagecraft.libs.authorization.http import authorize
 
 from django.http import HttpResponse
 from django.conf.urls import url
@@ -54,6 +55,11 @@ def is_uuid(instance):
 class ResourceView(View):
 
     model = None
+    permissions = {
+        'get': None,
+        'post': None,
+        'put': None,
+    }
     id_fields = {
         'id': UUID_RE_STRING,
     }
@@ -68,9 +74,12 @@ class ResourceView(View):
         user = kwargs.get('user', None)
         additional_filters = kwargs.get('additional_filters', {})
         unfiltered_roles = {'admin', 'dashboard-editor'}
+
         should_filter = user and (len(set(user['permissions']).intersection(
             unfiltered_roles)) == 0)
-        if should_filter:
+        can_filter = hasattr(self.model, 'user_set')
+
+        if should_filter and can_filter:
             additional_filters['user'] = User.objects.filter(
                 email=user['email'])
 
@@ -134,8 +143,11 @@ class ResourceView(View):
         pass
 
     def get(self, request, **kwargs):
+        user, err = self._authorize(request)
+        if err:
+            return err
+
         id_field, id = self._find_id(kwargs)
-        user = kwargs.get('user', None)
         sub_resource = kwargs.get('sub_resource', None)
 
         if id is not None:
@@ -191,7 +203,11 @@ class ResourceView(View):
         return None
 
     @method_decorator(atomic_view)
-    def post(self, user, request, **kwargs):
+    def post(self, request, **kwargs):
+        user, err = self._authorize(request)
+        if err:
+            return err
+
         model_json, err = self._validate_json(request)
         if err:
             return err
@@ -217,7 +233,11 @@ class ResourceView(View):
         return self._response(model)
 
     @method_decorator(atomic_view)
-    def put(self, user, request, **kwargs):
+    def put(self, request, **kwargs):
+        user, err = self._authorize(request)
+        if err:
+            return err
+
         id_field, id = self._find_id(kwargs)
 
         if id is None:
@@ -244,6 +264,10 @@ class ResourceView(View):
             return err
 
         return self._response(model)
+
+    def _authorize(self, request):
+        permission_required = self.permissions[request.method.lower()]
+        return authorize(request, permission_required)
 
     def _validate_json(self, request):
         if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':

@@ -86,6 +86,12 @@ class DataSetView(ResourceView):
         "additionalProperties": False,
     }
 
+    permissions = {
+        'get': 'signin',
+        'post': 'signin',
+        'put': 'signin',
+    }
+
     def list(self, request, **kwargs):
         '''
         Override ResourceView's list function (called by its 'get' function)
@@ -95,20 +101,17 @@ class DataSetView(ResourceView):
         queryset = super(DataSetView, self).list(request, **kwargs)
         return queryset.select_related('data_group', 'data_type')
 
-    @method_decorator(permission_required('signin'))
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
-    def get(self, user, request, **kwargs):
-        kwargs['user'] = user
+    def get(self, request, **kwargs):
         return super(DataSetView, self).get(
             request,
             **kwargs)
 
-    @method_decorator(permission_required('signin'))
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
-    def post(self, user, request, **kwargs):
-        return super(DataSetView, self).post(user, request, **kwargs)
+    def post(self, request, **kwargs):
+        return super(DataSetView, self).post(request, **kwargs)
 
     def update_model(self, model, model_json, request):
         try:

@@ -1,16 +1,19 @@
 from datetime import datetime, timedelta
 from functools import wraps
 
-from hamcrest import assert_that, equal_to, none
+from hamcrest import assert_that, equal_to, none, is_
 from httmock import urlmatch, HTTMock
 from mock import patch
 
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
 from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.apps.datasets.tests.support.test_helpers import has_header
-from stagecraft.libs.authorization.http import check_permission
+from stagecraft.libs.authorization.http import (
+    check_permission, authorize
+)
 
 
 def govuk_signon_mock(**kwargs):
@@ -155,3 +158,66 @@ class CheckPermissionTestCase(TestCase):
         (user, has_permission) = check_permission('correct-token', 'signin')
 
         assert_that(has_permission, equal_to(True))
+
+    def test_if_permission_is_none_and_user_then_ok(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission('correct-token',
+                                                      None)
+
+            assert_that(has_permission, equal_to(True))
+
+    def test_if_permission_is_none_and_no_user_then_fail(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission('incorrect-token',
+                                                      None)
+
+            assert_that(has_permission, equal_to(False))
+
+    def test_anon_user_if_no_token(self):
+        assert_that(True, is_(False))
+
+
+class AuthorizeTestCase(TestCase):
+
+    def setUp(self):
+        self.use_development_users = settings.USE_DEVELOPMENT_USERS
+
+    def tearDown(self):
+        settings.USE_DEVELOPMENT_USERS = self.use_development_users
+
+    def test_authorize(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        request = HttpRequest()
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer correct-token'
+
+        with HTTMock(govuk_signon_mock()):
+            user, err = authorize(request, 'signin')
+            assert_that(err, is_(None))
+            assert_that(user['uid'], is_('a-long-uid'))
+
+    def test_authorize_no_user(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        request = HttpRequest()
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer incorrect-token'
+
+        with HTTMock(govuk_signon_mock()):
+            user, err = authorize(request, 'signin')
+            assert_that(err.status_code, is_(401))
+            assert_that(user, is_(None))
+
+    def test_authorize_bad_permission(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        request = HttpRequest()
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer correct-token'
+
+        with HTTMock(govuk_signon_mock()):
+            user, err = authorize(request, 'super-high-level-permission')
+            assert_that(err.status_code, is_(403))
+            assert_that(user['uid'], is_('a-long-uid'))

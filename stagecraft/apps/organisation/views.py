@@ -26,13 +26,15 @@ class NodeTypeView(ResourceView):
         'name': 'name__iexact',
     }
 
+    permissions = {
+        'get': None,
+        'post': 'organisation',
+        'put': 'organisation',
+    }
+
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(NodeTypeView, self).get(request, **kwargs)
-
-    @method_decorator(permission_required('organisation'))
-    def post(self, user, request, **kwargs):
-        return super(NodeTypeView, self).post(user, request, **kwargs)
 
     def update_model(self, model, model_json, request):
         model.name = model_json['name']
@@ -78,13 +80,15 @@ class NodeView(ResourceView):
         'type': 'typeOf__name',
     }
 
+    permissions = {
+        'get': None,
+        'post': 'organisation',
+        'put': 'organisation',
+    }
+
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(NodeView, self).get(request, **kwargs)
-
-    @method_decorator(permission_required('organisation'))
-    def post(self, user, request, **kwargs):
-        return super(NodeView, self).post(user, request, **kwargs)
 
     def from_resource(self, request, identifier, model):
         if identifier == 'ancestors':
