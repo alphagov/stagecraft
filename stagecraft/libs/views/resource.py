@@ -124,7 +124,7 @@ class ResourceView(View):
         except self.model.DoesNotExist:
             return None
 
-    def from_resource(self, request, model):
+    def from_resource(self, request, model, sub_resource):
         return None
 
     def update_model(self, model, model_json, request):
