@@ -1,7 +1,7 @@
 [
 {
     "pk": 1,
-    "model": "datasets.backdropuser",
+    "model": "users.user",
     "fields": {
         "email": "tea@yourmumshouse.com",
         "data_sets": []
@@ -9,7 +9,7 @@
 },
 {
     "pk": 2,
-    "model": "datasets.backdropuser",
+    "model": "users.user",
     "fields": {
         "email": "foo@bar.com",
         "data_sets": [3,4]

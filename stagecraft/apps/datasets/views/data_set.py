@@ -14,9 +14,9 @@ from django.utils.decorators import method_decorator
 
 from stagecraft.apps.datasets.models import(
     DataSet,
-    BackdropUser,
     DataGroup,
     DataType)
+from stagecraft.apps.users.models import User
 from stagecraft.apps.transforms.models import Transform
 from stagecraft.apps.transforms.views import TransformView
 
@@ -192,13 +192,13 @@ def dashboard(user, request, name):
 @vary_on_headers('Authorization')
 def users(user, request, dataset_name):
 
-    backdrop_users = BackdropUser.objects.filter(
+    users = User.objects.filter(
         data_sets__name=dataset_name
     )
 
-    if backdrop_users:
+    if users:
         json_str = to_json(
-            [u.api_object() for u in backdrop_users]
+            [u.api_object() for u in users]
         )
     else:
         json_str = to_json([])

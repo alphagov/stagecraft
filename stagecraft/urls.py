@@ -8,7 +8,7 @@ import stagecraft.apps.transforms.views as transforms_views
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
 from stagecraft.apps.datasets.views import data_group as datagroups_views
-from stagecraft.apps.datasets.views import backdrop_user as backdrop_user_views
+import stagecraft.apps.users.views as user_views
 from stagecraft.apps.dashboards.views import dashboard as dashboard_views
 from stagecraft.apps.dashboards.views import module as module_views
 from stagecraft.apps.dashboards.views import \
@@ -51,7 +51,7 @@ urlpatterns = patterns(
             pattern_name='data-sets-transform',
             permanent=True)),
     url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
-        backdrop_user_views.detail),
+        user_views.detail),
     url(r'^_status/data-sets$', datasets_views.health_check),
     url(r'^_status$', status_views.status),
 

@@ -2,8 +2,7 @@ import json
 import jsonschema
 import logging
 import re
-from stagecraft.apps.datasets.models import(
-    BackdropUser)
+from stagecraft.apps.users.models import User
 
 from django.http import HttpResponse
 from django.conf.urls import url
@@ -71,7 +70,7 @@ class ResourceView(View):
         should_filter = user and (len(set(user['permissions']).intersection(
             unfiltered_roles)) == 0)
         if should_filter:
-            additional_filters['backdropuser'] = BackdropUser.objects.filter(
+            additional_filters['user'] = User.objects.filter(
                 email=user['email'])
 
         query_set = self.model.objects
@@ -90,7 +89,7 @@ class ResourceView(View):
             for (query_filter, model_filter) in self.list_filters.items()
         ]
         filter_args = {k: v for (k, v) in filter_items if v is not None}
-        # Used to filter by, for instance, backdrop user
+        # Used to filter by, for instance, user
         filter_args = dict(filter_args.items() + additional_filters.items())
 
         return query_set.filter(**filter_args).order_by('pk')
@@ -159,7 +158,7 @@ class ResourceView(View):
 
     def _user_missing_model_permission(self, user, model):
         user_is_not_admin = 'admin' not in user['permissions']
-        user_is_not_assigned = model.backdropuser_set.filter(
+        user_is_not_assigned = model.user_set.filter(
             email=user['email']).count() == 0
         return user_is_not_admin and user_is_not_assigned
 

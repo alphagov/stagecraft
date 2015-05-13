@@ -9,7 +9,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
-from ..support.test_helpers import (
+from stagecraft.apps.datasets.tests.support.test_helpers import (
     is_unauthorized, is_forbidden, is_error_response, has_header)
 
 

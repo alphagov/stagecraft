@@ -8,9 +8,7 @@ import reversion
 
 
 @python_2_unicode_compatible
-class BackdropUser(models.Model):
-
-    """Users of backdrop admin, as opposed to Stagecraft users"""
+class User(models.Model):
 
     email = models.EmailField(
         max_length=254,
@@ -41,8 +39,8 @@ class BackdropUser(models.Model):
         return "{}".format(self.email)
 
     class Meta:
-        app_label = 'datasets'
+        app_label = 'users'
         ordering = ['email']
 
 
-reversion.register(BackdropUser)
+reversion.register(User)
