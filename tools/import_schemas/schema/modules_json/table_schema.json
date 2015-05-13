@@ -1,6 +1,7 @@
 {
-  "id": "/ModuleCommon",
+  "id": "/Table",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "axes": {
       "type": "object",
@@ -16,40 +17,6 @@
           }
         }
       }
-    },
-    "axis-period": {
-      "type": "string",
-      "required": false,
-      "oneOf": [
-        {
-          "enum": [
-            "day",
-            "week",
-            "month",
-            "quarter"
-          ]
-        }
-      ]
-    },
-    "date-picker": {
-      "type": "object",
-      "required": false,
-      "properties": {
-        "start-date": {
-          "type": "string",
-          "format": "date-time",
-          "required": true
-        }
-      }
-    },
-    "value-attribute": {
-      "type": "string"
-    },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
     },
     "sort-order": {
       "type": "string",
