@@ -62,6 +62,7 @@ class ResourceView(View):
     sub_resources = {}
     list_filters = {}
     any_of_multiple_values_filter = {}
+    order_by = 'pk'
 
     def list(self, request, **kwargs):
         user = kwargs.get('user', None)
@@ -81,7 +82,8 @@ class ResourceView(View):
         query_set = self.filter_by_any_of_multiple_value_filter(
             query_set,
             request)
-        return query_set.order_by('pk')
+
+        return query_set.order_by(self.order_by)
 
     def filter_by_list_filters(self, query_set, request, additional_filters):
         filter_items = [
