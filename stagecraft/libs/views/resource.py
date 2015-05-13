@@ -172,7 +172,7 @@ class ResourceView(View):
         if sub_view is not None:
             resources = sub_view.from_resource(request, sub_resource, model)
             if resources is not None:
-                return self._response(resources)
+                return sub_view._response(resources)
             else:
                 return HttpResponse('sub resources not found', status=404)
         else:

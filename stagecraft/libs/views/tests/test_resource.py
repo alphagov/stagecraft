@@ -4,7 +4,8 @@ from django.test.client import RequestFactory
 from mock import Mock
 from hamcrest import (
     assert_that, is_, calling, raises, is_not,
-    instance_of, starts_with, has_key, equal_to
+    instance_of, starts_with, has_key, equal_to,
+    has_entry
 )
 from unittest import TestCase
 
@@ -108,6 +109,25 @@ class TestResourceView(ResourceView):
             'id': str(model.id),
             'name': model.name,
         }
+
+
+class TestResourceViewChild(TestResourceView):
+
+    def from_resource(self, request, sub_resource, model):
+        return model
+
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            "foo": "bar"
+        }
+
+
+TestResourceView.sub_resources = {
+    'child': TestResourceViewChild(),
+}
 
 
 class TestResourceViewMultipleIDs(ResourceView):
@@ -395,3 +415,11 @@ class ResourceViewTestCase(TestCase):
         assert_that(response, instance_of(HttpResponse))
         assert_that(response.status_code, is_(200))
         assert_that(view.was_saved, is_(True))
+
+    def test_sub_resource_returns_child_object(self):
+        node = NodeFactory()
+        status_code, sub_resource = self.get(args={
+            "id": node.id,
+            "sub_resource": "child"})
+        assert_that(status_code, is_(200))
+        assert_that(sub_resource, has_entry("foo", "bar"))
