@@ -282,7 +282,10 @@ class ResourceView(View):
     def _response(self, model):
         if hasattr(self.__class__, 'serialize'):
             if hasattr(model, '__iter__'):
-                obj = [self.__class__.serialize(m) for m in model]
+                if hasattr(self.__class__, 'serialize_for_list'):
+                    obj = [self.__class__.serialize_for_list(m) for m in model]
+                else:
+                    obj = [self.__class__.serialize(m) for m in model]
             else:
                 obj = self.__class__.serialize(model)
         else:

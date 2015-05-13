@@ -95,6 +95,14 @@ class TestResourceView(ResourceView):
             model.save()
 
     @staticmethod
+    def serialize_for_list(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            'in_list': True,
+        }
+
+    @staticmethod
     def serialize(model):
         return {
             'id': str(model.id),
@@ -179,6 +187,15 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(len(json_response), is_(2))
         assert_that(json_response[0]['name'], starts_with('foo-node'))
+
+    def test_list_serializes_with_diff_func(self):
+        NodeFactory(name='foo-node-1')
+        NodeFactory(name='foo-node-2')
+
+        status_code, json_response = self.get()
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response[0]['in_list'], is_(True))
 
     def test_resource_re_string_multiple_ids(self):
         re = resource_re_string('node', TestResourceViewMultipleIDs)
