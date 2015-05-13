@@ -3,6 +3,7 @@ import uuid
 from django.core.validators import RegexValidator
 from django.db import models
 
+from stagecraft.apps.users.models import User
 from stagecraft.apps.organisation.views import NodeView
 
 
@@ -42,6 +43,7 @@ class Dashboard(models.Model):
             slug_validator
         ]
     )
+    owners = models.ManyToManyField(User)
 
     dashboard_types = [
         'transaction',
