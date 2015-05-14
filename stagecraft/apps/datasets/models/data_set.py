@@ -68,6 +68,7 @@ class DataSet(models.Model):
                                    verbose_name='created (UTC)')
     modified = models.DateTimeField(auto_now=True,
                                     verbose_name='modified (UTC)')
+    owners = models.ManyToManyField('users.User')
     data_group = models.ForeignKey(
         DataGroup,
         on_delete=models.PROTECT,
