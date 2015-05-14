@@ -50,8 +50,6 @@ urlpatterns = patterns(
         RedirectView.as_view(
             pattern_name='data-sets-transform',
             permanent=True)),
-    url(r'^users/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})$',
-        user_views.detail),
     url(r'^_status/data-sets$', datasets_views.health_check),
     url(r'^_status$', status_views.status),
 
@@ -90,4 +88,5 @@ urlpatterns = patterns(
     resource_url('data-sets', datasets_views.DataSetView),
     resource_url('data-groups', datagroups_views.DataGroupView),
     resource_url('module', module_views.ModuleView),
+    resource_url('users', user_views.UserView)
 )
