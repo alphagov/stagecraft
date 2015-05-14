@@ -16,7 +16,5 @@ class UserAdmin(reversion.VersionAdmin):
     search_fields = ['email']
     list_display = ('email',)
     list_per_page = 30
-    filter_horizontal = ('data_sets',)
-
 
 admin.site.register(User, UserAdmin)

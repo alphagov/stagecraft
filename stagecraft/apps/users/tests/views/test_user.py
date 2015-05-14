@@ -61,7 +61,7 @@ class UserViewsTestCase(TestCase):
             '/users/foo%40bar.com',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
-        expected = {'data_sets': ['set1', 'set2'], 'email': 'foo@bar.com'}
+        expected = {'email': 'foo@bar.com'}
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
     def test_detail_nonexistant_user(self):

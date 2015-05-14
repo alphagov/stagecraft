@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 email=email,
             )
             for data_set in data_sets:
-                user.data_sets.add(data_set)
+                user.dataset_set.add(data_set)
                 self.stdout.write(
                     "Added access to {0} for user {1}".format(data_set, email)
                 )
