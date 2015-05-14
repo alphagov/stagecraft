@@ -17,43 +17,11 @@
         }
       }
     },
-    "axis-period": {
-      "type": "string",
-      "required": false,
-      "oneOf": [
-        {
-          "enum": [
-            "day",
-            "week",
-            "month",
-            "quarter"
-          ]
-        }
-      ]
-    },
-    "date-picker": {
-      "type": "object",
-      "required": false,
-      "properties": {
-        "start-date": {
-          "type": "string",
-          "format": "date-time",
-          "required": true
-        }
-      }
-    },
     "value-attribute": {
       "type": "string"
     },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
-    },
     "matching-attribute": {
-      "type": "string",
-      "required": false
+      "type": "string"
     }
   },
   "definitions": {
