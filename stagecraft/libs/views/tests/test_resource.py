@@ -5,8 +5,8 @@ from mock import Mock
 from hamcrest import (
     assert_that, is_, calling, raises, is_not,
     instance_of, starts_with, has_key, equal_to,
-    has_entry
-)
+    has_entry,
+    contains)
 from unittest import TestCase
 
 from django.http import HttpRequest, HttpResponse
@@ -78,7 +78,7 @@ class TestResourceView(ResourceView):
 
     was_saved = False
 
-    def update_relationships(self, model, model_json, request):
+    def update_relationships(self, model, model_json, request, parent):
         self.was_saved = model.pk is not None
 
     def update_model(self, model, model_json, request):
@@ -113,8 +113,17 @@ class TestResourceView(ResourceView):
 
 class TestResourceViewChild(TestResourceView):
 
-    def from_resource(self, request, sub_resource, model):
-        return model
+    def update_relationships(self, model, model_json, request, parent):
+        if parent:
+            model.parents.add(parent)
+
+    @staticmethod
+    def serialize_for_list(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            "foo": "bar"
+        }
 
     @staticmethod
     def serialize(model):
@@ -423,5 +432,43 @@ class ResourceViewTestCase(TestCase):
         status_code, sub_resource = self.get(args={
             "id": node.id,
             "sub_resource": "child"})
+
         assert_that(status_code, is_(200))
-        assert_that(sub_resource, has_entry("foo", "bar"))
+        assert_that(sub_resource, contains(has_entry("foo", "bar")))
+
+    def test_if_post_with_id_bad_request(self):
+        status_code, resp = self.post(args={
+            'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4',
+        })
+        assert_that(status_code, is_(405))
+
+    def test_post_to_a_sub_resource(self):
+        node = NodeFactory()
+        node_type = NodeTypeFactory()
+        status_code, resp = self.post(args={
+            'id': node.id,
+            'sub_resource': 'child',
+        }, body=json.dumps({
+            'type_id': str(node_type.id),
+            'slug': 'a-node',
+            'name': 'a-node',
+        }))
+        print resp
+        assert_that(status_code, is_(200))
+        assert_that(node.node_set.count(), is_(1))
+
+    def test_post_404s_if_parent_doesnt_exist(self):
+        status_code, resp = self.post(args={
+            'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4',
+            'sub_resource': 'child',
+        }, body=json.dumps({
+        }))
+        assert_that(status_code, is_(404))
+
+    def test_post_to_sub_resource_validates_against_schema(self):
+        node = NodeFactory()
+        status_code, response = self.post(args={
+            'id': node.id,
+            'sub_resource': 'child',
+        }, body=json.dumps({}))
+        assert_that(status_code, is_(400))

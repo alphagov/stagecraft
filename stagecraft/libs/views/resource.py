@@ -133,13 +133,10 @@ class ResourceView(View):
         except self.model.DoesNotExist:
             return None
 
-    def from_resource(self, request, model, sub_resource):
-        return None
-
     def update_model(self, model, model_json, request):
         pass
 
-    def update_relationships(self, model, model_json, request):
+    def update_relationships(self, model, model_json, request, parent):
         pass
 
     def get(self, request, **kwargs):
@@ -159,7 +156,7 @@ class ResourceView(View):
             else:
                 return self._response(model)
         else:
-            return self._response(self.list(request, user=user))
+            return self._response(self.list(request, user=user, **kwargs))
 
     def _find_id(self, args):
         for key, regex in self.id_fields.items():
@@ -182,11 +179,10 @@ class ResourceView(View):
         sub_view = self.sub_resources.get(sub_resource, None)
 
         if sub_view is not None:
-            resources = sub_view.from_resource(request, sub_resource, model)
-            if resources is not None:
-                return sub_view._response(resources)
-            else:
-                return HttpResponse('sub resources not found', status=404)
+            sub_view_method = getattr(sub_view, request.method.lower())
+            return sub_view_method(request, **{
+                'parent': model,
+            })
         else:
             return HttpResponse('sub resource not found', status=404)
 
@@ -208,29 +204,45 @@ class ResourceView(View):
         if err:
             return err
 
-        model_json, err = self._validate_json(request)
-        if err:
-            return err
+        id_field, id = self._find_id(kwargs)
+        if id is not None:
+            if 'sub_resource' in kwargs:
+                model = self.by_id(request, id_field, id, user=user)
+                if model:
+                    return self._get_sub_resource(request,
+                                                  kwargs['sub_resource'],
+                                                  model)
+                else:
+                    return HttpResponse('parent resource not found',
+                                        status=404)
+            else:
+                return HttpResponse("can't post to a resource", status=405)
+        else:
+            model_json, err = self._validate_json(request)
+            if err:
+                return err
 
-        model = self.model()
+            model = self.model()
 
-        err = self.update_model(model, model_json, request)
-        if err:
-            return err
+            err = self.update_model(model, model_json, request)
+            if err:
+                return err
 
-        err = self._validate_and_save(model)
-        if err:
-            return err
+            err = self._validate_and_save(model)
+            if err:
+                return err
 
-        err = self.update_relationships(model, model_json, request)
-        if err:
-            return err
+            err = self.update_relationships(
+                model, model_json, request, kwargs.get('parent', None)
+            )
+            if err:
+                return err
 
-        err = self._validate_and_save(model)
-        if err:
-            return err
+            err = self._validate_and_save(model)
+            if err:
+                return err
 
-        return self._response(model)
+            return self._response(model)
 
     @method_decorator(atomic_view)
     def put(self, request, **kwargs):
@@ -255,7 +267,9 @@ class ResourceView(View):
         if err:
             return err
 
-        err = self.update_relationships(model, model_json, request)
+        err = self.update_relationships(
+            model, model_json, request, kwargs.get('parent', None)
+        )
         if err:
             return err
 
