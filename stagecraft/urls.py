@@ -56,8 +56,6 @@ urlpatterns = patterns(
     url(r'^_status$', status_views.status),
 
     # Dashboards
-    url(r'^dashboards$', dashboard_views.list_dashboards),
-    url(r'^dashboard$', dashboard_views.dashboard, name='dashboard'),
     url(
         r'^public/dashboards$',
         dashboard_views.dashboards_for_spotlight,
@@ -66,18 +64,6 @@ urlpatterns = patterns(
         pattern_name='dashboards_for_spotlight',
         permanent=True,
         query_string=True)),
-
-    # Dashboard by UUID
-    url(r'^dashboard/(?P<identifier>{})/module$'.format(uuid_regexp),
-        module_views.modules_on_dashboard),
-    url(r'^dashboard/(?P<identifier>{})$'.format(uuid_regexp),
-        dashboard_views.dashboard, name='dashboard'),
-
-    # Or Slug
-    url(r'^dashboard/(?P<identifier>[-a-z0-9]+)/module$',
-        module_views.modules_on_dashboard),
-    url(r'^dashboard/(?P<identifier>[-a-z0-9]+)$',
-        dashboard_views.dashboard, name='dashboard'),
 
     url(r'^transactions-explorer-service/(?P<identifier>[-a-z0-9]+)/dashboard',
         transactions_explorer_views.dashboards_by_tx, name='dashboards_by_tx'),
@@ -90,4 +76,5 @@ urlpatterns = patterns(
     resource_url('data-groups', datagroups_views.DataGroupView),
     resource_url('module-type', module_views.ModuleTypeView),
     resource_url('module', module_views.ModuleView),
+    resource_url('dashboard', dashboard_views.DashboardView),
 )

@@ -1,16 +1,15 @@
 from django.utils.decorators import method_decorator
-from stagecraft.libs.views.resource import ResourceView
+from stagecraft.libs.views.resource import ResourceView, UUID_RE_STRING
 import json
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from jsonschema.exceptions import SchemaError, ValidationError
+from jsonschema.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.views.decorators.cache import never_cache
 from django.db import DataError
 
 from stagecraft.apps.datasets.models import DataSet
-from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
 
 from ..models import Dashboard, Module, ModuleType
@@ -25,33 +24,6 @@ def json_response(obj):
 
 REQUIRED_KEYS = set(['type_id', 'slug', 'title', 'description', 'info',
                      'options', 'order'])
-
-
-@csrf_exempt
-@never_cache
-def modules_on_dashboard(request, identifier):
-
-    try:
-        if is_uuid(identifier):
-            dashboard = Dashboard.objects.get(id=identifier)
-        else:
-            dashboard = Dashboard.objects.get(slug=identifier)
-    except Dashboard.DoesNotExist:
-        return HttpResponse('dashboard does not exist', status=404)
-
-    if request.method == 'GET':
-        return list_modules_on_dashboard(request, dashboard)
-    elif request.method == 'POST':
-        return add_module_to_dashboard_view(request, dashboard)
-    else:
-        return HttpResponse('', status=405)
-
-
-def list_modules_on_dashboard(request, dashboard):
-    modules = Module.objects.filter(dashboard=dashboard)
-    serialized = [module.serialize() for module in modules]
-
-    return json_response(serialized)
 
 
 def add_module_to_dashboard(dashboard, module_settings, parent_module=None):
@@ -133,39 +105,145 @@ def add_module_to_dashboard(dashboard, module_settings, parent_module=None):
     return module
 
 
-@permission_required('dashboard')
-def add_module_to_dashboard_view(user, request, dashboard):
-    if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
-        return HttpResponse('bad content type', status=415)
-
-    try:
-        module_settings = json.loads(request.body)
-    except ValueError:
-        return HttpResponse('bad json', status=400)
-
-    try:
-        module = add_module_to_dashboard(dashboard, module_settings)
-    except ValueError as e:
-        return HttpResponse(e.message, status=400)
-
-    return json_response(module.serialize())
-
-
 class ModuleView(ResourceView):
     model = Module
 
+    id_fields = {
+        'id': UUID_RE_STRING,
+        'slug': '[\w-]+',
+    }
+
+    list_filters = {
+        'name': 'name__iexact'
+    }
+
+    schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+            },
+            "type_id": {
+                "type": "string",
+            },
+            "dashboard": {
+                "type": "string",
+            },
+            "data_group": {
+                "type": "string",
+            },
+            "data_type": {
+                "type": "string",
+            },
+            "parent": {
+                "type": "string",
+            },
+            "slug": {
+                "type": "string",
+            },
+            "title": {
+                "type": "string",
+            },
+            "description": {
+                "type": "string",
+            },
+            "info": {
+                "type": "array",
+            },
+            "options": {
+                "type": "object",
+            },
+            "query_parameters": {
+                "type": "object",
+            },
+            "order": {
+                "type": "integer",
+            },
+            "objects": {
+                "type": "string",
+            },
+            "modules": {
+                "type": "array"
+            }
+        },
+        "required": ["type_id", "slug", "title", "order"],
+        "additionalProperties": False,
+    }
+
+    permissions = {
+        'get': None,
+        'post': 'dashboard',
+        'put': 'dashboard',
+    }
+
+    def list(self, request, **kwargs):
+        query_set = super(ModuleView, self).list(request, **kwargs)
+
+        if 'parent' in kwargs:
+            query_set = query_set.filter(dashboard=kwargs['parent'].id)
+
+        return query_set
+
     @csrf_exempt
-    @never_cache
+    @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(ModuleView, self).get(request, **kwargs)
 
-    def post(self, request, **kwargs):
-        # block direct creation of modules for now.
-        return HttpResponse('', status=405)
+    def update_model(self, model, model_json, request, parent):
 
-    def put(self, request, **kwargs):
-        # block direct creation of modules for now.
-        return HttpResponse('', status=405)
+        try:
+            module_type = ModuleType.objects.get(id=model_json['type_id'])
+        except ModuleType.DoesNotExist:
+            return HttpResponse('module type not found', status=404)
+
+        try:
+            dashboard = Dashboard.objects.get(id=parent.id)
+        except Dashboard.DoesNotExist:
+            return HttpResponse('dashboard not found', status=404)
+
+        model.type = module_type
+        model.dashboard = dashboard
+        model.slug = model_json['slug']
+        model.title = model_json['title']
+        model.description = model_json['description']
+        model.info = model_json['info']
+        model.options = model_json['options']
+        model.order = model_json['order']
+
+        if model_json.get('data_group') and model_json.get('data_type'):
+            try:
+                data_set = DataSet.objects.get(
+                    data_group__name=model_json['data_group'],
+                    data_type__name=model_json['data_type'],
+                )
+            except DataSet.DoesNotExist:
+                return HttpResponse('data set does not exit', status=400)
+
+            model.data_set = data_set
+            model.query_parameters = model_json.get('query_parameters', {})
+
+            try:
+                model.validate_query_parameters()
+            except ValidationError as err:
+                msg = 'Query parameters not valid: {}'.format(err.message)
+                return HttpResponse(msg, status=400)
+        elif model_json.get('query_parameters'):
+            return HttpResponse('query parameters but not data set',
+                                status=400)
+
+    def update_relationships(self, model, model_json, request, parent):
+        if 'parent_id' in model_json:
+            parent_id = model_json['parent_id']
+            if not is_uuid(parent_id):
+                return HttpResponse('parent_id has to be a uuid', status=400)
+
+            try:
+                parent_node = Dashboard.objects.get(id=parent_id)
+            except Dashboard.DoesNotExist:
+                return HttpResponse('parent not found', status=400)
+
+            model.parents.add(parent_node)
 
     @staticmethod
     def serialize(model):

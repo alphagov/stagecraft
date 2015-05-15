@@ -63,7 +63,7 @@ class ModuleViewsTestCase(TestCase):
         cls.module_type.delete()
         cls.dashboard.delete()
 
-    def test_module_only_get(self):
+    def test_module_doesnt_delete(self):
         module1 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
@@ -73,18 +73,8 @@ class ModuleViewsTestCase(TestCase):
         delete_resp = self.client.delete(
             '/module/{}'.format(module1.id),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        put_resp = self.client.put(
-            '/module/{}'.format(module1.id),
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        post_resp = self.client.post(
-            '/module/{}'.format(module1.id),
-            data=json.dumps({}),
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
-            content_type='application/json')
 
         assert_that(delete_resp.status_code, equal_to(405))
-        assert_that(put_resp.status_code, equal_to(405))
-        assert_that(post_resp.status_code, equal_to(405))
 
     def test_get_module_by_uuid(self):
         module1 = ModuleFactory(
@@ -122,16 +112,12 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             equal_to(module_attrs))
 
-    def test_modules_on_dashboard_only_get_post(self):
+    def test_modules_on_dashboard_doesnt_delete(self):
         delete_resp = self.client.delete(
-            '/dashboard/{}/module'.format(self.dashboard.slug),
-            HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        put_resp = self.client.put(
             '/dashboard/{}/module'.format(self.dashboard.slug),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
 
         assert_that(delete_resp.status_code, equal_to(405))
-        assert_that(put_resp.status_code, equal_to(405))
 
     def test_list_modules_by_uuid_or_slug(self):
         DashboardFactory(
@@ -235,6 +221,7 @@ class ModuleViewsTestCase(TestCase):
                 'options': {
                     'thing': 'a value',
                 },
+                'objects': "some object",
                 'order': 1,
                 'modules': [],
             }),
