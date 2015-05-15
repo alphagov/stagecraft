@@ -67,7 +67,7 @@ class TransformTypeView(ResourceView):
     def get(self, request, **kwargs):
         return super(TransformTypeView, self).get(request, **kwargs)
 
-    def update_model(self, model, model_json, request):
+    def update_model(self, model, model_json, request, parent):
         model.name = model_json['name']
         model.function = model_json['function']
         model.schema = model_json['schema']
@@ -147,7 +147,7 @@ class TransformView(ResourceView):
     def get(self, request, **kwargs):
         return super(TransformView, self).get(request, **kwargs)
 
-    def update_model(self, model, model_json, request):
+    def update_model(self, model, model_json, request, parent):
         try:
             transform_type = TransformType.objects.get(
                 id=model_json['type_id'])

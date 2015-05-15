@@ -33,7 +33,7 @@ class DataGroupView(ResourceView):
     def post(self, request, **kwargs):
         return super(DataGroupView, self).post(request, **kwargs)
 
-    def update_model(self, model, model_json, request):
+    def update_model(self, model, model_json, request, parent):
         for (key, value) in model_json.items():
             setattr(model, key, value)
 
