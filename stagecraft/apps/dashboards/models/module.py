@@ -1,13 +1,12 @@
 import copy
 import jsonschema
-from jsonschema import Draft3Validator
+from jsonschema import Draft3Validator, SchemaError
 
 from django.core.validators import RegexValidator
 from django.db import models
 
 from dbarray import TextArrayField
 from jsonfield import JSONField
-from jsonschema.validators import validator_for
 from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataSet
@@ -45,9 +44,13 @@ class ModuleType(models.Model):
         app_label = 'dashboards'
 
     # should run on normal validate
-    def validate_schema(self):
-        validator_for(self.schema, Draft3Validator).check_schema(self.schema)
-        return True
+    def validate(self):
+        try:
+            Draft3Validator.check_schema(self.schema)
+        except SchemaError as err:
+            return 'schema is invalid: {}'.format(err)
+
+        return None
 
     def serialize(self):
         return {
