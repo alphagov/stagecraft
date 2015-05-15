@@ -37,7 +37,7 @@ class DataGroupsViewsTestCase(TestCase):
             data=json.dumps(data_group),
             content_type='application/json')
 
-        assert_equal(resp.status_code, 401)
+        assert_equal(resp.status_code, 403)
 
     def test_get(self):
         data_group = DataGroupFactory()
@@ -52,7 +52,7 @@ class DataGroupsViewsTestCase(TestCase):
         resp = self.client.get(
             '/data-groups?name={}'.format(data_group.name))
 
-        assert_equal(resp.status_code, 401)
+        assert_equal(resp.status_code, 403)
 
     def test_get_correct_datagroup(self):
         data_group_1 = DataGroupFactory()
