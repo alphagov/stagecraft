@@ -1,6 +1,7 @@
 {
-  "id": "/ModuleCommon",
+  "id": "/Journey",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "axes": {
       "type": "object",
