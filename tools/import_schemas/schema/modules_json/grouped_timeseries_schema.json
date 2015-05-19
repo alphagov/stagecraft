@@ -70,10 +70,6 @@
         }
       ]
     },
-    "category": {
-      "type": "string",
-      "required": true
-    },
     "use_stack": {
       "type": "boolean"
     },
