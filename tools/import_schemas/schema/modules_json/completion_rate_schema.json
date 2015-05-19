@@ -1,6 +1,7 @@
 {
-  "id": "/ModuleCommon",
+  "id": "/CompletionRate",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "axes": {
       "type": "object",
@@ -31,26 +32,9 @@
         }
       ]
     },
-    "date-picker": {
-      "type": "object",
-      "required": false,
-      "properties": {
-        "start-date": {
-          "type": "string",
-          "format": "date-time",
-          "required": true
-        }
-      }
-    },
     "value-attribute": {
       "type": "string",
       "required": true
-    },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
     },
     "denominator-matcher": {
       "type": "string",
