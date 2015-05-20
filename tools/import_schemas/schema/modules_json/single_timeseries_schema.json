@@ -70,6 +70,17 @@
     },
     "default-value": {
       "type": "integer"
+    },
+    "date-picker": {
+      "type": "object",
+      "required": false,
+      "properties": {
+        "start-date": {
+          "type": "string",
+          "format": "date-time",
+          "required": true
+        }
+      }
     }
   },
   "definitions": {
