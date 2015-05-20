@@ -14,6 +14,12 @@
     "link-attr": {
       "type": "string",
       "required": true
+    },
+    "classes": {
+      "type": [
+        "array",
+        "string"
+      ]
     }
   },
   "$schema": "http://json-schema.org/draft-03/schema#"
