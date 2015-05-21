@@ -1,6 +1,7 @@
 {
-  "id": "/ModuleCommon",
+  "id": "/Column",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "axes": {
       "type": "object",
@@ -17,53 +18,40 @@
         }
       }
     },
-    "axis-period": {
+    "value-attribute": {
       "type": "string",
-      "required": false,
+      "required": true
+    },
+    "format": {
       "oneOf": [
         {
-          "enum": [
-            "day",
-            "week",
-            "month",
-            "quarter"
-          ]
+          "type": "object",
+          "required": false,
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "duration"
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "enum": [
+                "m"
+              ]
+            }
+          }
         }
       ]
     },
-    "date-picker": {
-      "type": "object",
-      "required": false,
-      "properties": {
-        "start-date": {
-          "type": "string",
-          "format": "date-time",
-          "required": true
-        }
-      }
+    "max-bars": {
+      "type": "number",
+      "required": true
     },
-    "value-attribute": {
-      "type": "string"
-    },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
-    },
-    "category": {
+    "pin-to": {
       "type": "string",
       "required": true
-    },
-    "comparison": {
-      "type": "array",
-      "required": true
-    },
-    "show-line-labels": {
-      "type": "boolean"
-    },
-    "use_stack": {
-      "type": "boolean"
     }
   },
   "definitions": {

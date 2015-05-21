@@ -1,6 +1,7 @@
 {
-  "id": "/ModuleCommon",
+  "id": "/UserSatisfactionGraph",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "axes": {
       "type": "object",
@@ -31,6 +32,19 @@
         }
       ]
     },
+    "value-attribute": {
+      "type": "string",
+      "required": true
+    },
+    "total-attribute": {
+      "type": "string"
+    },
+    "trim": {
+      "type": "boolean"
+    },
+    "migrated": {
+      "type": "boolean"
+    },
     "date-picker": {
       "type": "object",
       "required": false,
@@ -41,19 +55,6 @@
           "required": true
         }
       }
-    },
-    "value-attribute": {
-      "type": "string",
-      "required": true
-    },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
-    },
-    "trim": {
-      "type": "boolean"
     }
   },
   "definitions": {

@@ -1,5 +1,5 @@
 {
-  "id": "/KPI",
+  "id": "/BarChartWithNumber",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -7,17 +7,10 @@
       "type": "string",
       "required": true
     },
-    "classes": {
-      "type": [
-        "array",
-        "string"
-      ]
-    },
     "format": {
       "oneOf": [
         {
           "type": "object",
-          "required": true,
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -36,7 +29,6 @@
         },
         {
           "type": "object",
-          "required": true,
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -55,7 +47,6 @@
         },
         {
           "type": "object",
-          "required": true,
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -71,7 +62,6 @@
         },
         {
           "type": "object",
-          "required": true,
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -85,19 +75,72 @@
             }
           }
         }
-      ],
-      "required": true
+      ]
     },
-    "date-period": {
+    "axes": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "$ref": "#/definitions/axis"
+        },
+        "y": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/axis"
+          }
+        }
+      }
+    },
+    "axis-period": {
       "type": "string",
-      "enum": [
-        "hour",
-        "day",
-        "week",
-        "month",
-        "quarter"
-      ],
-      "required": false
+      "required": false,
+      "oneOf": [
+        {
+          "enum": [
+            "day",
+            "week",
+            "month",
+            "quarter"
+          ]
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "axis": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "required": true
+        },
+        "key": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "format": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "$schema": "http://json-schema.org/draft-03/schema#"
