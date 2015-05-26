@@ -4,8 +4,7 @@
   "additionalProperties": false,
   "properties": {
     "value-attribute": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "format": {
       "oneOf": [
