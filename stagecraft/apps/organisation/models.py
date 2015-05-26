@@ -34,9 +34,17 @@ class NodeManager(models.Manager):
         ORDER BY node_parents.depth DESC
         ''', [node.id])
 
+    def immediate_descendants(self, node):
+        return self.raw('''
+        SELECT organisation_node.*
+        FROM organisation_node_parents
+          INNER JOIN organisation_node
+          ON organisation_node.id = organisation_node_parents.from_node_id
+        WHERE organisation_node_parents.to_node_id = %s
+        ''', [node.id])
+
     def get_queryset(self):
-        return super(NodeManager, self).get_queryset().select_related(
-            'typeOf')
+        return super(NodeManager, self).get_queryset().select_related('typeOf')
 
 
 class NodeType(models.Model):
@@ -78,6 +86,9 @@ class Node(models.Model):
 
     def get_ancestors(self, include_self=True):
         return Node.objects.ancestors_of(self, include_self)
+
+    def get_immediate_descendants(self):
+        return Node.objects.immediate_descendants(self)
 
     def spotlightify(self):
         node = {}

@@ -57,6 +57,21 @@ class NodeTestCase(TestCase):
 
         assert_that(calling(str).with_args(node), is_not(raises(ValueError)))
 
+    def test_get_immediate_descendants(self):
+        root = Node.objects.create(name='root', typeOf=self.node_type)
+        intermediate = Node.objects.create(name='intermediate',
+                                           typeOf=self.node_type)
+        intermediate.parents.add(root)
+        intermediate.save()
+
+        leaf = Node.objects.create(name='leaf', typeOf=self.node_type)
+        leaf.parents.add(intermediate)
+        leaf.save()
+
+        immediate_descendants = list(root.get_immediate_descendants())
+        assert_that(len(immediate_descendants), is_(1))
+        assert_that(a_node_has_name('intermediate', immediate_descendants))
+
 
 class NodeTypeTestCase(TestCase):
 
