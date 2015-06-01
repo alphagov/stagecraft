@@ -353,10 +353,7 @@ class Dashboard(models.Model):
             for node in self.agency().get_ancestors(include_self=False):
                 if node.typeOf.name == 'department':
                     dept = node
-            if dept is not None:
-                return dept
-            else:
-                raise ValueError
+            return dept
         else:
             if self.organisation is not None:
                 for node in self.organisation.get_ancestors():
