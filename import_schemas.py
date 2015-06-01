@@ -83,11 +83,16 @@ def validate_all_modules():
 def validate_all_modules_against_files():
     for module in Module.objects.all():
         schema = get_schema_for_module_type(module.type.name)
-        jsonschema.validate(module.options, schema)
-        print "======"
-        print "{} valid in {} dashboard".format(
-            module.slug, module.dashboard.slug)
-        print "^====="
+        try:
+            jsonschema.validate(module.options, schema)
+            print "======"
+            print "{} valid in {} dashboard".format(
+                module.slug, module.dashboard.slug)
+            print "^====="
+        except jsonschema.exceptions.ValidationError as e:
+            print 'failure validating {} in {} dashboard'.format(
+                module.slug, module.dashboard.slug)
+            raise e
     return True
 
 
