@@ -297,9 +297,9 @@ class DashboardTestCase(TransactionTestCase):
         assert_that(
             self.dashboard.department(), equal_to(agency.parents.first()))
 
-    def test_department_throws_exception_when_agency_has_no_department(self):
+    def test_department_is_none_when_agency_has_no_department(self):
         self.dashboard.organisation = AgencyFactory()
-        assert_that(calling(self.dashboard.department), raises(ValueError))
+        assert_that(self.dashboard.department(), is_(none()))
 
     def test_department_returns_none_when_organisation_is_none(self):
         assert_that(self.dashboard.department(), is_(none()))
