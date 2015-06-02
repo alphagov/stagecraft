@@ -4,8 +4,9 @@ from django.test.client import RequestFactory
 from mock import Mock
 from hamcrest import (
     assert_that, is_, calling, raises, is_not,
-    instance_of, starts_with, has_key, equal_to
-)
+    instance_of, starts_with, has_key, equal_to,
+    has_entry,
+    contains)
 from unittest import TestCase
 
 from django.http import HttpRequest, HttpResponse
@@ -77,10 +78,10 @@ class TestResourceView(ResourceView):
 
     was_saved = False
 
-    def update_relationships(self, model, model_json, request):
+    def update_relationships(self, model, model_json, request, parent):
         self.was_saved = model.pk is not None
 
-    def update_model(self, model, model_json, request):
+    def update_model(self, model, model_json, request, parent):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:
@@ -95,11 +96,47 @@ class TestResourceView(ResourceView):
             model.save()
 
     @staticmethod
+    def serialize_for_list(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            'in_list': True,
+        }
+
+    @staticmethod
     def serialize(model):
         return {
             'id': str(model.id),
             'name': model.name,
         }
+
+
+class TestResourceViewChild(TestResourceView):
+
+    def update_relationships(self, model, model_json, request, parent):
+        if parent:
+            model.parents.add(parent)
+
+    @staticmethod
+    def serialize_for_list(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            "foo": "bar"
+        }
+
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'name': model.name,
+            "foo": "bar"
+        }
+
+
+TestResourceView.sub_resources = {
+    'child': TestResourceViewChild(),
+}
 
 
 class TestResourceViewMultipleIDs(ResourceView):
@@ -120,10 +157,11 @@ class TestResourceViewMultipleIDs(ResourceView):
 
 class ResourceViewTestCase(TestCase):
 
-    def get(self, args={}, query={}, cls=TestResourceView):
+    def get(self, args={}, query={}, cls=TestResourceView, user=None):
         view = cls()
 
         request = HttpRequest()
+        request.method = 'GET'
         for (k, v) in query.items():
             request.GET[k] = v
 
@@ -142,13 +180,14 @@ class ResourceViewTestCase(TestCase):
         view = TestResourceView()
 
         request = HttpRequest()
+        request.method = action
         request.META['CONTENT_TYPE'] = content_type
         request._body = body
 
         if action == 'POST':
-            response = view.post(None, request, **args)
+            response = view.post(request, **args)
         elif action == 'PUT':
-            response = view.put(None, request, **args)
+            response = view.put(request, **args)
         else:
             raise Exception('Invalid action {}'.format(action))
 
@@ -170,6 +209,20 @@ class ResourceViewTestCase(TestCase):
     def tearDown(self):
         Node.objects.all().delete()
 
+    def test_user_filtering_only_with_user_set(self):
+        node = NodeFactory()
+
+        status_code, json_response = self.get(args={
+            'id': str(node.id),
+        }, user={
+            'permissions': [
+                'signin',
+            ],
+        })
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response['name'], is_(node.name))
+
     def test_list(self):
         NodeFactory(name='foo-node-1')
         NodeFactory(name='foo-node-2')
@@ -179,6 +232,31 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(len(json_response), is_(2))
         assert_that(json_response[0]['name'], starts_with('foo-node'))
+
+    def test_list_serializes_with_diff_func(self):
+        NodeFactory(name='foo-node-1')
+        NodeFactory(name='foo-node-2')
+
+        status_code, json_response = self.get()
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response[0]['in_list'], is_(True))
+
+    def test_list_serializes_with_diff_func(self):
+        NodeFactory(name='foo-node-1', slug='b')
+        NodeFactory(name='foo-node-2', slug='a')
+
+        TestResourceView.order_by = 'name'
+        status_code, json_response = self.get()
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response[0]['name'], is_('foo-node-1'))
+
+        TestResourceView.order_by = 'slug'
+        status_code, json_response = self.get()
+
+        assert_that(status_code, is_(200))
+        assert_that(json_response[0]['name'], is_('foo-node-2'))
 
     def test_resource_re_string_multiple_ids(self):
         re = resource_re_string('node', TestResourceViewMultipleIDs)
@@ -335,6 +413,7 @@ class ResourceViewTestCase(TestCase):
         view = TestResourceView()
 
         request = HttpRequest()
+        request.method = 'POST'
         request.META['CONTENT_TYPE'] = 'application/json'
         request._body = json.dumps({
             'type_id': str(node_type.id),
@@ -342,8 +421,53 @@ class ResourceViewTestCase(TestCase):
             'slug': 'xtx',
         })
 
-        response = view.post(None, request)
+        response = view.post(request)
 
         assert_that(response, instance_of(HttpResponse))
         assert_that(response.status_code, is_(200))
         assert_that(view.was_saved, is_(True))
+
+    def test_sub_resource_returns_child_object(self):
+        node = NodeFactory()
+        status_code, sub_resource = self.get(args={
+            "id": node.id,
+            "sub_resource": "child"})
+
+        assert_that(status_code, is_(200))
+        assert_that(sub_resource, contains(has_entry("foo", "bar")))
+
+    def test_if_post_with_id_bad_request(self):
+        status_code, resp = self.post(args={
+            'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4',
+        })
+        assert_that(status_code, is_(405))
+
+    def test_post_to_a_sub_resource(self):
+        node = NodeFactory()
+        node_type = NodeTypeFactory()
+        status_code, resp = self.post(args={
+            'id': node.id,
+            'sub_resource': 'child',
+        }, body=json.dumps({
+            'type_id': str(node_type.id),
+            'slug': 'a-node',
+            'name': 'a-node',
+        }))
+        assert_that(status_code, is_(200))
+        assert_that(node.node_set.count(), is_(1))
+
+    def test_post_404s_if_parent_doesnt_exist(self):
+        status_code, resp = self.post(args={
+            'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4',
+            'sub_resource': 'child',
+        }, body=json.dumps({
+        }))
+        assert_that(status_code, is_(404))
+
+    def test_post_to_sub_resource_validates_against_schema(self):
+        node = NodeFactory()
+        status_code, response = self.post(args={
+            'id': node.id,
+            'sub_resource': 'child',
+        }, body=json.dumps({}))
+        assert_that(status_code, is_(400))

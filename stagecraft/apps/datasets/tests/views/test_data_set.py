@@ -12,7 +12,7 @@ from django.test import TestCase
 from stagecraft.apps.datasets.models.data_set import DataSet
 
 from stagecraft.apps.datasets.tests.support.test_helpers import (
-    is_unauthorized, is_error_response, has_header, has_status)
+    is_unauthorized, is_error_response, has_header, has_status, is_forbidden)
 from stagecraft.apps.dashboards.tests.factories.factories import (
     DashboardFactory, ModuleTypeFactory, ModuleFactory
 )
@@ -172,26 +172,26 @@ class DataSetsViewsTestCase(TestCase):
 
     def test_authorization_header_needed_for_list(self):
         resp = self.client.get('/data-sets')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_authorization_header_needed_for_detail(self):
         resp = self.client.get('/data-sets/group1_type1')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_correct_format_authorization_header_needed_for_list(self):
         resp = self.client.get(
             '/data-sets',
             HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_correct_format_authorization_header_needed_for_detail(self):
         resp = self.client.get(
             '/data-sets/group1_type1',
             HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_correct_authorization_header_needed_for_list(self):

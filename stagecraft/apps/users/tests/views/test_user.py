@@ -23,19 +23,19 @@ class LongCacheTestCase(TestCase):
         assert_that(resp, has_header('Vary', 'Authorization'))
 
 
-class BackdropUserViewsTestCase(TestCase):
+class UserViewsTestCase(TestCase):
     fixtures = ['backdrop_users_testdata.json']
 
     def test_authorization_header_needed_for_detail(self):
         resp = self.client.get('/users/tea%40yourmumshouse.com')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_correct_format_authorization_header_needed_for_detail(self):
         resp = self.client.get(
             '/users/tea%40yourmumshouse.com',
             HTTP_AUTHORIZATION='Nearer development-oauth-access-token')
-        assert_that(resp, is_unauthorized())
+        assert_that(resp, is_forbidden())
         assert_that(resp, is_error_response())
 
     def test_correct_authorization_header_needed_for_detail(self):
@@ -69,5 +69,3 @@ class BackdropUserViewsTestCase(TestCase):
             '/users/nonexistant@user.com',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 404)
-        assert_that(resp, is_error_response(
-            "No user with email address 'nonexistant@user.com' exists"))
