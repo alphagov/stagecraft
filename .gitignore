@@ -26,3 +26,5 @@
 
 # apple mac lol
 .DS_Store
+client_secret.json
+*.pickle

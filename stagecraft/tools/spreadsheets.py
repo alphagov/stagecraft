@@ -2,6 +2,7 @@ import pickle
 import string
 
 import gspread
+from oauth2client.client import SignedJwtAssertionCredentials
 
 
 REPLACE_TABLE = {
@@ -230,8 +231,12 @@ class SpreadsheetMunger:
                 tx_id = tx_id[:90]
             record['tx_id'] = tx_id
 
-    def load(self, username, password):
-        account = gspread.login(username, password)
+    def load(self, client_email, private_key):
+        scope = ['https://spreadsheets.google.com/feeds']
+        credentials = SignedJwtAssertionCredentials(
+            client_email, private_key, scope)
+
+        account = gspread.authorize(credentials)
 
         try:
             with open('tx_values.pickle', 'rb') as pickled:

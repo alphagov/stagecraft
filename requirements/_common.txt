@@ -23,5 +23,6 @@ statsd==3.0.1
 django-statsd-mozilla==0.3.12
 
 #for pulling transactions explorer spreadsheets.
-gspread==0.2.2
+gspread==0.2.5
 dogslow==0.9.7
+oauth2client==1.4.11
