@@ -221,7 +221,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'name': 'group1_type1',
                 'data_type': 'type1',
@@ -236,7 +236,7 @@ class DataSetsViewsTestCase(TestCase):
                 'published': False
             },
             {
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'name': 'set2',
                 'data_type': 'type1',
@@ -254,7 +254,7 @@ class DataSetsViewsTestCase(TestCase):
                 'name': 'abc_-0123456789',
                 'data_group': 'group3',
                 'data_type': 'type3',
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'realtime': False,
                 'auto_ids': [],
@@ -269,7 +269,7 @@ class DataSetsViewsTestCase(TestCase):
                 'name': 'monitoring-data-set',
                 'data_group': 'group3',
                 'data_type': 'monitoring',
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'realtime': False,
                 'auto_ids': [],
@@ -352,7 +352,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'name': 'group1_type1',
                 'data_type': 'type1',
@@ -430,7 +430,7 @@ class DataSetsViewsTestCase(TestCase):
         assert_equal(resp.status_code, 200)
         expected = [
             {
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'name': 'group1_type1',
                 'data_type': 'type1',
@@ -445,7 +445,7 @@ class DataSetsViewsTestCase(TestCase):
                 'published': False,
             },
             {
-                'bearer_token': None,
+                'bearer_token': '',
                 'capped_size': None,
                 'name': 'set2',
                 'data_type': 'type1',
@@ -485,7 +485,7 @@ class DataSetsViewsTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(resp.status_code, 200)
         expected = {
-            'bearer_token': None,
+            'bearer_token': '',
             'capped_size': None,
             'name': 'group1_type1',
             'data_type': 'type1',
@@ -517,7 +517,7 @@ class DataSetsViewsTestCase(TestCase):
         }
         expected = {
             'name': 'group1_type3',
-            'bearer_token': None,
+            'bearer_token': '',
             'capped_size': None,
             'data_type': 'type3',
             'realtime': False,
@@ -765,7 +765,7 @@ class DataSetsViewsTestCase(TestCase):
             'name': 'abc_-0123456789',
             'data_group': 'group3',
             'data_type': 'type3',
-            'bearer_token': None,
+            'bearer_token': '',
             'capped_size': None,
             'realtime': False,
             'auto_ids': [],

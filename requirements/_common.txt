@@ -1,12 +1,11 @@
 # requirements/common.txt: Used on *all* environments.
 
-django==1.6.11
+django==1.7.8
 django-dbarray==0.2
 django-mptt==0.6.1
 django-reversion==1.8.0
 django-uuidfield==0.5.0
 jsonfield==0.9.22
-South==0.8.4
 requests==2.2.1
 logstash_formatter==0.5.7
 

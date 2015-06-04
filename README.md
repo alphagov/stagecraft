@@ -31,9 +31,9 @@ export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
 
 Before the server is run for the first time the database needs to be synced.
 
-*Note: The first time you `syncdb`, you'll be asked to setup a `superadmin`.*
+*Note: The first time you `migrate`, you'll be asked to setup a `superadmin`.*
 ```
-python manage.py syncdb
+python manage.py migrate
 ```
 
 This project uses django-reversion to provide version control functionality.
