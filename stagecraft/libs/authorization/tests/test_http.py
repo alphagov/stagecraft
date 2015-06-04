@@ -177,8 +177,29 @@ class CheckPermissionTestCase(TestCase):
 
             assert_that(has_permission, equal_to(False))
 
-    # def test_anon_user_if_no_token(self):
-    #     assert_that(True, is_(False))
+    def test_anon_user_if_no_token(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        (user, has_permission) = check_permission(None, None, True)
+
+        assert_that(has_permission, equal_to(True))
+        assert_that(user.get('name'), equal_to('Anonymous'))
+
+    def test_no_user_if_no_token_and_anon_user_not_allowed(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        (user, has_permission) = check_permission(None, None, False)
+
+        assert_that(has_permission, equal_to(False))
+        assert_that(user, is_(None))
+
+    def test_anon_user_if_permission_requested(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        (user, has_permission) = check_permission(None, 'permission', True)
+
+        assert_that(has_permission, equal_to(False))
+        assert_that(user.get('name'), equal_to('Anonymous'))
 
 
 class AuthorizeTestCase(TestCase):
