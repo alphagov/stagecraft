@@ -3,7 +3,7 @@ import json
 from django.utils.cache import patch_response_headers
 from functools import wraps
 from uuid import UUID
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -56,10 +56,28 @@ def create_error(request, status, code='', title='', detail=''):
     "detail" - A human-readable explanation specific to this
                occurrence of the problem.
     """
+    id = ''
+    if request:
+        id = request.META.get('HTTP_REQUEST_ID', '')
+
     return {
-        'id': request.META.get('HTTP_REQUEST_ID', ''),
+        'id': id,
         'status': str(status),
         'code': code,
         'title': title,
         'detail': detail,
     }
+
+
+def create_http_error(status, message, request, code='', title=''):
+    error = {
+        'status': 'error',
+        'message': message,
+        'errors': [create_error(request,
+                                status,
+                                code=code,
+                                title=title,
+                                detail=message)],
+    }
+
+    return HttpResponse(to_json(error), status=status)
