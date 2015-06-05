@@ -14,11 +14,11 @@ with open(result_path, 'r') as f:
 
 tx_path = ("/performance/transactions-explorer"
            "/service-details/"
-           "bis-acas-elearning-registrations")
+           "ago-bona-vacantia-referrals-of-estates-company-assets")
 tx_full_url = "https://gov.uk{}".format(tx_path)
 
-spotlight_path = ("/performance/training-resources"
-                  "-on-workplace-relations/registrations")
+spotlight_path = ("/performance/trusts-estates/"
+                  "referrals-estates-company-assets-bona-vacantia")
 spotlight_full_url = "https://gov.uk{}".format(spotlight_path)
 
 

@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from stagecraft.tools import get_credentials_or_die
 
 import requests
 
@@ -21,13 +22,7 @@ from stagecraft.apps.datasets.models import DataSet
 
 def import_dashboards(summaries, update=False,
                       dry_run=True, publish=False):
-    try:
-        username = os.environ['GOOGLE_USERNAME']
-        password = os.environ['GOOGLE_PASSWORD']
-    except KeyError:
-        print("Please supply username (GOOGLE_USERNAME)\
-                and password (GOOGLE_PASSWORD) as environment variables")
-        sys.exit(1)
+    client_email, private_key = get_credentials_or_die()
 
     loader = SpreadsheetMunger(positions={
         'names_description': 8,
@@ -39,7 +34,7 @@ def import_dashboards(summaries, update=False,
         'names_other_notes': 17,
         'names_tx_id': 19,
     })
-    records = loader.load(username, password)
+    records = loader.load(client_email, private_key)
     print('Loaded {} records'.format(len(records)))
 
     failed_dashboards = []
@@ -221,31 +216,6 @@ def import_tc_module(record, dashboard, dataset):
                 'type': 'currency',
                 'magnitude': True,
                 'sigfigs': 3
-            },
-            'classes': 'cols3',
-        },
-    }
-    module = get_or_create_module(dashboard, attributes['slug'])
-    return set_module_attributes(module, dashboard, dataset, attributes)
-
-
-def import_cpt_module(record, dashboard, dataset):
-    attributes = {
-        'module_type': 'kpi',
-        'title': 'Cost per transaction',
-        'slug': 'cost-per-transaction',
-        'query_params': {
-            'filter_by': [
-                'service_id:' + record['tx_id'],
-                'type:seasonally-adjusted'
-            ],
-            'sort_by': '_timestamp:descending'
-        },
-        'options': {
-            'value-attribute': 'cost_per_transaction',
-            'format': {
-                'type': 'currency',
-                'pence': True
             },
             'classes': 'cols3',
         },

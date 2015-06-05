@@ -21,8 +21,8 @@ from ..load_organisations import(
     create_nodes)
 
 
-with open(
-        'stagecraft/tools/fixtures/spreadsheet_munging_result.json', 'r') as f:
+with open("stagecraft/tools/fixtures/"
+          "spreadsheet_munging_result_old.json", 'r') as f:
     tx_fixture = json.loads(f.read())
 
 with open('stagecraft/tools/fixtures/organisations.json', 'r') as f:

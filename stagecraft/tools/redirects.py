@@ -1,7 +1,7 @@
-import os
 import sys
 import csv
 import requests
+from stagecraft.tools import get_credentials_or_die
 
 from .spreadsheets import SpreadsheetMunger
 
@@ -66,15 +66,8 @@ def write(list_of_lists):
         with open('redirects.csv', 'w') as csvfile:
             _write_csv(csvfile)
 
-
 if __name__ == '__main__':
-    try:
-        username = os.environ['GOOGLE_USERNAME']
-        password = os.environ['GOOGLE_PASSWORD']
-    except KeyError:
-        print("Please supply username (GOOGLE_USERNAME)"
-              "and password (GOOGLE_PASSWORD) as environment variables")
-        sys.exit(1)
+    client_email, private_key = get_credentials_or_die()
 
     munger = SpreadsheetMunger({
         'names_name': 9,
@@ -83,6 +76,6 @@ if __name__ == '__main__':
         'names_service_slug': 12,
         'names_tx_id_column': 19,
     })
-    results = munger.load(username, password)
+    results = munger.load(client_email, private_key)
     list_of_rows = generate(results)
     write(list_of_rows)

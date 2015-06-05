@@ -1,21 +1,21 @@
 [  
   {  
-    "name":"Registrations to use online training and resources on workplace relations",
+    "name":"Trusts and estates: referrals of estates and company assets (bona vacantia)",
     "service":{  
-      "name":"Training and resources on workplace relations",
-      "slug":"training-resources-on-workplace-relations"
+      "name":"Trusts and estates",
+      "slug":"trusts-estates"
     },
-    "agency":{
-      "abbr": "Crown Prosecution Service",
-      "name":"Crown Prosecution Service",
-      "slug":"crown-prosecution-service"
+    "agency":{  
+      "abbr":"Treasury Solicitor's Department",
+      "name":"Treasury Solicitor's Department",
+      "slug":"treasury-solicitor's-department"
     },
-    "tx_id":"bis-acas-elearning-registrations",
+    "tx_id":"ago-bona-vacantia-referrals-of-estates-company-assets",
     "department":{  
       "abbr":"AGO",
       "name":"Attorney General's Office",
       "slug":"ago"
     },
-    "slug":"registrations"
+    "slug":"referrals-estates-company-assets-bona-vacantia"
   }
 ]

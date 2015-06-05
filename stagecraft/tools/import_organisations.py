@@ -2,9 +2,8 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import os
+from stagecraft.tools import get_credentials_or_die
 import requests
-import sys
 
 import django
 django.setup()
@@ -71,7 +70,7 @@ def get_govuk_organisations():
     return results
 
 
-def load_data(username, password):
+def load_data(client_email, private_key):
     spreadsheets = SpreadsheetMunger({
         'names_transaction_name': 11,
         'names_transaction_slug': 12,
@@ -82,7 +81,7 @@ def load_data(username, password):
         'names_notes': 3,
         'names_description': 8
     })
-    records = spreadsheets.load(username, password)
+    records = spreadsheets.load(client_email, private_key)
     govuk_response = get_govuk_organisations()
     return records, govuk_response
 
@@ -218,8 +217,8 @@ def transactions_graph(records, by_title, by_abbr):
     return nodes, edges, node_to_transactions
 
 
-def load_organisations(username, password):
-    records, govuk_response = load_data(username, password)
+def load_organisations(client_email, private_key):
+    records, govuk_response = load_data(client_email, private_key)
 
     govuk_nodes, govuk_edges = govuk_graph(govuk_response)
     by_title = index_nodes(govuk_nodes, 1)
@@ -367,18 +366,11 @@ def link_remaining(past_relations, dashboards_linked, nodes_to_db, by_abbr):
 
 
 if __name__ == '__main__':
-    try:
-        username = os.environ['GOOGLE_USERNAME']
-        password = os.environ['GOOGLE_PASSWORD']
-    except KeyError:
-        print("Please supply as environment variables:")
-        print("GOOGLE_USERNAME")
-        print("GOOGLE_PASSWORD")
-        sys.exit(1)
+    client_email, private_key = get_credentials_or_die()
 
     print('Loading organisations')
     nodes, edges, nodes_to_transactions = load_organisations(
-        username, password)
+        client_email, private_key)
     print('Clearing organisations')
     past_relations = clear_organisation_relations()
     print('Creating nodes')
