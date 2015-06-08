@@ -6,6 +6,9 @@ import os
 import requests
 import sys
 
+import django
+django.setup()
+
 from collections import defaultdict
 from django.db import connection
 from pprint import pprint
