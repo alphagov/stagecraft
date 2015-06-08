@@ -4,6 +4,9 @@ import sys
 
 import requests
 
+import django
+django.setup()
+
 from django.db import IntegrityError
 from django.db.utils import DataError
 from django.core.exceptions import ValidationError

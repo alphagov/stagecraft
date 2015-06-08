@@ -4,6 +4,9 @@ import sys
 
 from collections import defaultdict
 
+import django
+django.setup()
+
 from django.db.utils import DataError, IntegrityError
 
 from stagecraft.apps.organisation.models import Node, NodeType
