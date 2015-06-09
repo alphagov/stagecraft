@@ -562,9 +562,12 @@ class DataSetsViewsTestCase(TestCase):
             data=json.dumps(data_set),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
+
+        response_dict = json.loads(resp.content)
+
         assert_equal(resp.status_code, 400)
         assert_equal(
-            resp.content,
+            response_dict['message'],
             "options failed validation: Additional properties are not allowed "
             "(u'name' was unexpected)")
 
@@ -586,9 +589,11 @@ class DataSetsViewsTestCase(TestCase):
             data=json.dumps(data_set),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
+
+        response_dict = json.loads(resp.content)
         assert_equal(resp.status_code, 400)
         assert_equal(
-            resp.content,
+            response_dict['message'],
             "validation errors:\n__all__: Data set with this "
             "Data group and Data type already exists.")
 
@@ -610,9 +615,11 @@ class DataSetsViewsTestCase(TestCase):
             data=json.dumps(data_set),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
+
+        response_dict = json.loads(resp.content)
         assert_equal(resp.status_code, 400)
         assert_equal(
-            resp.content,
+            response_dict['message'],
             "validation errors:\n__all__: Data set with this "
             "Data group and Data type already exists.")
 
@@ -633,9 +640,12 @@ class DataSetsViewsTestCase(TestCase):
             data=json.dumps(data_set),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
+
+        response_dict = json.loads(resp.content)
+
         assert_equal(resp.status_code, 400)
         assert_equal(
-            resp.content,
+            response_dict['message'],
             "options failed validation: 'data_group' is a required property")
 
     def test_post_when_no_type(self):
@@ -655,9 +665,11 @@ class DataSetsViewsTestCase(TestCase):
             data=json.dumps(data_set),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
+        response_dict = json.loads(resp.content)
+
         assert_equal(resp.status_code, 400)
         assert_equal(
-            resp.content,
+            response_dict['message'],
             "options failed validation: 'data_type' is a required property")
 
     def test_post_when_non_existant_group(self):

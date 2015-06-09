@@ -859,5 +859,6 @@ class DashboardViewsCreateTestCase(TestCase):
         expected_message = "validation errors:\n" \
                            "strapline: Value u'Invalid' is not a valid choice."
 
+        response_dict = json.loads(resp.content)
         assert_that(resp.status_code, equal_to(400))
-        assert_that(resp.content, equal_to(expected_message))
+        assert_that(response_dict['message'], equal_to(expected_message))
