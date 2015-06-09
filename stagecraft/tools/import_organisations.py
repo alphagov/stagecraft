@@ -15,7 +15,7 @@ from pprint import pprint
 from stagecraft.apps.organisation.models import Node, NodeType
 from stagecraft.apps.dashboards.models import Dashboard
 
-from .spreadsheets import SpreadsheetMunger
+from stagecraft.tools.spreadsheets import SpreadsheetMunger
 
 # These may not be 100% accurate however the derived
 # typeOf will be overwritten with more certain information

@@ -12,7 +12,7 @@ from django.db import IntegrityError
 from django.db.utils import DataError
 from django.core.exceptions import ValidationError
 
-from .spreadsheets import SpreadsheetMunger
+from stagecraft.tools.spreadsheets import SpreadsheetMunger
 
 from stagecraft.apps.dashboards.models import Dashboard
 from stagecraft.apps.dashboards.models import Module
@@ -25,14 +25,14 @@ def import_dashboards(summaries, update=False,
     client_email, private_key = get_credentials_or_die()
 
     loader = SpreadsheetMunger(positions={
-        'names_description': 8,
-        'names_service_name': 9,
-        'names_service_slug': 10,
         'names_transaction_name': 11,
         'names_transaction_slug': 12,
-        'names_notes': 18,
-        'names_other_notes': 17,
+        'names_service_name': 9,
+        'names_service_slug': 10,
         'names_tx_id': 19,
+        'names_other_notes': 17,
+        'names_notes': 3,
+        'names_description': 8
     })
     records = loader.load(client_email, private_key)
     print('Loaded {} records'.format(len(records)))

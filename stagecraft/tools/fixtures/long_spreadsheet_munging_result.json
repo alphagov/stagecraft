@@ -1,0 +1,59 @@
+[  
+  {  
+    "name":"Registrations to use online training and resources on workplace relations",
+    "service":{  
+      "name":"ZEBRAZEBRAZEBRA",
+      "slug":"zebrazebrazebra"
+    },
+    "agency":{  
+      "abbr":"CPS",
+      "name":"Crown Prosecution Service",
+      "slug":"cps"
+    },
+    "tx_id":"zebrazebrazebra",
+    "department":{  
+      "abbr":"AGO",
+      "name":"Attorney General's Office",
+      "slug":"ago"
+    },
+    "slug":"zebrazebrazebra"
+  },
+  {  
+    "name":"Trusts and estates: referrals of estates and company assets (bona vacantia)",
+    "service":{  
+      "name":"Trusts and estates",
+      "slug":"trusts-estates"
+    },
+    "agency":{  
+      "abbr":"TSOL",
+      "name":"Treasury Solicitor's Department",
+      "slug":"tsol"
+    },
+    "tx_id":"ago-bona-vacantia-referrals-of-estates-company-assets",
+    "department":{  
+      "abbr":"AGO",
+      "name":"Attorney General's Office",
+      "slug":"ago"
+    },
+    "slug":"referrals-estates-company-assets-bona-vacantia"
+  },
+  {  
+    "name":"Registrations to use online training and resources on workplace relations",
+    "service":{  
+      "name":"Training and resources on workplace relations",
+      "slug":"training-resources-on-workplace-relations"
+    },
+    "agency":{  
+      "abbr":"CPS",
+      "name":"Crown Prosecution Service",
+      "slug":"cps"
+    },
+    "tx_id":"bis-acas-elearning-registrations",
+    "department":{  
+      "abbr":"AGO",
+      "name":"Attorney General's Office",
+      "slug":"ago"
+    },
+    "slug":"registrations"
+  }
+]
