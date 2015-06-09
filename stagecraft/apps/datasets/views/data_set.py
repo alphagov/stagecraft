@@ -113,6 +113,7 @@ class DataSetView(ResourceView):
         return super(DataSetView, self).post(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
+        logger.setLevel('ERROR')
         try:
             data_group = DataGroup.objects.get(name=model_json['data_group'])
             data_type = DataType.objects.get(name=model_json['data_type'])
@@ -123,11 +124,11 @@ class DataSetView(ResourceView):
         except DataGroup.DoesNotExist:
             message = "No data group with name '{}' found".format(
                 model_json['data_group'])
-            return create_http_error(400, message, request)
+            return create_http_error(400, message, request, logger=logger)
         except DataType.DoesNotExist:
             message = "No data type with name '{}' found".format(
                 model_json['data_type'])
-            return create_http_error(400, message, request)
+            return create_http_error(400, message, request, logger=logger)
 
     @staticmethod
     def serialize(model):
