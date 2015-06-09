@@ -25,6 +25,7 @@ from .spreadsheets import SpreadsheetMunger
 govuk_to_pp_type = {
     "Advisory non-departmental public body": 'agency',
     "Tribunal non-departmental public body": 'agency',
+    "Court": 'agency',
     "Sub-organisation": 'agency',
     "Executive agency": 'agency',
     "Devolved administration": 'agency',

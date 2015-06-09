@@ -453,6 +453,7 @@ def add_type_to_parent(parent, typeOf):
 types_dict = {
     "Advisory non-departmental public body": 'agency',
     "Tribunal non-departmental public body": 'agency',
+    "Court": 'agency',
     "Sub-organisation": 'agency',
     "Executive agency": 'agency',
     "Devolved administration": 'agency',
