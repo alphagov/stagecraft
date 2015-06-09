@@ -4,9 +4,8 @@ import requests
 
 from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.libs.validation.validation import extract_bearer_token
-from stagecraft.libs.views.utils import create_error
+from stagecraft.libs.views.utils import create_http_error
 from django.conf import settings
-from django.http import (HttpResponseForbidden, HttpResponse, HttpRequest)
 from django_statsd.clients import statsd
 
 audit_logger = logging.getLogger('stagecraft.audit')
@@ -72,23 +71,14 @@ def check_permission(access_token, permission_requested, anon_allowed=True):
 
 
 def unauthorized(request, message):
-    doc = {
-        'status': 'error',
-        'message': 'Unauthorized: {}'.format(message),
-    }
-    doc["errors"] = [create_error(request, 401, detail=doc["message"])]
-    response = HttpResponse(to_json(doc), status=401)
+    response = create_http_error(
+        401, 'Unauthorized: {}'.format(message), request)
     response['WWW-Authenticate'] = 'Bearer'
     return response
 
 
 def forbidden(request, message):
-    doc = {
-        'status': 'error',
-        'message': 'Forbidden: {}'.format(message),
-    }
-    doc["errors"] = [create_error(request, 403, detail=doc["message"])]
-    return HttpResponseForbidden(to_json(doc))
+    return create_http_error(403, 'Forbidden: {}'.format(message), request)
 
 
 def authorize(request, permission, anon_allowed=True):

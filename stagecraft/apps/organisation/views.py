@@ -1,11 +1,10 @@
-from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
-from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.resource import ResourceView
 from .models import Node, NodeType
+from stagecraft.libs.views.utils import create_http_error
 
 
 class NodeTypeView(ResourceView):
@@ -101,7 +100,7 @@ class NodeView(ResourceView):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:
-            return HttpResponse('no NodeType found', status=400)
+            return create_http_error(400, 'no NodeType found', request)
 
         model.name = model_json['name']
         model.slug = model_json.get('slug', None)
@@ -112,12 +111,13 @@ class NodeView(ResourceView):
         if 'parent_id' in model_json:
             parent_id = model_json['parent_id']
             if not is_uuid(parent_id):
-                return HttpResponse('parent_id has to be a uuid', status=400)
+                return create_http_error(400, 'parent_id has to be a uuid',
+                                         request)
 
             try:
                 parent_node = Node.objects.get(id=parent_id)
             except Node.DoesNotExist:
-                return HttpResponse('parent not found', status=400)
+                return create_http_error(400, 'parent not found', request)
 
             model.parents.add(parent_node)
 

@@ -80,7 +80,7 @@ class TestResourceView(ResourceView):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:
-            return HttpResponse('no NodeType found', status=400)
+            return create_http_error(400, 'no NodeType found', request)
 
         model.name = model_json['name']
         model.slug = model_json.get('slug', None)

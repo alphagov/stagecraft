@@ -1,13 +1,11 @@
 from stagecraft.libs.views.utils import(
     to_json,
     long_cache,
-    create_error,
-    build_400)
+    create_http_error)
 from stagecraft.libs.authorization.http import permission_required
 import logging
 
-from django.http import (HttpResponse,
-                         HttpResponseNotFound)
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 from django.utils.decorators import method_decorator
@@ -21,6 +19,7 @@ from stagecraft.apps.transforms.models import Transform
 from stagecraft.apps.transforms.views import TransformView
 
 logger = logging.getLogger(__name__)
+logger.setLevel('WARNING')
 
 from stagecraft.libs.views.resource import ResourceView
 
@@ -122,17 +121,13 @@ class DataSetView(ResourceView):
             for (key, value) in model_json.items():
                 setattr(model, key, value)
         except DataGroup.DoesNotExist:
-            return build_400(
-                logger,
-                request,
-                "No data group with name '{}' found"
-                .format(model_json['data_group']))
+            message = "No data group with name '{}' found".format(
+                model_json['data_group'])
+            return create_http_error(400, message, request)
         except DataType.DoesNotExist:
-            return build_400(
-                logger,
-                request,
-                "No data type with name '{}' found"
-                .format(model_json['data_type']))
+            message = "No data type with name '{}' found".format(
+                model_json['data_type'])
+            return create_http_error(400, message, request)
 
     @staticmethod
     def serialize(model):
@@ -145,13 +140,8 @@ def transform(request, name):
     try:
         data_set = DataSet.objects.get(name=name)
     except DataSet.DoesNotExist:
-        error = {'status': 'error',
-                 'message': "No Data Set named '{}' exists".format(name)}
-        logger.warn(error)
-
-        error["errors"] = [create_error(request, 404, detail=error['message'])]
-
-        return HttpResponseNotFound(to_json(error))
+        message = "No Data Set named '{}' exists".format(name)
+        return create_http_error(404, message, request, logger=logger)
 
     data_set_transforms = Transform.objects.filter(
         input_group=data_set.data_group,
@@ -175,13 +165,8 @@ def dashboard(user, request, name):
     try:
         data_set = DataSet.objects.get(name=name)
     except DataSet.DoesNotExist:
-        error = {'status': 'error',
-                 'message': "No Data Set named '{}' exists".format(name)}
-        logger.warn(error)
-
-        error["errors"] = [create_error(request, 404, detail=error['message'])]
-
-        return HttpResponseNotFound(to_json(error))
+        message = "No Data Set named '{}' exists".format(name)
+        return create_http_error(404, message, request, logger=logger)
 
     modules = data_set.module_set.distinct('dashboard')
     dashboards = [m.dashboard for m in modules]

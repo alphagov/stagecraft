@@ -2,7 +2,6 @@ import logging
 
 from django.conf import settings
 from django.http import (HttpResponse,
-                         HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -12,7 +11,8 @@ from stagecraft.apps.dashboards.models.dashboard import Dashboard
 from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.resource import ResourceView, UUID_RE_STRING
-from stagecraft.libs.views.utils import to_json, create_error
+from stagecraft.libs.views.utils import to_json, create_error, \
+    create_http_error
 from .module import add_module_to_dashboard, ModuleView
 import time
 
@@ -67,15 +67,9 @@ def single_dashboard_for_spotlight(request, dashboard_slug):
 
 
 def error_response(request, dashboard_slug):
-    error = {
-        'status': 'error',
-        'message': "No dashboard with slug '{}' exists".format(
-            dashboard_slug)
-    }
-    logger.warn(error)
-    error["errors"] = [create_error(request, 404, detail=error['message'])]
-    return HttpResponseNotFound(to_json(error),
-                                content_type='application/json')
+    message = "No dashboard with slug '{}' exists".format(dashboard_slug)
+    logger.setLevel('WARNING')
+    return create_http_error(404, message, request, logger=logger)
 
 
 def fetch_dashboard(dashboard_slug):
@@ -203,32 +197,15 @@ class DashboardView(ResourceView):
         if model_json.get('organisation'):
             org_id = model_json['organisation']
             if not is_uuid(org_id):
-                error = {
-                    'status': 'error',
-                    'message': 'Organisation must be a valid UUID',
-                    'errors': [create_error(
-                        request, 400,
-                        detail='Organisation must be a valid UUID'
-                    )],
-                }
-                return HttpResponseBadRequest(to_json(error))
-
+                return create_http_error(400,
+                                         'Organisation must be a valid UUID',
+                                         request)
             try:
                 organisation = Node.objects.get(id=org_id)
                 model.organisation = organisation
             except Node.DoesNotExist:
-                error = {
-                    'status': 'error',
-                    'message': 'Organisation does not exist',
-                    'errors': [
-                        create_error(
-                            request,
-                            404,
-                            detail='Organisation does not exist'
-                        )
-                    ]
-                }
-                return HttpResponseBadRequest(to_json(error))
+                return create_http_error(404, 'Organisation does not exist',
+                                         request)
 
         for key, value in model_json.iteritems():
             if key not in ['organisation', 'links']:
@@ -265,7 +242,7 @@ class DashboardView(ResourceView):
                     for changed_module in self.update_module(model, module):
                         current_module_ids.discard(changed_module.id)
                 except ValueError as e:
-                    return HttpResponse(e.message, status=400)
+                    return create_http_error(400, e.message, request)
 
             model.module_set.filter(id__in=current_module_ids).delete()
 
