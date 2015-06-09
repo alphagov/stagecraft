@@ -18,6 +18,7 @@ from django.db import DataError, IntegrityError
 from jsonschema import FormatChecker
 from jsonschema.compat import str_types
 from jsonschema.exceptions import ValidationError
+from stagecraft.libs.views.utils import create_http_error
 
 from .transaction import atomic_view
 from django.db.models import Q
@@ -150,7 +151,7 @@ class ResourceView(View):
         if id is not None:
             model = self.by_id(request, id_field, id, user=user)
             if model is None:
-                return HttpResponse('resource not found', status=404)
+                return create_http_error(404, 'model not found', request)
             elif sub_resource is not None:
                 return self._get_sub_resource(request, sub_resource, model)
             else:
@@ -184,17 +185,18 @@ class ResourceView(View):
                 'parent': model,
             })
         else:
-            return HttpResponse('sub resource not found', status=404)
+            return create_http_error(404, 'sub resource not found', request)
 
-    def _validate_and_save(self, model):
-        err = self._validate_model(model)
+    def _validate_and_save(self, model, request):
+        err = self._validate_model(model, request)
         if err:
             return err
 
         try:
             model.save()
         except (DataError, IntegrityError) as err:
-            return HttpResponse('error saving model: {}'.format(err))
+            return create_http_error(400, 'error saving model: {}'.format(err),
+                                     request)
 
         return None
 
@@ -213,10 +215,11 @@ class ResourceView(View):
                                                   kwargs['sub_resource'],
                                                   model)
                 else:
-                    return HttpResponse('parent resource not found',
-                                        status=404)
+                    return create_http_error(404, 'parent resource not found',
+                                             request)
             else:
-                return HttpResponse("can't post to a resource", status=405)
+                return create_http_error(405, "can't post to a resource",
+                                         request)
         else:
             model_json, err = self._validate_json(request)
             if err:
@@ -229,7 +232,7 @@ class ResourceView(View):
             if err:
                 return err
 
-            err = self._validate_and_save(model)
+            err = self._validate_and_save(model, request)
             if err:
                 return err
 
@@ -239,7 +242,7 @@ class ResourceView(View):
             if err:
                 return err
 
-            err = self._validate_and_save(model)
+            err = self._validate_and_save(model, request)
             if err:
                 return err
 
@@ -254,11 +257,11 @@ class ResourceView(View):
         id_field, id = self._find_id(kwargs)
 
         if id is None:
-            return HttpResponse('id not provided', status=400)
+            return create_http_error(400, 'id not provided', request)
 
         model = self.by_id(request, id_field, id, user=user)
         if model is None:
-            return HttpResponse('model not found', status=404)
+            return create_http_error(404, 'model not found', request)
 
         model_json, err = self._validate_json(request)
         if err:
@@ -275,7 +278,7 @@ class ResourceView(View):
         if err:
             return err
 
-        err = self._validate_and_save(model)
+        err = self._validate_and_save(model, request)
         if err:
             return err
 
@@ -287,29 +290,30 @@ class ResourceView(View):
 
     def _validate_json(self, request):
         if request.META.get('CONTENT_TYPE', '').lower() != 'application/json':
-            return None, HttpResponse('bad content type', status=415)
+            return None, create_http_error(415, 'bad content type', request)
 
         try:
             model_json = json.loads(request.body)
         except ValueError:
-            return None, HttpResponse('bad json', status=400)
+            return None, create_http_error(400, 'error decoding JSON: {}'
+                                           .format(ValueError), request)
 
         try:
             jsonschema.validate(
                 model_json, self.schema,
                 format_checker=FORMAT_CHECKER)
         except ValidationError as err:
-            return None, HttpResponse(
-                'options failed validation: {}'.format(err.message),
-                status=400)
+            message = 'options failed validation: {}'.format(err.message)
+            return None, create_http_error(400, message, request)
 
         return model_json, None
 
-    def _validate_model(self, model):
+    def _validate_model(self, model, request):
         if hasattr(model, 'validate'):
             err = model.validate()
             if err:
-                return HttpResponse(err, status=400)
+                return create_http_error(400, 'validation error: {}'
+                                         .format(err), request)
 
         try:
             model.full_clean()
@@ -318,9 +322,10 @@ class ResourceView(View):
                 '{}: {}'.format(k, ' '.join(v))
                 for k, v in err.message_dict.items()
             ]
-            return HttpResponse(
-                'validation errors:\n{}'.format('\n'.join(messages)),
-                status=400)
+            return create_http_error(400,
+                                     'validation errors:\n{}'
+                                     .format('\n'.join(messages)),
+                                     request)
 
     def _response(self, model):
         if hasattr(self.__class__, 'serialize'):

@@ -13,6 +13,7 @@ from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.validation.validation import is_uuid
 
 from ..models import Dashboard, Module, ModuleType
+from stagecraft.libs.views.utils import create_http_error
 
 
 def json_response(obj):
@@ -195,12 +196,12 @@ class ModuleView(ResourceView):
         try:
             module_type = ModuleType.objects.get(id=model_json['type_id'])
         except ModuleType.DoesNotExist:
-            return HttpResponse('module type not found', status=404)
+            return create_http_error(404, 'module type not found', request)
 
         try:
             dashboard = Dashboard.objects.get(id=parent.id)
         except Dashboard.DoesNotExist:
-            return HttpResponse('dashboard not found', status=404)
+            return create_http_error(404, 'dashboard not found', request)
 
         model.type = module_type
         model.dashboard = dashboard
@@ -218,7 +219,8 @@ class ModuleView(ResourceView):
                     data_type__name=model_json['data_type'],
                 )
             except DataSet.DoesNotExist:
-                return HttpResponse('data set does not exit', status=400)
+                return create_http_error(400, 'data set does not exit',
+                                         request)
 
             model.data_set = data_set
             model.query_parameters = model_json.get('query_parameters', {})
@@ -227,21 +229,22 @@ class ModuleView(ResourceView):
                 model.validate_query_parameters()
             except ValidationError as err:
                 msg = 'Query parameters not valid: {}'.format(err.message)
-                return HttpResponse(msg, status=400)
+                return create_http_error(400, msg, request)
         elif model_json.get('query_parameters'):
-            return HttpResponse('query parameters but not data set',
-                                status=400)
+            return create_http_error(400, 'query parameters but not data set',
+                                     request)
 
     def update_relationships(self, model, model_json, request, parent):
         if 'parent_id' in model_json:
             parent_id = model_json['parent_id']
             if not is_uuid(parent_id):
-                return HttpResponse('parent_id has to be a uuid', status=400)
+                return create_http_error(400, 'parent_id has to be a uuid',
+                                         request)
 
             try:
                 parent_node = Dashboard.objects.get(id=parent_id)
             except Dashboard.DoesNotExist:
-                return HttpResponse('parent not found', status=400)
+                return create_http_error(400, 'parent not found', request)
 
             model.parents.add(parent_node)
 

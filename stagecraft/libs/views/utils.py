@@ -3,7 +3,7 @@ import json
 from django.utils.cache import patch_response_headers
 from functools import wraps
 from uuid import UUID
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -31,18 +31,6 @@ def to_json(what):
     return json.dumps(what, indent=1, cls=JsonEncoder)
 
 
-def build_400(logger, request, message):
-    error = {'status': 'error',
-             'message': message}
-    logger.error(error)
-
-    error["errors"] = [
-        create_error(request, 400, detail=error['message'])
-    ]
-
-    return HttpResponseBadRequest(to_json(error))
-
-
 def create_error(request, status, code='', title='', detail=''):
     """creates a JSON API error - http://jsonapi.org/format/#errors
 
@@ -56,10 +44,31 @@ def create_error(request, status, code='', title='', detail=''):
     "detail" - A human-readable explanation specific to this
                occurrence of the problem.
     """
+    id = ''
+    if request:
+        id = request.META.get('HTTP_REQUEST_ID', '')
+
     return {
-        'id': request.META.get('HTTP_REQUEST_ID', ''),
+        'id': id,
         'status': str(status),
         'code': code,
         'title': title,
         'detail': detail,
     }
+
+
+def create_http_error(status, message, request, code='', title='',
+                      logger=None):
+    error = {
+        'status': 'error',
+        'message': message,
+        'errors': [create_error(request,
+                                status,
+                                code=code,
+                                title=title,
+                                detail=message)],
+    }
+    if logger:
+        logger.error(error)
+
+    return HttpResponse(to_json(error), status=status)

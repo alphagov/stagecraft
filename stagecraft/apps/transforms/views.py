@@ -13,6 +13,7 @@ from stagecraft.apps.datasets.models import DataGroup, DataType
 from .models import Transform, TransformType
 
 from stagecraft.libs.views.resource import ResourceView
+from stagecraft.libs.views.utils import create_http_error
 
 
 def resolve_data_reference(reference):
@@ -152,22 +153,25 @@ class TransformView(ResourceView):
             transform_type = TransformType.objects.get(
                 id=model_json['type_id'])
         except TransformType.DoesNotExist:
-            return HttpResponse('transform type was not found', status=400)
+            return create_http_error(400, 'transform type was not found',
+                                     request)
 
         (input_group, input_type) = resolve_data_reference(model_json['input'])
 
         if input_type is None:
-            return HttpResponse(
+            return create_http_error(
+                400,
                 'input requires at least a data-type (that exists)',
-                status=400)
+                request)
 
         (output_group, output_type) = \
             resolve_data_reference(model_json['output'])
 
         if output_type is None:
-            return HttpResponse(
+            return create_http_error(
+                400,
                 'output requires at least a data-type (that exists)',
-                status=400)
+                request)
 
         model.type = transform_type
         model.input_group = input_group

@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 from hamcrest import (
-    assert_that, equal_to, is_, none, has_property,
+    assert_that, equal_to, is_, has_property,
     contains, has_entry, has_entries, has_key, starts_with, has_length
 )
 from django_nose.tools import assert_redirects
@@ -13,9 +13,8 @@ from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory,
     LinkFactory
 )
-from stagecraft.apps.datasets.tests.factories import(
-    DataGroupFactory, DataTypeFactory, DataSetFactory
-)
+from stagecraft.apps.datasets.tests.factories import DataSetFactory
+
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
 from stagecraft.apps.dashboards.models.module import Module
@@ -24,7 +23,6 @@ from stagecraft.libs.authorization.tests.test_http import (
     with_govuk_signon)
 from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.utils import JsonEncoder
-from nose.tools import nottest
 
 
 class DashboardViewsListTestCase(TestCase):
@@ -713,7 +711,7 @@ class DashboardViewsCreateTestCase(TestCase):
             content_type="application/json",
             HTTP_AUTHORIZATION='Bearer correct-token')
 
-        assert_that(resp.status_code, equal_to(400))
+        assert_that(resp.status_code, equal_to(404))
         assert_that(Dashboard.objects.count(), equal_to(0))
 
     @with_govuk_signon(permissions=['dashboard'])
@@ -859,5 +857,6 @@ class DashboardViewsCreateTestCase(TestCase):
         expected_message = "validation errors:\n" \
                            "strapline: Value u'Invalid' is not a valid choice."
 
+        response_dict = json.loads(resp.content)
         assert_that(resp.status_code, equal_to(400))
-        assert_that(resp.content, equal_to(expected_message))
+        assert_that(response_dict['message'], equal_to(expected_message))

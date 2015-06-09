@@ -1,14 +1,10 @@
 import json
-
-from django.test.client import RequestFactory
-from mock import Mock
-from hamcrest import (
-    assert_that, is_, calling, raises, is_not,
-    instance_of, starts_with, has_key, equal_to,
-    has_entry,
-    contains)
 from unittest import TestCase
 
+from hamcrest import (
+    assert_that, is_, calling, raises, is_not,
+    instance_of, starts_with, has_key, has_entry,
+    contains, equal_to)
 from django.http import HttpRequest, HttpResponse
 from jsonschema import FormatError
 
@@ -16,11 +12,10 @@ from stagecraft.apps.organisation.models import Node, NodeType
 from stagecraft.apps.organisation.tests.factories import (
     NodeFactory, NodeTypeFactory
 )
-
 from ..resource import (
     FORMAT_CHECKER, ResourceView, resource_re_string,
-    UUID_RE_STRING
-)
+    UUID_RE_STRING)
+from stagecraft.libs.views.utils import create_http_error
 
 
 class FormatCheckerTestCase(TestCase):
@@ -85,7 +80,7 @@ class TestResourceView(ResourceView):
         try:
             node_type = NodeType.objects.get(id=model_json['type_id'])
         except NodeType.DoesNotExist:
-            return HttpResponse('no NodeType found', status=400)
+            return create_http_error(400, 'no NodeType found', request)
 
         model.name = model_json['name']
         model.slug = model_json.get('slug', None)
@@ -471,3 +466,16 @@ class ResourceViewTestCase(TestCase):
             'sub_resource': 'child',
         }, body=json.dumps({}))
         assert_that(status_code, is_(400))
+
+    def test_create_http_error(self):
+        status = 400
+        message = "Detail for 400 Bad Request"
+        request = HttpRequest()
+
+        error = create_http_error(status, message, request)
+
+        err = json.loads(error.content)
+
+        assert_that(error.status_code, equal_to(400))
+        assert_that(err["errors"][0]["detail"],
+                    equal_to("Detail for 400 Bad Request"))
