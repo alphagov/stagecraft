@@ -1,6 +1,6 @@
+import uuid
 from django.core.validators import RegexValidator
 from django.db import models
-from uuidfield import UUIDField
 
 
 class NodeManager(models.Manager):
@@ -48,7 +48,7 @@ class NodeManager(models.Manager):
 
 
 class NodeType(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=256, unique=True)
 
     def __str__(self):
@@ -62,7 +62,7 @@ class Node(models.Model):
 
     objects = NodeManager()
 
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=256)
     abbreviation = models.CharField(
         max_length=50,

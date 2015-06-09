@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
+import uuid
 from django.core.validators import RegexValidator
 from django.db import models
-from uuidfield import UUIDField
 
 from stagecraft.apps.organisation.views import NodeView
 
@@ -30,7 +30,7 @@ class DashboardManager(models.Manager):
 class Dashboard(models.Model):
     objects = DashboardManager()
 
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     slug_validator = RegexValidator(
         '^[-a-z0-9]+$',
         message='Slug can only contain lower case letters, numbers or hyphens'
@@ -364,7 +364,7 @@ class Dashboard(models.Model):
 
 
 class Link(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     title = models.CharField(max_length=100)
     url = models.URLField(max_length=200)
     dashboard = models.ForeignKey(Dashboard)

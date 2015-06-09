@@ -1,10 +1,9 @@
 # requirements/common.txt: Used on *all* environments.
 
-django==1.7.8
+django==1.8.2
 django-dbarray==0.2
 django-mptt==0.6.1
-django-reversion==1.8.0
-django-uuidfield==0.5.0
+django-reversion==1.8.6
 jsonfield==0.9.22
 requests==2.2.1
 logstash_formatter==0.5.7
@@ -12,7 +11,7 @@ logstash_formatter==0.5.7
 jsonschema==2.3.0
 
 # psycopg2 requires the libpq-dev package
-psycopg2==2.5.2
+psycopg2==2.5.4
 
 # For performing data operations that require speaking to backdrop
 performanceplatform-client==0.2.4

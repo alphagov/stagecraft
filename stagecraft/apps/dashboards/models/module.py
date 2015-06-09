@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import copy
 import jsonschema
+import uuid
 from jsonschema import Draft3Validator, SchemaError
 
 from django.core.validators import RegexValidator
@@ -8,7 +9,6 @@ from django.db import models
 
 from dbarray import TextArrayField
 from jsonfield import JSONField
-from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataSet
 
@@ -24,7 +24,7 @@ class ModuleManager(models.Manager):
 
 
 class ModuleType(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     name_validator = RegexValidator(
         '^[a-z_]+$',
@@ -62,7 +62,7 @@ class ModuleType(models.Model):
 
 
 class Module(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
     data_set = models.ForeignKey(DataSet, null=True, blank=True)
