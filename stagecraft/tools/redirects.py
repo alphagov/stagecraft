@@ -1,28 +1,37 @@
-import os
+import argparse
 import sys
 import csv
 import requests
+from stagecraft.tools import get_credentials_or_die
 
-from .spreadsheets import SpreadsheetMunger
+from stagecraft.tools.spreadsheets import SpreadsheetMunger
 
-columns = ['source', 'destination']
+columns = ['Source', 'Destination']
 tx_url = '/performance/transactions-explorer/service-details/'
 spotlight_url = '/performance/'
 
 
-def generate(transactions):
-    list_of_rows = [columns]
+def generate(transactions, new_slugs=True):
+    list_of_rows = []
     for transaction in transactions:
         transaction_url = tx_url + transaction['tx_id']
-        new_spotlight_transaction_url = "{}{}/{}".format(
-            spotlight_url,
-            transaction['service']['slug'],
-            transaction['slug'])
-        # should also check if there is already a redirect to the target?
-        if redirect_page(transaction_url, new_spotlight_transaction_url):
-            list_of_rows.append(
-                [transaction_url, new_spotlight_transaction_url])
-    return list_of_rows
+        try:
+            if new_slugs:
+                new_spotlight_transaction_url = "{}{}/{}".format(
+                    spotlight_url,
+                    transaction['service']['slug'],
+                    transaction['slug'])
+            else:
+                new_spotlight_transaction_url = "{}{}".format(
+                    spotlight_url,
+                    transaction['tx_id'])
+            if redirect_page(transaction_url, new_spotlight_transaction_url):
+                list_of_rows.append(
+                    [transaction_url, new_spotlight_transaction_url])
+        except KeyError:
+            print("Not enough information to generate redirect for {}".format(
+                transaction['tx_id']))
+    return [columns] + sorted(list_of_rows, key=lambda row: row[0])
 
 
 def redirect_page(source_url, destination_url):
@@ -66,23 +75,30 @@ def write(list_of_lists):
         with open('redirects.csv', 'w') as csvfile:
             _write_csv(csvfile)
 
-
 if __name__ == '__main__':
-    try:
-        username = os.environ['GOOGLE_USERNAME']
-        password = os.environ['GOOGLE_PASSWORD']
-    except KeyError:
-        print("Please supply username (GOOGLE_USERNAME)"
-              "and password (GOOGLE_PASSWORD) as environment variables")
-        sys.exit(1)
+    client_email, private_key = get_credentials_or_die()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--new_slugs",
+                        help="Generate redirects to new style slugs. "
+                             "Will fail if these are not yet supported",
+                        action="store_true")
+    args = parser.parse_args()
+
+    new_slugs = False
+    if args.new_slugs:
+        new_slugs = True
 
     munger = SpreadsheetMunger({
-        'names_name': 9,
-        'names_slug': 10,
-        'names_service_name': 11,
-        'names_service_slug': 12,
-        'names_tx_id_column': 19,
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
+        'names_tx_id': 19,
+        'names_other_notes': 17,
+        'names_notes': 3,
+        'names_description': 8
     })
-    results = munger.load(username, password)
-    list_of_rows = generate(results)
+    results = munger.load(client_email, private_key)
+    list_of_rows = generate(results, new_slugs)
     write(list_of_rows)

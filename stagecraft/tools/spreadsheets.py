@@ -19,27 +19,51 @@ class SpreadsheetMunger:
     def __init__(self, positions={}):
         # The transaction explorer spreadsheet is less likely
         # to change so we can set defaults for these positions.
+        # The comments on these are the column names for the positions
+        # on 09/06/2015
+        # "Name of service",
         self.tx_name = positions.get('tx_name', 4)
-        self.tx_desc1 = positions.get('tx_desc1', 65)
-        self.tx_desc2 = positions.get('tx_desc2', 66)
+        # "Description 1",
+        self.tx_desc1 = positions.get('tx_desc1', 69)
+        # "Description 2",
+        self.tx_desc2 = positions.get('tx_desc2', 70)
+        # "Agency abbr",
         self.tx_agency_abbr = positions.get('tx_agency_abbr', 3)
+        # "Agency/body",
         self.tx_agency_name = positions.get('tx_agency_name', 2)
+        # "Abbr",
         self.tx_department_abbr = positions.get('tx_department_abbr', 0)
+        # "Department",
         self.tx_department_name = positions.get('tx_department_name', 1)
-        self.tx_high_volume = positions.get('tx_high_volume', 74)
-        self.tx_costs = positions.get('tx_costs', 68)
-        self.tx_other_notes = positions.get('tx_other_notes', 69)
+        # "High-volume?",
+        self.tx_high_volume = positions.get('tx_high_volume', 77)
+        # "Notes on costs",
+        self.tx_costs = positions.get('tx_costs', 72)
+        # "Other notes",
+        self.tx_other_notes = positions.get('tx_other_notes', 73)
+        # "Slug",
         self.tx_tx_id_column = positions.get('tx_tx_id_column', 6)
-        self.tx_customer_type = positions.get('tx_customer_type', 70)
-        self.tx_business_model = positions.get('tx_business_model', 71)
+        # "Customer type",
+        self.tx_customer_type = positions.get('tx_customer_type', 74)
+        # "Business model",
+        self.tx_business_model = positions.get('tx_business_model', 75)
 
+        # "Proposed new summary",
         self.names_description = positions['names_description']
+        # "Proposed name (of page e.g. carers allowance applications not apply
+        # for carers allowance)",
         self.names_transaction_name = positions['names_transaction_name']
+        # "Proposed URL2 (name of transaction) e.g. /applications",
         self.names_transaction_slug = positions['names_transaction_slug']
+        # "Proposed name of overview page",
         self.names_service_name = positions['names_service_name']
+        # "Proposed URL1 (name of service) e.g. /carers-allowance",
         self.names_service_slug = positions['names_service_slug']
+        # "Liz notes",
         self.names_notes = positions['names_notes']
+        # "Other notes",
         self.names_other_notes = positions['names_other_notes']
+        # "Slug [do not edit]"
         self.names_tx_id = positions['names_tx_id']
 
     def _replace_unicode(self, s):
