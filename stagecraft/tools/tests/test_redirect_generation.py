@@ -19,11 +19,11 @@ with open(result_path, 'r') as f:
 tx_path = ("/performance/transactions-explorer"
            "/service-details/"
            "ago-bona-vacantia-referrals-of-estates-company-assets")
-tx_full_url = "https://gov.uk{}".format(tx_path)
+tx_full_url = "https://www.gov.uk{}".format(tx_path)
 
 spotlight_path = ("/performance/trusts-estates/"
                   "referrals-estates-company-assets-bona-vacantia")
-spotlight_full_url = "https://gov.uk{}".format(spotlight_path)
+spotlight_full_url = "https://www.gov.uk{}".format(spotlight_path)
 
 alphabetized_new_style = [
     [
@@ -94,7 +94,8 @@ class RedirectWriterTests(unittest.TestCase):
             [tx_path, spotlight_path]
         ]))
         mock_get.assert_has_calls(
-            [call(tx_full_url), call(spotlight_full_url)])
+            [call(tx_full_url, allow_redirects=False),
+             call(spotlight_full_url, allow_redirects=False)])
 
     @patch('requests.get')
     def test_redirects_produced_when_source_pages_exist_and_old_slugs(
@@ -105,13 +106,14 @@ class RedirectWriterTests(unittest.TestCase):
         redirects = generate(spreadsheets_data, False)
         old_slug_path = ("/performance/ago-bona-vacantia-"
                          "referrals-of-estates-company-assets")
-        spotlight_full_url = "https://gov.uk{}".format(old_slug_path)
+        spotlight_full_url = "https://www.gov.uk{}".format(old_slug_path)
         assert_that(redirects, equal_to([
             ['Source', 'Destination'],
             [tx_path, old_slug_path]
         ]))
         mock_get.assert_has_calls(
-            [call(tx_full_url), call(spotlight_full_url)])
+            [call(tx_full_url, allow_redirects=False),
+             call(spotlight_full_url, allow_redirects=False)])
 
     @patch('requests.get')
     def test_no_redirect_if_no_existing_source_page(self, mock_get):
@@ -122,7 +124,7 @@ class RedirectWriterTests(unittest.TestCase):
         assert_that(redirects, equal_to([
             ['Source', 'Destination'],
         ]))
-        mock_get.assert_called_once_with(tx_full_url)
+        mock_get.assert_called_once_with(tx_full_url, allow_redirects=False)
 
     @patch('requests.get')
     def test_no_redirect_if_source_already_redirected(self, mock_get):
@@ -133,7 +135,7 @@ class RedirectWriterTests(unittest.TestCase):
         assert_that(redirects, equal_to([
             ['Source', 'Destination'],
         ]))
-        mock_get.assert_called_once_with(tx_full_url)
+        mock_get.assert_called_once_with(tx_full_url, allow_redirects=False)
 
     @patch('requests.get')
     def test_raises_exception_if_source_returns_unexpected_status_code(
@@ -200,7 +202,8 @@ class RedirectWriterTests(unittest.TestCase):
         redirects = generate(long_spreadsheets_data, True)
         assert_that(redirects, equal_to(alphabetized_new_style))
         mock_get.assert_has_calls(
-            [call(tx_full_url), call(spotlight_full_url)])
+            [call(tx_full_url, allow_redirects=False),
+             call(spotlight_full_url, allow_redirects=False)])
 
     @patch('requests.get')
     def test_ordered_alphabetically_when_old_style(
@@ -211,7 +214,8 @@ class RedirectWriterTests(unittest.TestCase):
         redirects = generate(long_spreadsheets_data, False)
         old_slug_path = ("/performance/ago-bona-vacantia-"
                          "referrals-of-estates-company-assets")
-        spotlight_full_url = "https://gov.uk{}".format(old_slug_path)
+        spotlight_full_url = "https://www.gov.uk{}".format(old_slug_path)
         assert_that(redirects, equal_to(alphabetized_old_style))
         mock_get.assert_has_calls(
-            [call(tx_full_url), call(spotlight_full_url)])
+            [call(tx_full_url, allow_redirects=False),
+             call(spotlight_full_url, allow_redirects=False)])
