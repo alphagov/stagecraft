@@ -6,7 +6,7 @@ from stagecraft.tools import get_credentials_or_die
 
 from stagecraft.tools.spreadsheets import SpreadsheetMunger
 
-columns = ['source', 'destination']
+columns = ['Source', 'Destination']
 tx_url = '/performance/transactions-explorer/service-details/'
 spotlight_url = '/performance/'
 

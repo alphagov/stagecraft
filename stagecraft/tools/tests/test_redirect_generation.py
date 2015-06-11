@@ -27,8 +27,8 @@ spotlight_full_url = "https://gov.uk{}".format(spotlight_path)
 
 alphabetized_new_style = [
     [
-        "source",
-        "destination"
+        "Source",
+        "Destination"
     ],
     [
         "/performance/transactions-explorer/service-details/"
@@ -51,8 +51,8 @@ alphabetized_new_style = [
 
 alphabetized_old_style = [
     [
-        "source",
-        "destination"
+        "Source",
+        "Destination"
     ],
     [
         "/performance/transactions-explorer/service-details/"
@@ -90,7 +90,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get.reset_mock()
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
             [tx_path, spotlight_path]
         ]))
         mock_get.assert_has_calls(
@@ -107,7 +107,7 @@ class RedirectWriterTests(unittest.TestCase):
                          "referrals-of-estates-company-assets")
         spotlight_full_url = "https://gov.uk{}".format(old_slug_path)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
             [tx_path, old_slug_path]
         ]))
         mock_get.assert_has_calls(
@@ -120,7 +120,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get.reset_mock()
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
         ]))
         mock_get.assert_called_once_with(tx_full_url)
 
@@ -131,7 +131,7 @@ class RedirectWriterTests(unittest.TestCase):
         mock_get.reset_mock()
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
         ]))
         mock_get.assert_called_once_with(tx_full_url)
 
@@ -151,7 +151,7 @@ class RedirectWriterTests(unittest.TestCase):
 
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
             [tx_path, spotlight_path]
         ]))
 
@@ -161,7 +161,7 @@ class RedirectWriterTests(unittest.TestCase):
 
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
         ]))
 
     @patch('requests.get')
@@ -170,7 +170,7 @@ class RedirectWriterTests(unittest.TestCase):
 
         redirects = generate(spreadsheets_data, True)
         assert_that(redirects, equal_to([
-            ['source', 'destination'],
+            ['Source', 'Destination'],
         ]))
 
     @patch('requests.get')
