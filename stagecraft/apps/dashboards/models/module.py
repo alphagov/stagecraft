@@ -39,7 +39,7 @@ class ModuleType(models.Model):
         ]
     )
 
-    schema = JSONField()
+    schema = JSONField(default={})
 
     class Meta:
         app_label = 'dashboards'
@@ -83,7 +83,7 @@ class Module(models.Model):
     description = models.CharField(max_length=200, blank=True)
     info = TextArrayField(blank=True)
 
-    options = JSONField(blank=True)
+    options = JSONField(blank=True, default={})
     query_parameters = JSONField(null=True, blank=True)
 
     order = models.IntegerField()

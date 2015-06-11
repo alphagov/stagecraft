@@ -250,9 +250,14 @@ class Dashboard(models.Model):
         return modules_or_tabs
 
     def serialize(self):
+        def simple_field(field):
+            return not (field.is_relation or field.one_to_one or (
+                field.many_to_one and field.related_model))
+
         serialized = {}
-        fields = self._meta.get_fields_with_model()
-        field_names = [field.name for field, _ in fields]
+        fields = self._meta.get_fields()
+        field_names = [field.name for field in fields
+                       if simple_field(field)]
 
         for field in field_names:
             if not (field.startswith('_') or field.endswith('_cache')):
