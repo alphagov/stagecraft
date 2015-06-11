@@ -39,7 +39,7 @@ def redirect_page(source_url, destination_url):
 
     def _check_redirect(full_url):
         print('Getting ' + full_url)
-        response = requests.get(full_url)
+        response = requests.get(full_url, allow_redirects=False)
         if response.status_code == 200:
             print("Was 200")
             return True
@@ -53,8 +53,8 @@ def redirect_page(source_url, destination_url):
             raise Exception("UNEXPECTED STATUS CODE {} FOR {}".format(
                 response.status_code, full_url))
         return True
-    full_source_url = 'https://gov.uk' + source_url
-    full_destination_url = 'https://gov.uk' + destination_url
+    full_source_url = 'https://www.gov.uk' + source_url
+    full_destination_url = 'https://www.gov.uk' + destination_url
     return _check_redirect(full_source_url) and _check_redirect(
         full_destination_url)
 
