@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import dbarray.fields
 import jsonfield.fields
-import uuidfield.fields
 import django.core.validators
+import uuid
 
 
 class Migration(migrations.Migration):
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Dashboard',
             fields=[
-                ('id', uuidfield.fields.UUIDField(primary_key=True, auto=True, serialize=False, hyphenate=True)),
+                ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('slug', models.CharField(unique=True, max_length=90, validators=[django.core.validators.RegexValidator('^[-a-z0-9]+$', message='Slug can only contain lower case letters, numbers or hyphens')])),
                 ('dashboard_type', models.CharField(default='transaction', max_length=30, choices=[('transaction', 'transaction'), ('high-volume-transaction', 'high-volume-transaction'), ('service-group', 'service-group'), ('agency', 'agency'), ('department', 'department'), ('content', 'content'), ('other', 'other')])),
                 ('page_type', models.CharField(default='dashboard', max_length=80)),
@@ -40,27 +40,21 @@ class Migration(migrations.Migration):
                 ('service_cache', models.ForeignKey(related_name='dashboards_owned_by_service', blank=True, to='organisation.Node', null=True)),
                 ('transaction_cache', models.ForeignKey(related_name='dashboards_owned_by_transaction', blank=True, to='organisation.Node', null=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Link',
             fields=[
-                ('id', uuidfield.fields.UUIDField(primary_key=True, auto=True, serialize=False, hyphenate=True)),
+                ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('title', models.CharField(max_length=100)),
                 ('url', models.URLField()),
                 ('link_type', models.CharField(max_length=20, choices=[('transaction', 'transaction'), ('other', 'other')])),
                 ('dashboard', models.ForeignKey(to='dashboards.Dashboard')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Module',
             fields=[
-                ('id', uuidfield.fields.UUIDField(primary_key=True, auto=True, serialize=False, hyphenate=True)),
+                ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('slug', models.CharField(max_length=60, validators=[django.core.validators.RegexValidator('^[-a-z0-9]+$', message='Slug can only contain lower case letters, numbers or hyphens')])),
                 ('title', models.CharField(max_length=60)),
                 ('description', models.CharField(max_length=200, blank=True)),
@@ -72,26 +66,19 @@ class Migration(migrations.Migration):
                 ('data_set', models.ForeignKey(blank=True, to='datasets.DataSet', null=True)),
                 ('parent', models.ForeignKey(blank=True, to='dashboards.Module', null=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ModuleType',
             fields=[
-                ('id', uuidfield.fields.UUIDField(primary_key=True, auto=True, serialize=False, hyphenate=True)),
+                ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=25, validators=[django.core.validators.RegexValidator('^[a-z_]+$', message='Module type name can only contain lowercase letters, numbers or underscores')])),
                 ('schema', jsonfield.fields.JSONField()),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='module',
             name='type',
             field=models.ForeignKey(to='dashboards.ModuleType'),
-            preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
             name='module',

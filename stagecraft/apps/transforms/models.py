@@ -1,12 +1,12 @@
 import logging
 import jsonschema
+import uuid
 from jsonschema import Draft3Validator, SchemaError, ValidationError
 
 from django.core.validators import RegexValidator
 from django.db import models
 
 from jsonfield import JSONField
-from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataGroup, DataType
 from stagecraft.apps.dashboards.models.module import query_param_schema
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class TransformType(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(
         max_length=25,
         unique=True,
@@ -48,7 +48,7 @@ class TransformType(models.Model):
 
 
 class Transform(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(TransformType)
 
     input_group = models.ForeignKey(

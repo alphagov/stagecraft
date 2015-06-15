@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import copy
 import jsonschema
+import uuid
 from jsonschema import Draft3Validator, SchemaError
 
 from django.core.validators import RegexValidator
@@ -8,7 +9,6 @@ from django.db import models
 
 from dbarray import TextArrayField
 from jsonfield import JSONField
-from uuidfield import UUIDField
 
 from stagecraft.apps.datasets.models import DataSet
 
@@ -24,7 +24,7 @@ class ModuleManager(models.Manager):
 
 
 class ModuleType(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     name_validator = RegexValidator(
         '^[a-z_]+$',
@@ -39,7 +39,7 @@ class ModuleType(models.Model):
         ]
     )
 
-    schema = JSONField()
+    schema = JSONField(default={})
 
     class Meta:
         app_label = 'dashboards'
@@ -62,7 +62,7 @@ class ModuleType(models.Model):
 
 
 class Module(models.Model):
-    id = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
     data_set = models.ForeignKey(DataSet, null=True, blank=True)
@@ -83,7 +83,7 @@ class Module(models.Model):
     description = models.CharField(max_length=200, blank=True)
     info = TextArrayField(blank=True)
 
-    options = JSONField(blank=True)
+    options = JSONField(blank=True, default={})
     query_parameters = JSONField(null=True, blank=True)
 
     order = models.IntegerField()

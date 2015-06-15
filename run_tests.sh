@@ -40,7 +40,7 @@ find $basedir/stagecraft -iname '*.pyc' -exec rm {} \+
 find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 
 # probably going to need to install dependencies
-pip install -r requirements/ci.txt --use-mirrors
+pip install -r requirements/ci.txt
 
 if [ -z "$NO_AUTOPEP8" ]; then
   autopep8 -i -r stagecraft --exclude '00*.py'

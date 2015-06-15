@@ -31,6 +31,10 @@ class TestDataSetMassUpdate(TestCase):
             bearer_token="999999",
             data_type=cls.data_type2)
 
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
     def test_update_bearer_token_by_date_type(self):
 
         new_bearer_token = "ghi789"

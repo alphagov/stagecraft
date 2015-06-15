@@ -19,11 +19,11 @@ from django.test import TestCase, TransactionTestCase
 from stagecraft.libs.backdrop_client import (
     disable_backdrop_connection, BackdropNotFoundError)
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
-from stagecraft.apps.datasets.models.data_set import ImmutableFieldError
+from stagecraft.apps.datasets.models.data_set import ImmutableFieldError, \
+    DataSetQuerySet
 
 
 class DataSetTestCase(TestCase):
-    fixtures = ['datasets_testdata.json']
 
     @classmethod
     def setUpClass(cls):
@@ -48,24 +48,26 @@ class DataSetTestCase(TestCase):
                 data_set1.name)
 
     def test_saving_existing_doesnt_change_the_name(self):
-        with _make_temp_data_group_and_type() as (data_group, data_type):
-            data_set1 = DataSet.objects.get(name='set2')
-            data_set1.save()
+        DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set1 = DataSet.objects.get(name='data_group1_data_type1')
+        data_set1.save()
 
-            assert_equal('set2', data_set1.name)
+        assert_equal('data_group1_data_type1', data_set1.name)
 
     def test_saving_with_new_name_doesnt_change_it(self):
-        with _make_temp_data_group_and_type() as (data_group, data_type):
-            data_set1 = DataSet.objects.get(name='set2')
-            data_set1.name = 'apple'
-            try:
-                data_set1.save()
-            except ImmutableFieldError:
-                pass
-            set2s = DataSet.objects.filter(name='set2')
-            apples = DataSet.objects.filter(name='apple')
-            assert_equal(len(set2s), 1)
-            assert_equal(len(apples), 0)
+        DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set1 = DataSet.objects.get(name='data_group1_data_type1')
+        data_set1.name = 'apple'
+        try:
+            data_set1.save()
+        except ImmutableFieldError:
+            pass
+        data_sets = DataSet.objects.filter(name='data_group1_data_type1')
+        assert_equal(len(data_sets), 1)
 
     @disable_backdrop_connection
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
@@ -279,10 +281,10 @@ class BackdropIntegrationTestCase(TransactionTestCase):
                                                     mock_delete_data_set):
         with _make_temp_data_group_and_type() as (data_group, data_type):
             data_set = DataSet.objects.create(
-                name='test_data_set_006',
                 data_group=data_group,
                 data_type=data_type)
 
-            DataSet.objects.all().delete()
+            for ds in DataSet.objects.all():
+                ds.delete()
 
         mock_delete_data_set.assert_called_once_with(data_set.name)
