@@ -18,19 +18,10 @@ class DataSetInline(admin.StackedInline):
 
 class DataTypeAdmin(reversion.VersionAdmin):
     search_fields = ['name']
-    list_display = ('name', 'number_of_datasets',)
+    list_display = ('name',)
     inlines = [
         DataSetInline
     ]
 
-    def queryset(self, request):
-        qs = super(DataTypeAdmin, self).queryset(request)
-        qs = qs.annotate(models.Count('dataset'))
-        return qs
-
-    def number_of_datasets(self, obj):
-        return obj.dataset__count
-
-    number_of_datasets.admin_order_field = 'dataset__count'
 
 admin.site.register(DataType, DataTypeAdmin)
