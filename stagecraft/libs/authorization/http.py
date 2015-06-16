@@ -73,9 +73,16 @@ def _set_user_to_database(access_token, user):
 
 def check_permission(access_token, permission_requested, anon_allowed=True):
     user = _get_user(access_token, anon_allowed)
+    if user is None:
+        return (user, False)
+    if permission_requested is None:
+        permission_requested_set = set()
+    else:
+        permission_requested_set = set(permission_requested)
+    user_permissions = set(user['permissions'])
     has_permission = user is not None and \
         (permission_requested is None or
-         permission_requested in user['permissions'])
+         len(permission_requested_set.intersection(user_permissions)) > 0)
     return (user, has_permission)
 
 
