@@ -130,6 +130,21 @@ class CheckPermissionTestCase(TestCase):
 
         assert_that(has_permission, equal_to(False))
 
+    def test_user_with_returns_object_and_true_when_permissions_is_list(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        OAuthUser.objects.create(access_token='correct-token',
+                                 uid='my-uid',
+                                 email='jon@example.com',
+                                 permissions=['signin'],
+                                 expires_at=datetime.now() + timedelta(days=1))
+
+        (user, has_permission) = check_permission(
+            'correct-token', ['signin', 'bob'])
+
+        assert_that(user['email'], equal_to('jon@example.com'))
+        assert_that(has_permission, equal_to(True))
+
     def test_user_from_database_should_not_be_returned_if_expired(self):
         settings.USE_DEVELOPMENT_USERS = False
         OAuthUser.objects.create(access_token='correct-token-2',
