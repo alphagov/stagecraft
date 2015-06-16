@@ -70,6 +70,18 @@ def _get_user_from_database(access_token):
 def _set_user_to_database(access_token, user):
     OAuthUser.objects.cache_user(access_token, user)
 
+def _get_resource_role_permissions(resource, permissions=None):
+    if permissions is None:
+        permissions = settings.ROLES
+    resource_permissions = {"get": set(), "put": set(), "post": set()}
+    for permission in permissions:
+        for k, v in permission["permissions"].items():
+            if k == resource:
+                for method in v:
+                    resource_permissions[method].add(permission["role"])
+
+    return resource_permissions
+
 
 def check_permission(access_token, permission_requested, anon_allowed=True):
     user = _get_user(access_token, anon_allowed)

@@ -12,7 +12,7 @@ from django.test import TestCase
 from stagecraft.apps.datasets.models import OAuthUser
 from stagecraft.apps.datasets.tests.support.test_helpers import has_header
 from stagecraft.libs.authorization.http import (
-    check_permission, authorize
+    check_permission, authorize, _get_resource_role_permissions
 )
 
 
@@ -226,10 +226,46 @@ class CheckPermissionTestCase(TestCase):
     def test_anon_user_if_permission_requested(self):
         settings.USE_DEVELOPMENT_USERS = False
 
-        (user, has_permission) = check_permission(None, ['permission'], True)
+        (user, has_permission) = check_permission(
+            None, set(['permission']), True)
 
         assert_that(has_permission, equal_to(False))
         assert_that(user.get('name'), equal_to('Anonymous'))
+
+    def test_role_permissions_for_a_resource(self):
+        permissions_set = [
+            {
+                "role": "admin",
+                "permissions": {
+                    "Dashboard": ["get"],
+                    "Transform": ["get"]
+                },
+            },
+            {
+                "role": "dashboard-editor",
+                "permissions": {
+                    "Dashboard": ["get", "post"]
+                }
+            }
+        ]
+        permissions = _get_resource_role_permissions(
+            'Dashboard', permissions_set)
+        assert_that(permissions, equal_to(
+            {
+                'get': set(['admin', 'dashboard-editor']),
+                'post': set(['dashboard-editor']),
+                'put': set()
+            }
+        ))
+        permissions = _get_resource_role_permissions(
+            'Transform', permissions_set)
+        assert_that(permissions, equal_to(
+            {
+                'get': set(['admin']),
+                'post': set(),
+                'put': set()
+            }
+        ))
 
 
 class AuthorizeTestCase(TestCase):
