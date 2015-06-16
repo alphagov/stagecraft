@@ -86,9 +86,9 @@ class DataSetView(ResourceView):
     }
 
     permissions = {
-        'get': 'signin',
-        'post': 'signin',
-        'put': 'signin',
+        'get': ['signin'],
+        'post': ['signin'],
+        'put': ['signin'],
     }
 
     def list(self, request, **kwargs):
@@ -160,7 +160,7 @@ def transform(request, name):
         content_type='application/json')
 
 
-@permission_required('dashboard')
+@permission_required(['dashboard'])
 @never_cache
 def dashboard(user, request, name):
     try:
@@ -176,7 +176,7 @@ def dashboard(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@permission_required('admin')
+@permission_required(['admin'])
 @long_cache
 @vary_on_headers('Authorization')
 def users(user, request, dataset_name):

@@ -60,8 +60,8 @@ class TransformTypeView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'transforms',
-        'put': 'transforms',
+        'post': ['transforms'],
+        'put': ['transforms'],
     }
 
     @method_decorator(never_cache)
@@ -140,8 +140,8 @@ class TransformView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'transforms',
-        'put': 'transforms',
+        'post': ['transforms'],
+        'put': ['transforms'],
     }
 
     @method_decorator(never_cache)
