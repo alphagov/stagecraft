@@ -13,6 +13,15 @@ audit_logger = logging.getLogger('stagecraft.audit')
 
 @statsd.timer('get_user.both')
 def _get_user(access_token, anon_allowed):
+    """
+    Attempts to find a user (using the access token ) in
+    either Stagecraft's OAuthUser table or, and as fallback, via a request to
+    GovUK's Signon API.
+
+    Args:
+        access_token: access token from request
+        anon_allowed: whether to allow anonymous users
+    """
     user = None
     if access_token is not None:
 
