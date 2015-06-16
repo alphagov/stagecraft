@@ -16,9 +16,9 @@ class DataGroupView(ResourceView):
     }
 
     permissions = {
-        'get': 'signin',
-        'post': 'signin',
-        'put': 'signin',
+        'get': ['signin'],
+        'post': ['signin'],
+        'put': ['signin'],
     }
 
     @method_decorator(never_cache)

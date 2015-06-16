@@ -71,7 +71,7 @@ class CheckPermissionTestCase(TestCase):
 
     def test_use_development_users_gets_from_dictionary(self):
         (user, has_permission) = check_permission(
-            'development-oauth-access-token', 'signin')
+            'development-oauth-access-token', ['signin'])
         assert_that(user['name'], equal_to('Some User'))
         assert_that(has_permission, equal_to(True))
 
@@ -79,7 +79,7 @@ class CheckPermissionTestCase(TestCase):
         settings.USE_DEVELOPMENT_USERS = False
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission(
-                'correct-token', 'signin')
+                'correct-token', ['signin'])
         assert_that(user['name'], equal_to('Foobar'))
         assert_that(has_permission, equal_to(True))
 
@@ -89,7 +89,7 @@ class CheckPermissionTestCase(TestCase):
 
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission(
-                'correct-token', 'signin')
+                'correct-token', ['signin'])
         get_patch.assert_called_with(
             'http://signon.dev.gov.uk/user.json?client_id=clientid',
             headers={
@@ -99,7 +99,7 @@ class CheckPermissionTestCase(TestCase):
     def test_user_without_permission_from_signon_returns_none_and_false(self):
         settings.USE_DEVELOPMENT_USERS = False
         with HTTMock(govuk_signon_mock()):
-            (user, has_permission) = check_permission('bad-auth', 'signin')
+            (user, has_permission) = check_permission('bad-auth', ['signin'])
         assert_that(user, none())
         assert_that(has_permission, equal_to(False))
 
@@ -113,7 +113,22 @@ class CheckPermissionTestCase(TestCase):
                                  expires_at=datetime.now() + timedelta(days=1))
 
         (user, has_permission) = check_permission(
-            'correct-token', 'signin')
+            'correct-token', ['signin'])
+
+        assert_that(user['email'], equal_to('joe@example.com'))
+        assert_that(has_permission, equal_to(True))
+
+    def test_user_with_returns_object_and_true_when_permissions_is_list(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        OAuthUser.objects.create(access_token='correct-token',
+                                 uid='my-uid',
+                                 email='joe@example.com',
+                                 permissions=['signin'],
+                                 expires_at=datetime.now() + timedelta(days=1))
+
+        (user, has_permission) = check_permission(
+            'correct-token', ['signin', 'bob'])
 
         assert_that(user['email'], equal_to('joe@example.com'))
         assert_that(has_permission, equal_to(True))
@@ -126,7 +141,7 @@ class CheckPermissionTestCase(TestCase):
                                  permissions=['signin'],
                                  expires_at=datetime.now() + timedelta(days=1))
 
-        (user, has_permission) = check_permission('correct-token', 'admin')
+        (user, has_permission) = check_permission('correct-token', ['admin'])
 
         assert_that(has_permission, equal_to(False))
 
@@ -155,7 +170,7 @@ class CheckPermissionTestCase(TestCase):
 
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission('correct-token-2',
-                                                      'admin')
+                                                      ['admin'])
 
         assert_that(user, none())
         assert_that(has_permission, equal_to(False))
@@ -166,11 +181,11 @@ class CheckPermissionTestCase(TestCase):
 
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission('correct-token',
-                                                      'signin')
+                                                      ['signin'])
 
         assert_that(OAuthUser.objects.count(), equal_to(1))
 
-        (user, has_permission) = check_permission('correct-token', 'signin')
+        (user, has_permission) = check_permission('correct-token', ['signin'])
 
         assert_that(has_permission, equal_to(True))
 
@@ -211,7 +226,7 @@ class CheckPermissionTestCase(TestCase):
     def test_anon_user_if_permission_requested(self):
         settings.USE_DEVELOPMENT_USERS = False
 
-        (user, has_permission) = check_permission(None, 'permission', True)
+        (user, has_permission) = check_permission(None, ['permission'], True)
 
         assert_that(has_permission, equal_to(False))
         assert_that(user.get('name'), equal_to('Anonymous'))
@@ -232,7 +247,7 @@ class AuthorizeTestCase(TestCase):
         request.META['HTTP_AUTHORIZATION'] = 'Bearer correct-token'
 
         with HTTMock(govuk_signon_mock()):
-            user, err = authorize(request, 'signin')
+            user, err = authorize(request, ['signin'])
             assert_that(err, is_(None))
             assert_that(user['uid'], is_('a-long-uid'))
 
@@ -243,7 +258,7 @@ class AuthorizeTestCase(TestCase):
         request.META['HTTP_AUTHORIZATION'] = 'Bearer incorrect-token'
 
         with HTTMock(govuk_signon_mock()):
-            user, err = authorize(request, 'signin')
+            user, err = authorize(request, ['signin'])
             assert_that(err.status_code, is_(401))
             assert_that(user, is_(None))
 
@@ -254,6 +269,6 @@ class AuthorizeTestCase(TestCase):
         request.META['HTTP_AUTHORIZATION'] = 'Bearer correct-token'
 
         with HTTMock(govuk_signon_mock()):
-            user, err = authorize(request, 'super-high-level-permission')
+            user, err = authorize(request, ['super-high-level-permission'])
             assert_that(err.status_code, is_(403))
             assert_that(user['uid'], is_('a-long-uid'))

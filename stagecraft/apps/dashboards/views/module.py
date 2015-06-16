@@ -174,8 +174,8 @@ class ModuleView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'dashboard',
-        'put': 'dashboard',
+        'post': ['dashboard'],
+        'put': ['dashboard'],
     }
 
     def list(self, request, **kwargs):
@@ -281,8 +281,8 @@ class ModuleTypeView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'dashboard',
-        'put': 'dashboard',
+        'post': ['dashboard'],
+        'put': ['dashboard'],
     }
 
     @method_decorator(never_cache)
