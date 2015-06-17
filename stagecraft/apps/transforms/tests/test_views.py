@@ -8,6 +8,8 @@ from hamcrest import (
 
 from .factories import TransformTypeFactory, TransformFactory
 from ...datasets.tests.factories import DataGroupFactory, DataTypeFactory
+from stagecraft.apps.users.models import User
+from stagecraft.libs.authorization.tests.test_http import with_govuk_signon
 
 
 class TransformTypeViewTestCase(TestCase):
@@ -153,7 +155,7 @@ class TransformViewTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(400))
 
-    def test_get(self):
+    def test_get_allows_any_user(self):
         transform = TransformFactory()
         resp = self.client.get(
             '/transform/{}'.format(transform.id),
@@ -169,3 +171,19 @@ class TransformViewTestCase(TestCase):
             resp_json['input']['data-type'],
             equal_to(transform.input_type.name)
         )
+
+    @with_govuk_signon(permissions=['transforms'])
+    def test_404_on_put_when_user_not_in_ownership_array(self):
+        transform = TransformFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        transform.owners.add(user)
+
+        resp = self.client.put(
+            '/transform/{}'.format(transform.id),
+            data={},
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+
+        assert_that(resp.status_code, equal_to(404))
