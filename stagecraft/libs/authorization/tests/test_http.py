@@ -27,7 +27,8 @@ def govuk_signon_mock(**kwargs):
                     "name": kwargs.get("name", "Foobar"),
                     "organisation_slug": kwargs.get(
                         "organisation_slug", "cabinet-office"),
-                    "permissions": kwargs.get("permissions", ["signin"]),
+                    "permissions": kwargs.get(
+                        "permissions", ["signin", "anon"]),
                     "uid": "a-long-uid",
                 }
             }
@@ -192,12 +193,21 @@ class CheckPermissionTestCase(TestCase):
 
         assert_that(has_permission, equal_to(True))
 
-    def test_if_permission_is_none_and_user_then_ok(self):
+    def test_if_permission_is_none_and_user_then_not_ok(self):
         settings.USE_DEVELOPMENT_USERS = False
 
         with HTTMock(govuk_signon_mock()):
             (user, has_permission) = check_permission('correct-token',
                                                       set())
+
+            assert_that(has_permission, equal_to(False))
+
+    def test_if_permission_is_anon_and_user_then_ok(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        with HTTMock(govuk_signon_mock()):
+            (user, has_permission) = check_permission('correct-token',
+                                                      set(['anon']))
 
             assert_that(has_permission, equal_to(True))
 
@@ -213,10 +223,17 @@ class CheckPermissionTestCase(TestCase):
     def test_anon_user_if_no_token(self):
         settings.USE_DEVELOPMENT_USERS = False
 
-        (user, has_permission) = check_permission(None, set(), True)
+        (user, has_permission) = check_permission(None, set(['anon']), True)
 
         assert_that(has_permission, equal_to(True))
         assert_that(user.get('name'), equal_to('Anonymous'))
+
+    def test_no_access_without_role(self):
+        settings.USE_DEVELOPMENT_USERS = False
+
+        (user, has_permission) = check_permission(None, set(), True)
+
+        assert_that(has_permission, equal_to(False))
 
     def test_no_user_if_no_token_and_anon_user_not_allowed(self):
         settings.USE_DEVELOPMENT_USERS = False

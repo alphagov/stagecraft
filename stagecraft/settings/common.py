@@ -126,9 +126,9 @@ ROLES = [
     {
         "role": "dashboard",
         "permissions": {
-            "Dashboard": ["post", "put"],
-            "Module": ["post", "put"],
-            "ModuleType": ["post", "put"],
+            "Dashboard": ["get", "post", "put"],
+            "Module": ["get", "post", "put"],
+            "ModuleType": ["get", "post", "put"],
         },
     },
     {
@@ -141,21 +141,33 @@ ROLES = [
     {
         "role": "organisation",
         "permissions": {
-            "Node": ["post", "put"],
-            "NodeType": ["post", "put"],
+            "Node": ["get", "post", "put"],
+            "NodeType": ["get", "post", "put"],
         },
     },
     {
         "role": "transforms",
         "permissions": {
-            "Transform": ["post", "put"],
-            "TransformType": ["post", "put"],
+            "Transform": ["get", "post", "put"],
+            "TransformType": ["get", "post", "put"],
         },
     },
     {
         "role": "user",
         "permissions": {
             "User": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "anon",
+        "permissions": {
+            "Dashboard": ["get"],
+            "Module": ["get"],
+            "ModuleType": ["get"],
+            "Node": ["get"],
+            "NodeType": ["get"],
+            "Transform": ["get"],
+            "TransformType": ["get"],
         },
     },
 ]

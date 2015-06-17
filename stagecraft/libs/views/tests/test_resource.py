@@ -73,6 +73,9 @@ class TestResourceView(ResourceView):
 
     was_saved = False
 
+    permissions = {
+        'get': set(['anon']), 'post': set(['anon']), 'put': set(['anon'])}
+
     def update_relationships(self, model, model_json, request, parent):
         self.was_saved = model.pk is not None
 
@@ -159,6 +162,8 @@ class ResourceViewTestCase(TestCase):
         request.method = 'GET'
         for (k, v) in query.items():
             request.GET[k] = v
+
+        view.permissions = {'get': set(['anon'])}
 
         response = view.get(request, **args)
 

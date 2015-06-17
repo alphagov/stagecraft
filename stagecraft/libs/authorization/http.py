@@ -41,8 +41,7 @@ def _get_user(access_token, anon_allowed):
             "email": "performance@digital.cabinet-office.gov.uk",
             "name": "Anonymous",
             "organisation_slug": "cabinet-office",
-            "permissions": [
-            ],
+            "permissions": ["anon"],
             "uid": "00000000-0000-0000-0000-000000000000"
         }
 
@@ -90,7 +89,7 @@ def check_permission(access_token, permission_requested, anon_allowed=True):
         return (user, False)
     # always allow access if no role requested
     if not permission_requested:
-        return (user, True)
+        return (user, False)
     user_permissions = set(user['permissions'])
     return (user, len(permission_requested.intersection(user_permissions)) > 0)
 
