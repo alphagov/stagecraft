@@ -14,6 +14,7 @@ from stagecraft.libs.validation.validation import is_uuid
 
 from ..models import Dashboard, Module, ModuleType
 from stagecraft.libs.views.utils import create_http_error
+from stagecraft.libs.authorization.http import _get_resource_role_permissions
 
 
 def json_response(obj):
@@ -172,11 +173,7 @@ class ModuleView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = {
-        'get': None,
-        'post': ['dashboard'],
-        'put': ['dashboard'],
-    }
+    permissions = _get_resource_role_permissions('Module')
 
     def list(self, request, **kwargs):
         query_set = super(ModuleView, self).list(request, **kwargs)
@@ -279,11 +276,7 @@ class ModuleTypeView(ResourceView):
         'name': 'name__iexact'
     }
 
-    permissions = {
-        'get': None,
-        'post': ['dashboard'],
-        'put': ['dashboard'],
-    }
+    permissions = _get_resource_role_permissions('ModuleType')
 
     @method_decorator(never_cache)
     def get(self, request, **kwargs):

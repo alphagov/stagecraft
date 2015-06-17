@@ -6,7 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.views.decorators.cache import never_cache
 
-from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.authorization.http import (
+    permission_required, _get_resource_role_permissions)
 from stagecraft.libs.validation.validation import is_uuid
 
 from stagecraft.apps.datasets.models import DataGroup, DataType
@@ -58,11 +59,7 @@ class TransformTypeView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = {
-        'get': None,
-        'post': ['transforms'],
-        'put': ['transforms'],
-    }
+    permissions = _get_resource_role_permissions('TransformType')
 
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
@@ -138,11 +135,7 @@ class TransformView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = {
-        'get': None,
-        'post': ['transforms'],
-        'put': ['transforms'],
-    }
+    permissions = _get_resource_role_permissions('Transform')
 
     @method_decorator(never_cache)
     def get(self, request, **kwargs):

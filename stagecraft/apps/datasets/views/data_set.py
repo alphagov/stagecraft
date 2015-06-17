@@ -2,7 +2,8 @@ from stagecraft.libs.views.utils import(
     to_json,
     long_cache,
     create_http_error)
-from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.authorization.http import (
+    permission_required, _get_resource_role_permissions)
 import logging
 
 from django.http import HttpResponse
@@ -85,11 +86,7 @@ class DataSetView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = {
-        'get': ['signin'],
-        'post': ['signin'],
-        'put': ['signin'],
-    }
+    permissions = _get_resource_role_permissions('DataSet')
 
     def list(self, request, **kwargs):
         '''
@@ -160,7 +157,7 @@ def transform(request, name):
         content_type='application/json')
 
 
-@permission_required(['dashboard'])
+@permission_required(set(['dashboard']))
 @never_cache
 def dashboard(user, request, name):
     try:
@@ -176,7 +173,7 @@ def dashboard(user, request, name):
     return HttpResponse(json_str, content_type='application/json')
 
 
-@permission_required(['admin'])
+@permission_required(set(['admin']))
 @long_cache
 @vary_on_headers('Authorization')
 def users(user, request, dataset_name):

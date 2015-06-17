@@ -3,7 +3,8 @@ from stagecraft.apps.datasets.models import DataGroup
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
-from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.authorization.http import (
+    permission_required, _get_resource_role_permissions)
 
 
 class DataGroupView(ResourceView):
@@ -15,11 +16,7 @@ class DataGroupView(ResourceView):
         "name": "name"
     }
 
-    permissions = {
-        'get': ['signin'],
-        'post': ['signin'],
-        'put': ['signin'],
-    }
+    permissions = _get_resource_role_permissions('DataGroup')
 
     @method_decorator(never_cache)
     @method_decorator(vary_on_headers('Authorization'))
