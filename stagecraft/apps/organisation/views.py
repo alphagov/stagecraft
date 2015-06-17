@@ -27,8 +27,8 @@ class NodeTypeView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'organisation',
-        'put': 'organisation',
+        'post': ['organisation'],
+        'put': ['organisation'],
     }
 
     @method_decorator(never_cache)
@@ -81,8 +81,8 @@ class NodeView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'organisation',
-        'put': 'organisation',
+        'post': ['organisation'],
+        'put': ['organisation'],
     }
 
     def list(self, request, **kwargs):

@@ -176,8 +176,8 @@ class DashboardView(ResourceView):
 
     permissions = {
         'get': None,
-        'post': 'dashboard',
-        'put': 'dashboard',
+        'post': ['dashboard'],
+        'put': ['dashboard'],
     }
 
     @method_decorator(never_cache)

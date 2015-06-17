@@ -41,9 +41,9 @@ class UserView(ResourceView):
     }
 
     permissions = {
-        'get': 'user',
-        'post': 'user',
-        'put': 'user',
+        'get': ['user'],
+        'post': ['user'],
+        'put': ['user'],
     }
 
     @never_cache
