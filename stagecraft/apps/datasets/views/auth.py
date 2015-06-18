@@ -9,7 +9,7 @@ from stagecraft.libs.authorization.http import permission_required
 
 @csrf_exempt
 @require_http_methods(['POST', 'PUT'])
-@permission_required('user_update_permission')
+@permission_required(set(['user_update_permission']))
 @never_cache
 def invalidate(user, request, uid):
     OAuthUser.objects.purge_user(uid)

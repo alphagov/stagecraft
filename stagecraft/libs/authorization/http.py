@@ -13,6 +13,15 @@ audit_logger = logging.getLogger('stagecraft.audit')
 
 @statsd.timer('get_user.both')
 def _get_user(access_token, anon_allowed):
+    """
+    Attempts to find a user (using the access token ) in
+    either Stagecraft's OAuthUser table or, and as fallback, via a request to
+    GovUK's Signon API.
+
+    Args:
+        access_token: access token from request
+        anon_allowed: whether to allow anonymous users
+    """
     user = None
     if access_token is not None:
 
@@ -32,8 +41,7 @@ def _get_user(access_token, anon_allowed):
             "email": "performance@digital.cabinet-office.gov.uk",
             "name": "Anonymous",
             "organisation_slug": "cabinet-office",
-            "permissions": [
-            ],
+            "permissions": ["anon"],
             "uid": "00000000-0000-0000-0000-000000000000"
         }
 
@@ -62,12 +70,28 @@ def _set_user_to_database(access_token, user):
     OAuthUser.objects.cache_user(access_token, user)
 
 
+def _get_resource_role_permissions(resource, permissions=None):
+    if permissions is None:
+        permissions = settings.ROLES
+    resource_permissions = {"get": set(), "put": set(), "post": set()}
+    for permission in permissions:
+        for k, v in permission["permissions"].items():
+            if k == resource:
+                for method in v:
+                    resource_permissions[method].add(permission["role"])
+
+    return resource_permissions
+
+
 def check_permission(access_token, permission_requested, anon_allowed=True):
     user = _get_user(access_token, anon_allowed)
-    has_permission = user is not None and \
-        (permission_requested is None or
-         permission_requested in user['permissions'])
-    return (user, has_permission)
+    if user is None:
+        return (user, False)
+    # always allow access if no role requested
+    if not permission_requested:
+        return (user, False)
+    user_permissions = set(user['permissions'])
+    return (user, len(permission_requested.intersection(user_permissions)) > 0)
 
 
 def unauthorized(request, message):

@@ -15,6 +15,7 @@ from stagecraft.libs.views.utils import to_json, create_error, \
     create_http_error
 from .module import add_module_to_dashboard, ModuleView
 import time
+from stagecraft.libs.authorization.http import _get_resource_role_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -174,11 +175,7 @@ class DashboardView(ResourceView):
         'slug': 'slug_iexact'
     }
 
-    permissions = {
-        'get': None,
-        'post': 'dashboard',
-        'put': 'dashboard',
-    }
+    permissions = _get_resource_role_permissions('Dashboard')
 
     @method_decorator(never_cache)
     def get(self, request, **kwargs):

@@ -5,6 +5,7 @@ from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.resource import ResourceView
 from .models import Node, NodeType
 from stagecraft.libs.views.utils import create_http_error
+from stagecraft.libs.authorization.http import _get_resource_role_permissions
 
 
 class NodeTypeView(ResourceView):
@@ -25,11 +26,7 @@ class NodeTypeView(ResourceView):
         'name': 'name__iexact',
     }
 
-    permissions = {
-        'get': None,
-        'post': 'organisation',
-        'put': 'organisation',
-    }
+    permissions = _get_resource_role_permissions('NodeType')
 
     @method_decorator(never_cache)
     def get(self, request, **kwargs):
@@ -79,11 +76,7 @@ class NodeView(ResourceView):
         'type': 'typeOf__name',
     }
 
-    permissions = {
-        'get': None,
-        'post': 'organisation',
-        'put': 'organisation',
-    }
+    permissions = _get_resource_role_permissions('Node')
 
     def list(self, request, **kwargs):
         if 'parent' in kwargs:

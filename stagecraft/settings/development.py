@@ -37,6 +37,7 @@ DEVELOPMENT_USERS = {
         "name": "Some User",
         "organisation_slug": "cabinet-office",
         "permissions": [
+            "anon",
             "signin",
             "user",
             "admin",

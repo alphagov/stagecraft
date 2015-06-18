@@ -121,3 +121,53 @@ DOGSLOW_LOG_TO_FILE = False
 DOGSLOW_TIMER = 1
 DOGSLOW_LOGGER = 'stagecraft.apps'
 DOGSLOW_LOG_LEVEL = 'INFO'
+
+ROLES = [
+    {
+        "role": "dashboard",
+        "permissions": {
+            "Dashboard": ["get", "post", "put"],
+            "Module": ["get", "post", "put"],
+            "ModuleType": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "signin",
+        "permissions": {
+            "DataGroup": ["get", "post", "put"],
+            "DataSet": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "organisation",
+        "permissions": {
+            "Node": ["get", "post", "put"],
+            "NodeType": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "transforms",
+        "permissions": {
+            "Transform": ["get", "post", "put"],
+            "TransformType": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "user",
+        "permissions": {
+            "User": ["get", "post", "put"],
+        },
+    },
+    {
+        "role": "anon",
+        "permissions": {
+            "Dashboard": ["get"],
+            "Module": ["get"],
+            "ModuleType": ["get"],
+            "Node": ["get"],
+            "NodeType": ["get"],
+            "Transform": ["get"],
+            "TransformType": ["get"],
+        },
+    },
+]

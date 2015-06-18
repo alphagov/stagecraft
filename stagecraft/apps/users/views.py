@@ -6,7 +6,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 
 from stagecraft.apps.users.models import User
-from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.authorization.http import (
+    permission_required, _get_resource_role_permissions)
 from stagecraft.libs.views.resource import ResourceView
 
 logger = logging.getLogger(__name__)
@@ -40,11 +41,7 @@ class UserView(ResourceView):
         'email': 'email__iexact',
     }
 
-    permissions = {
-        'get': 'user',
-        'post': 'user',
-        'put': 'user',
-    }
+    permissions = _get_resource_role_permissions('User')
 
     @never_cache
     @vary_on_headers('Authorization')
