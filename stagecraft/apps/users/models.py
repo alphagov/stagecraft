@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
-from stagecraft.apps.datasets.models import DataSet
-from collections import OrderedDict
 
 import reversion
 
@@ -16,16 +14,8 @@ class User(models.Model):
         help_text=""""""
     )
 
-    data_sets = models.ManyToManyField(DataSet, blank=True)
-
     def serialize(self):
-        def get_names(data_sets):
-            return [data_set.name for data_set in data_sets]
-
-        return OrderedDict([
-            ('email',     self.email),
-            ('data_sets', get_names(self.data_sets.all()))
-        ])
+        return {'email': self.email}
 
     def api_object(self):
         """

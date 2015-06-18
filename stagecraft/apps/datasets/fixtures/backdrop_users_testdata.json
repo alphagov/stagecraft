@@ -3,16 +3,14 @@
     "pk": 1,
     "model": "users.user",
     "fields": {
-        "email": "tea@yourmumshouse.com",
-        "data_sets": []
+        "email": "tea@yourmumshouse.com"
     }
 },
 {
     "pk": 2,
     "model": "users.user",
     "fields": {
-        "email": "foo@bar.com",
-        "data_sets": [3,4]
+        "email": "foo@bar.com"
     }
 },
 {
@@ -32,7 +30,8 @@
         "upload_filters": "backdrop.filter.1",
         "queryable": true,
         "upload_format": "",
-        "raw_queries_allowed": true
+        "raw_queries_allowed": true,
+        "owners": [2]
     }
 },
 {
@@ -52,7 +51,8 @@
         "upload_filters": "backdrop.filter.1,backdrop.filter.2",
         "queryable": true,
         "upload_format": "",
-        "raw_queries_allowed": true
+        "raw_queries_allowed": true,
+        "owners": [2]
     }
 },
 {

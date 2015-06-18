@@ -61,6 +61,7 @@ class DataSetAdmin(reversion.VersionAdmin):
         'realtime',
         'capped_size',
         'max_age_expected',
+        'owners'
     )
 
 admin.site.register(DataSet, DataSetAdmin)

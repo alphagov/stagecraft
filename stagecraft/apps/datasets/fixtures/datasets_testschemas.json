@@ -28,7 +28,8 @@
             "raw_queries_allowed": true,
             "realtime": false,
             "upload_filters": "backdrop.filter.1",
-            "upload_format": ""
+            "upload_format": "",
+            "owners": [1]
         },
         "model": "datasets.dataset",
         "pk": 1
@@ -62,7 +63,8 @@
             "raw_queries_allowed": true,
             "realtime": false,
             "upload_filters": "backdrop.filter.1",
-            "upload_format": ""
+            "upload_format": "",
+            "owners": [1]
         },
         "model": "datasets.dataset",
         "pk": 2
@@ -96,7 +98,8 @@
             "raw_queries_allowed": true,
             "realtime": false,
             "upload_filters": "backdrop.filter.1",
-            "upload_format": ""
+            "upload_format": "",
+            "owners": [1]
         },
         "model": "datasets.dataset",
         "pk": 3
@@ -105,8 +108,7 @@
       "pk": 1,
       "model": "users.user",
       "fields": {
-        "email": "some.user@digital.cabinet-office.gov.uk",
-        "data_sets": [1, 2, 3]
+        "email": "some.user@digital.cabinet-office.gov.uk"
       }
     }
 ]

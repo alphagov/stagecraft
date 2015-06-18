@@ -5,6 +5,8 @@ from hamcrest import (
     assert_that, equal_to, is_,
     has_entry, has_item, has_key, is_not, has_length
 )
+from stagecraft.apps.users.models import User
+from stagecraft.libs.authorization.tests.test_http import with_govuk_signon
 
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from ...models import Dashboard, Module, ModuleType
@@ -52,6 +54,10 @@ class ModuleViewsTestCase(TestCase):
             title='A service',
             slug='some-slug',
         )
+        cls.user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+
+        cls.dashboard.owners.add(cls.user)
 
     @classmethod
     @disable_backdrop_connection
@@ -119,12 +125,8 @@ class ModuleViewsTestCase(TestCase):
 
         assert_that(delete_resp.status_code, equal_to(405))
 
+    @with_govuk_signon(permissions=['dashboard'])
     def test_list_modules_by_uuid_or_slug(self):
-        DashboardFactory(
-            published=True,
-            title='A service',
-            slug='some-slug2',
-        )
         module1 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
@@ -139,7 +141,8 @@ class ModuleViewsTestCase(TestCase):
             order=2)
 
         resp = self.client.get(
-            '/dashboard/{}/module'.format(self.dashboard.slug))
+            '/dashboard/{}/module'.format(self.dashboard.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, is_(equal_to(200)))
 
@@ -154,7 +157,8 @@ class ModuleViewsTestCase(TestCase):
             has_item(has_entry('id', str(module2.id))))
 
         self.client.get(
-            '/dashboard/{}/module'.format(self.dashboard.id))
+            '/dashboard/{}/module'.format(self.dashboard.id),
+            HTTP_AUTHORIZATION='Bearer correct-token')
 
         resp_json = json.loads(resp.content)
 
@@ -166,12 +170,14 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             has_item(has_entry('id', str(module2.id))))
 
+    @with_govuk_signon(permissions=['dashboard'])
     def test_list_modules_on_dashboard(self):
         dashboard2 = DashboardFactory(
             published=True,
             title='A service',
             slug='some-slug2',
         )
+        dashboard2.owners.add(self.user)
         module1 = ModuleFactory(
             type=self.module_type,
             dashboard=self.dashboard,
@@ -192,7 +198,8 @@ class ModuleViewsTestCase(TestCase):
             order=1)
 
         resp = self.client.get(
-            '/dashboard/{}/module'.format(self.dashboard.slug))
+            '/dashboard/{}/module'.format(self.dashboard.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, is_(equal_to(200)))
 

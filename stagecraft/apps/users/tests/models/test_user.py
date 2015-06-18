@@ -25,11 +25,6 @@ class UserTestCase(TestCase):
 
     def test_serialize_returns_serialized_user(self):
         a = User.objects.create(email='email@blah.net')
-        a.data_sets.add(DataSet.objects.get(name="evl_customer_satisfaction"))
-        a.data_sets.add(DataSet.objects.get(name="lpa_volumes"))
-        expected_response = {
-            'email': 'email@blah.net',
-            'data_sets': ['evl_customer_satisfaction', 'lpa_volumes']
-        }
+        expected_response = {'email': 'email@blah.net'}
 
         assert_equal(a.serialize(), expected_response)

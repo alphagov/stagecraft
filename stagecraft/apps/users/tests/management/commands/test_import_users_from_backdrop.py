@@ -11,12 +11,12 @@ class TestImportBackdropUser(TestCase):
 
     def setUp(self):
         for user in User.objects.all():
-            user.data_sets.clear()
+            user.dataset_set.clear()
             user.delete()
 
     def tearDown(self):
         for user in User.objects.all():
-            user.data_sets.clear()
+            user.dataset_set.clear()
             user.delete()
 
     def test_raises_command_error_when_no_user_file_passed(
@@ -49,7 +49,7 @@ users/tests/fixtures/backdrop_users_import_testdata.json"]
             return User.objects.filter(email=email).first()
 
         def _get_data_set_names(user):
-            return set([data_set.name for data_set in user.data_sets.all()])
+            return set([data_set.name for data_set in user.dataset_set.all()])
 
         args = ["stagecraft/apps/\
 users/tests/fixtures/backdrop_users_import_testdata.json"]

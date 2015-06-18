@@ -11,21 +11,30 @@ from mock import patch
 
 from stagecraft.apps.dashboards.tests.factories.factories import(
     DashboardFactory, DepartmentFactory, ModuleTypeFactory, ModuleFactory,
-    LinkFactory
-)
+    LinkFactory)
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
 
 from stagecraft.apps.dashboards.models.dashboard import (
     Dashboard)
 from stagecraft.apps.dashboards.models.module import Module
 from stagecraft.apps.dashboards.views.dashboard import fetch_dashboard
+from stagecraft.apps.users.models import User
 from stagecraft.libs.authorization.tests.test_http import (
-    with_govuk_signon)
+    with_govuk_signon, govuk_signon_mock)
 from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.utils import JsonEncoder
 
 
 class DashboardViewsListTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
     def test_list_dashboards_lists_dashboards(self):
         DashboardFactory(
@@ -140,6 +149,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_fetch_dashboard_with_multiple_slug_fragments(self):
         dashboard = DashboardFactory(slug='my_first_slug')
+        dashboard.owners.add(self.user)
         slug = 'my_first_slug/another/thing'
         returned_dashboard = fetch_dashboard(slug)
         assert_that(dashboard.id, equal_to(returned_dashboard.id))
@@ -160,6 +170,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_modules_are_ordered_correctly(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -183,6 +194,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_section_slug_returns_module_and_children(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         parent = ModuleFactory(
             type=module_type,
@@ -210,6 +222,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_module_slug_only_returns_module(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -226,6 +239,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_sectioned_module_slug_only_returns_module(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         parent = ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -256,6 +270,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_tab_slug_only_returns_tab(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -291,6 +306,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_sectioned_tab_slug_only_returns_tab(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         parent = ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -330,6 +346,7 @@ class DashboardViewsListTestCase(TestCase):
 
     def test_dashboard_with_nonexistent_tab_slug_returns_nothing(self):
         dashboard = DashboardFactory(slug='my-first-slug')
+        dashboard.owners.add(self.user)
         module_type = ModuleTypeFactory()
         ModuleFactory(
             type=module_type, dashboard=dashboard,
@@ -360,6 +377,15 @@ class DashboardViewsListTestCase(TestCase):
 
 class DashboardViewsGetTestCase(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
     @with_govuk_signon(permissions=['dashboard'])
     def test_get_a_dashboard_with_incorrect_id_returns_404(self):
         resp = self.client.get(
@@ -369,9 +395,10 @@ class DashboardViewsGetTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(404))
 
-    @with_govuk_signon(permissions=['dashboard'])
+    @with_govuk_signon(permissions=['dashboard', 'user'])
     def test_get_an_existing_dashboard_returns_a_dashboard(self):
         dashboard = DashboardFactory(slug='slug1')
+        dashboard.owners.add(self.user)
 
         resp = self.client.get(
             '/dashboard/{}'.format(dashboard.slug),
@@ -405,9 +432,31 @@ class DashboardViewsGetTestCase(TestCase):
 
 class DashboardViewsUpdateTestCase(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_404_when_user_not_in_ownership_array(self):
+        dashboard = DashboardFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        dashboard.owners.add(user)
+
+        resp = self.client.get('/dashboard/{}'.format(dashboard.slug),
+                               HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
+
     @with_govuk_signon(permissions=['dashboard'])
     def test_change_title_of_dashboard_changes_title_of_dashboard(self):
         dashboard = DashboardFactory()
+        dashboard.owners.add(self.user)
         dashboard_data = dashboard.serialize()
 
         dashboard_data['title'] = 'foo'
@@ -439,6 +488,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_updating_module_attributes(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         module = ModuleFactory(
             dashboard=dashboard,
             title='module-title',
@@ -479,6 +529,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_updating_nested_module_attributes(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         module = ModuleFactory(
             dashboard=dashboard,
             title='module-title',
@@ -528,6 +579,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_updating_module_with_nonexistent_dataset(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         module = ModuleFactory(
             dashboard=dashboard,
             title='module-title',
@@ -553,6 +605,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_update_non_existent_module_doesnt_work(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         dashboard_data = dashboard.serialize()
         dashboard_data['modules'] = [
             {
@@ -572,6 +625,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_removing_module(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         module = ModuleFactory(
             title='module to remove', dashboard=dashboard)
         dashboard_data = dashboard.serialize()
@@ -592,6 +646,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_removing_nested_module(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         parent = ModuleFactory(dashboard=dashboard, title='parent')
         child = ModuleFactory(
             parent=parent, dashboard=dashboard, title='module to remove')
@@ -625,6 +680,7 @@ class DashboardViewsUpdateTestCase(TestCase):
     @with_govuk_signon(permissions=['dashboard'])
     def test_update_existing_link(self):
         dashboard = DashboardFactory(title='test dashboard')
+        dashboard.owners.add(self.user)
         link = LinkFactory(dashboard=dashboard)
         dashboard_data = dashboard.serialize()
         dashboard_data['links'][0]['url'] = 'https://gov.uk/new-link'
