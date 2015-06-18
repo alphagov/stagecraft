@@ -543,6 +543,11 @@ class DataSetsViewsTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         assert_equal(json.loads(resp.content.decode('utf-8')), expected)
 
+        assert_that(
+            DataSet.objects.get(name=expected['name']).owners.first().email,
+            equal_to('some.user@digital.cabinet-office.gov.uk')
+        )
+
     def test_post_with_name_is_rejected(self):
         data_set = {
             'name': 'group1_type1',

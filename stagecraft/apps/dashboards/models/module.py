@@ -22,6 +22,9 @@ class ModuleManager(models.Manager):
             'data_set__data_group', 'data_set__data_type',
             'type')
 
+    def for_user(self, user):
+        return self.get_queryset().filter(dashboard__owners=user)
+
 
 class ModuleType(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
@@ -89,6 +92,11 @@ class Module(models.Model):
     order = models.IntegerField()
 
     objects = ModuleManager()
+
+    def _get_owners(self):
+        return self.dashboard.owners
+
+    owners = property(_get_owners)
 
     # should run on normal validate
     def validate_options(self):

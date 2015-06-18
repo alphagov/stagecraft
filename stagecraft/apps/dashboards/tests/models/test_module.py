@@ -1,7 +1,8 @@
 
 from django.db import transaction, IntegrityError
 from django.test import TestCase
-from jsonschema.exceptions import ValidationError, SchemaError
+from jsonschema.exceptions import ValidationError
+from stagecraft.apps.users.models import User
 from hamcrest import (
     assert_that, equal_to, calling, raises, is_not, has_entry, has_key,
     contains,
@@ -412,3 +413,22 @@ class ModuleTestCase(TestCase):
         data_source = module.options['tabs'][0]['data-source']
         assert_that(data_source['query-params']['group_by'],
                     equal_to(['foo']))
+
+    def test_module_delegates_to_dashboard_owners(self):
+        module = ModuleFactory(
+            slug='a-module',
+            type=self.module_type,
+            dashboard=self.dashboard_a,
+            order=1,
+            options={
+                'foo': 'bar',
+            },
+            query_parameters={
+                'sort_by': 'foo'
+            })
+        user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+        self.dashboard_a.owners.add(user)
+        assert_that(
+            module.owners.all(),
+            self.dashboard_a.owners.all())

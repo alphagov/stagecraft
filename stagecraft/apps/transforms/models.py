@@ -10,6 +10,7 @@ from jsonfield import JSONField
 
 from stagecraft.apps.users.models import User
 from stagecraft.apps.datasets.models import DataGroup, DataType
+from django.db.models.query import QuerySet
 from stagecraft.apps.dashboards.models.module import query_param_schema
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,18 @@ class TransformType(models.Model):
         return None
 
 
+class TransformManager(models.Manager):
+
+    def get_query_set(self):
+        return QuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_query_set().filter(owners=user)
+
+
 class Transform(models.Model):
+    objects = TransformManager()
+
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(TransformType)
     owners = models.ManyToManyField(User)

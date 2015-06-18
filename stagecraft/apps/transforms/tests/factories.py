@@ -1,7 +1,7 @@
 import factory
 
 from ..models import TransformType, Transform
-from ...datasets.tests.factories import DataTypeFactory
+from ...datasets.tests.factories import DataTypeFactory, DataGroupFactory
 
 
 class TransformTypeFactory(factory.DjangoModelFactory):
@@ -22,5 +22,19 @@ class TransformFactory(factory.DjangoModelFactory):
     type = factory.SubFactory(TransformTypeFactory)
     input_type = factory.SubFactory(DataTypeFactory)
     output_type = factory.SubFactory(DataTypeFactory)
+    query_parameters = {}
+    options = {}
+
+
+class TransformWithDataGroupFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Transform
+
+    type = factory.SubFactory(TransformTypeFactory)
+    input_type = factory.SubFactory(DataTypeFactory)
+    output_type = factory.SubFactory(DataTypeFactory)
+    input_group = factory.SubFactory(DataGroupFactory)
+    output_group = factory.SubFactory(DataGroupFactory)
     query_parameters = {}
     options = {}

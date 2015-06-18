@@ -44,6 +44,9 @@ class DataSetManager(models.Manager):
     def get_query_set(self):
         return DataSetQuerySet(self.model, using=self._db)
 
+    def for_user(self, user):
+        return self.get_query_set().filter(owners=user)
+
 
 @python_2_unicode_compatible
 class DataSet(models.Model):

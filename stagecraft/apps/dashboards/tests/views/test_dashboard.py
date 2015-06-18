@@ -20,7 +20,7 @@ from stagecraft.apps.dashboards.models.module import Module
 from stagecraft.apps.dashboards.views.dashboard import fetch_dashboard
 from stagecraft.apps.users.models import User
 from stagecraft.libs.authorization.tests.test_http import (
-    with_govuk_signon, govuk_signon_mock)
+    with_govuk_signon)
 from stagecraft.libs.views.utils import to_json
 from stagecraft.libs.views.utils import JsonEncoder
 
@@ -387,6 +387,31 @@ class DashboardViewsGetTestCase(TestCase):
         pass
 
     @with_govuk_signon(permissions=['dashboard'])
+    def test_404_when_user_not_in_ownership_array(self):
+        dashboard = DashboardFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        dashboard.owners.add(user)
+
+        resp = self.client.get('/dashboard/{}'.format(dashboard.slug),
+                               HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_404_when_user_not_in_ownership_array_for_any_dashboards(self):
+        dashboard = DashboardFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        dashboard.owners.add(user)
+
+        resp = self.client.get('/dashboards',
+                               HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(json.loads(resp.content), equal_to([]))
+
+    @with_govuk_signon(permissions=['dashboard'])
     def test_get_a_dashboard_with_incorrect_id_returns_404(self):
         resp = self.client.get(
             '/dashboard/non-existant-m8',
@@ -440,18 +465,6 @@ class DashboardViewsUpdateTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         pass
-
-    @with_govuk_signon(permissions=['dashboard'])
-    def test_404_when_user_not_in_ownership_array(self):
-        dashboard = DashboardFactory()
-        user, _ = User.objects.get_or_create(
-            email='not_correct_user.lastname@gov.uk')
-        dashboard.owners.add(user)
-
-        resp = self.client.get('/dashboard/{}'.format(dashboard.slug),
-                               HTTP_AUTHORIZATION='Bearer correct-token')
-
-        assert_that(resp.status_code, equal_to(404))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_change_title_of_dashboard_changes_title_of_dashboard(self):
@@ -686,7 +699,7 @@ class DashboardViewsUpdateTestCase(TestCase):
         dashboard_data['links'][0]['url'] = 'https://gov.uk/new-link'
         dashboard_data['links'][0]['title'] = 'new link title'
 
-        resp = self.client.put(
+        self.client.put(
             '/dashboard/{}'.format(dashboard.id),
             json.dumps(dashboard_data, cls=JsonEncoder),
             content_type="application/json",
@@ -744,6 +757,25 @@ class DashboardViewsCreateTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(200))
         assert_that(Dashboard.objects.count(), equal_to(1))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_create_dashboard_adds_owner(self):
+        department = DepartmentFactory()
+        data = self._get_dashboard_payload(
+            organisation=str(department.id))
+
+        resp = self.client.post(
+            '/dashboard', json.dumps(data),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        dashboard = Dashboard.objects.get(
+            slug=self._get_dashboard_payload()['slug'])
+        assert_that(len(dashboard.owners.all()), equal_to(1))
+        assert_that(
+            dashboard.owners.first().email,
+            equal_to('foobar.lastname@gov.uk'))
 
     @with_govuk_signon(permissions=['dashboard'])
     def test_create_dashboard_fails_with_invalid_organisation_uuid(self):
