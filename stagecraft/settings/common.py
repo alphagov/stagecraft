@@ -132,6 +132,35 @@ ROLES = [
         },
     },
     {
+        "role": "dashboard-editor",
+        "permissions": {
+            "Dashboard": ["get", "post", "put"],
+            "Module": ["get", "post", "put"],
+            "ModuleType": ["get"],
+            "DataGroup": ["get", "post"],
+            "DataSet": ["get", "post"],
+            "Node": ["get"],
+            "NodeType": ["get"],
+            "Transform": ["get", "post"],
+            "TransformType": ["get"],
+        },
+    },
+    {
+        "role": "admin",
+        "permissions": {
+            "Dashboard": ["get", "post", "put"],
+            "Module": ["get", "post", "put"],
+            "ModuleType": ["get", "post", "put"],
+            "DataGroup": ["get", "post", "put"],
+            "DataSet": ["get", "post", "put"],
+            "Node": ["get", "post", "put"],
+            "NodeType": ["get", "post", "put"],
+            "Transform": ["get", "post", "put"],
+            "TransformType": ["get", "post", "put"],
+            "User": ["get", "post", "put"],
+        },
+    },
+    {
         "role": "signin",
         "permissions": {
             "DataGroup": ["get", "post", "put"],

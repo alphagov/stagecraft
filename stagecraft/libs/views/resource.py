@@ -74,7 +74,7 @@ class ResourceView(View):
     def list(self, request, **kwargs):
         user = kwargs.get('user', None)
         additional_filters = kwargs.get('additional_filters', {})
-        unfiltered_roles = {'admin', 'dashboard-editor'}
+        unfiltered_roles = {'admin'}
 
         should_filter = user and (len(set(user['permissions']).intersection(
             unfiltered_roles)) == 0)
