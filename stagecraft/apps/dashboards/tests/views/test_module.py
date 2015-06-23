@@ -3,7 +3,8 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_,
-    has_entry, has_item, has_key, is_not, has_length
+    has_entry, has_item, has_key, is_not,
+    has_length, greater_than
 )
 from stagecraft.apps.users.models import User
 from stagecraft.libs.authorization.tests.test_http import with_govuk_signon
@@ -54,6 +55,11 @@ class ModuleViewsTestCase(TestCase):
             title='A service',
             slug='some-slug',
         )
+        cls.dashboard_without_owner = DashboardFactory(
+            published=True,
+            title='Another service',
+            slug='some-other-slug',
+        )
         cls.user, _ = User.objects.get_or_create(
             email='foobar.lastname@gov.uk')
 
@@ -82,6 +88,7 @@ class ModuleViewsTestCase(TestCase):
 
         assert_that(delete_resp.status_code, equal_to(405))
 
+    @with_govuk_signon(permissions=['dashboard'])
     def test_get_module_by_uuid(self):
         module1 = ModuleFactory(
             type=self.module_type,
@@ -90,7 +97,8 @@ class ModuleViewsTestCase(TestCase):
             options={},
             order=1)
         resp = self.client.get(
-            '/module/{}'.format(module1.id))
+            '/module/{}'.format(module1.id),
+            HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, is_(equal_to(200)))
 
@@ -117,6 +125,20 @@ class ModuleViewsTestCase(TestCase):
         assert_that(
             resp_json,
             equal_to(module_attrs))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_get_module_by_uuid_404s_when_user_not_owner_of_dashboard(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard_without_owner,
+            slug='module-1',
+            options={},
+            order=1)
+        resp = self.client.get(
+            '/module/{}'.format(module1.id),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, is_(equal_to(404)))
 
     def test_modules_on_dashboard_doesnt_delete(self):
         delete_resp = self.client.delete(
@@ -171,6 +193,38 @@ class ModuleViewsTestCase(TestCase):
             has_item(has_entry('id', str(module2.id))))
 
     @with_govuk_signon(permissions=['dashboard'])
+    def test_list_modules_on_dashboard_when_not_owner_returns_404(self):
+        dashboard2 = DashboardFactory(
+            published=True,
+            title='A service',
+            slug='some-slug2',
+        )
+        ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-2',
+            options={},
+            order=2)
+        ModuleFactory(
+            type=self.module_type,
+            dashboard=dashboard2,
+            slug='module-3',
+            options={},
+            order=1)
+
+        resp = self.client.get(
+            '/dashboard/{}/module'.format(dashboard2.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, is_(equal_to(404)))
+
+    @with_govuk_signon(permissions=['dashboard'])
     def test_list_modules_on_dashboard(self):
         dashboard2 = DashboardFactory(
             published=True,
@@ -216,7 +270,111 @@ class ModuleViewsTestCase(TestCase):
             resp_json,
             is_not(has_item(has_entry('id', str(module3.id)))))
 
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_list_modules(self):
+        ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-2',
+            options={},
+            order=2)
+
+        resp = self.client.get(
+            '/modules', HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, is_(equal_to(200)))
+        resp_json = json.loads(resp.content)
+        assert_that(len(resp_json), is_(equal_to(2)))
+
+    def test_edit_a_module_by_slug_on_a_dashboard_when_you_are_an_owner(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        resp = self.client.put(
+            '/module/{}'.format(module1.slug),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {
+                    'thing': 'a value',
+                },
+                'objects': "some object",
+                'order': 1,
+                'modules': [],
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(405)))
+
+    def test_edit_a_module_by_id_when_you_are_an_owner(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard,
+            slug='module-1',
+            options={},
+            order=1)
+        resp = self.client.put(
+            '/module/{}'.format(module1.id),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {
+                    'thing': 'a value',
+                },
+                'objects': "some object",
+                'order': 1,
+                'modules': [],
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(405)))
+
+    def test_edit_a_module_when_not_owner(self):
+        module1 = ModuleFactory(
+            type=self.module_type,
+            dashboard=self.dashboard_without_owner,
+            slug='module-1',
+            options={},
+            order=1)
+        resp = self.client.put(
+            '/module/{}'.format(module1.slug),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {
+                    'thing': 'a value',
+                },
+                'objects': "some object",
+                'order': 1,
+                'modules': [],
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(405)))
+
     def test_add_a_module_to_a_dashboard(self):
+        existing_modules_count = len(Module.objects.all())
         resp = self.client.post(
             '/dashboard/{}/module'.format(self.dashboard.slug),
             data=json.dumps({
@@ -236,6 +394,9 @@ class ModuleViewsTestCase(TestCase):
             content_type='application/json')
 
         assert_that(resp.status_code, is_(equal_to(200)))
+        assert_that(
+            len(Module.objects.all()),
+            greater_than(existing_modules_count))
 
         resp_json = json.loads(resp.content)
 
@@ -542,6 +703,47 @@ class ModuleViewsTestCase(TestCase):
         )
         dashboard = Dashboard.objects.get(id=self.dashboard.id)
         assert_that(dashboard.module_set.all(), has_length(1))
+
+    def test_add_a_module_without_a_dashboard(self):
+        resp = self.client.post(
+            '/module/',
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {
+                    'thing': 'a value',
+                },
+                'objects': "some object",
+                'order': 1,
+                'modules': [],
+            }),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(404)))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_add_a_module_to_a_dashboard_you_do_not_own(self):
+
+        resp = self.client.post(
+            '/dashboard/{}/module'.format(self.dashboard_without_owner.slug),
+            data=json.dumps({
+                'slug': 'a-module',
+                'type_id': str(self.module_type.id),
+                'title': 'Some module',
+                'description': 'Some text about the module',
+                'info': ['foo'],
+                'options': {'thing': 'a value'},
+                'order': 1,
+                'modules': [],
+            }),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json')
+
+        assert_that(resp.status_code, is_(equal_to(404)))
 
 
 class ModuleTypeViewsTestCase(TestCase):

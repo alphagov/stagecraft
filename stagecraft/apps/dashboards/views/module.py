@@ -188,6 +188,15 @@ class ModuleView(ResourceView):
     def get(self, request, **kwargs):
         return super(ModuleView, self).get(request, **kwargs)
 
+    @csrf_exempt
+    @method_decorator(never_cache)
+    def put(self, request, **kwargs):
+        return create_http_error(
+            405,
+            "Can't put to a resource,"
+            "update only supported through dashboard",
+            request)
+
     def update_model(self, model, model_json, request, parent):
 
         try:
@@ -195,6 +204,8 @@ class ModuleView(ResourceView):
         except ModuleType.DoesNotExist:
             return create_http_error(404, 'module type not found', request)
 
+        if parent is None:
+            return create_http_error(404, 'no parent dashboard found', request)
         try:
             dashboard = Dashboard.objects.get(id=parent.id)
         except Dashboard.DoesNotExist:

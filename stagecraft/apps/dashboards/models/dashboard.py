@@ -5,6 +5,7 @@ from django.db import models
 
 from stagecraft.apps.users.models import User
 from stagecraft.apps.organisation.views import NodeView
+from django.db.models.query import QuerySet
 
 
 def list_to_tuple_pairs(elements):
@@ -26,6 +27,12 @@ class DashboardManager(models.Manager):
                                WHERE name='transactional_services_summaries')
               AND dashboards_dashboard.status='published'
         ''', [filter_string])
+
+    def get_query_set(self):
+        return QuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_query_set().filter(owners=user)
 
 
 class Dashboard(models.Model):

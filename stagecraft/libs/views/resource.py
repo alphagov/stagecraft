@@ -80,11 +80,12 @@ class ResourceView(View):
             unfiltered_roles)) == 0)
         can_filter = hasattr(self.model, 'owners')
 
-        if should_filter and can_filter:
-            additional_filters['owners'] = User.objects.filter(
-                email=user['email'])
-
         query_set = self.model.objects
+
+        if should_filter and can_filter:
+            user = User.objects.filter(email=user['email'])
+            query_set = self.model.objects.for_user(user)
+
         query_set = self.filter_by_list_filters(
             query_set,
             request,
@@ -235,6 +236,11 @@ class ResourceView(View):
             err = self._validate_and_save(model, request)
             if err:
                 return err
+
+            if hasattr(model, 'owners'):
+                user_obj, created = User.objects.get_or_create(
+                    email=user["email"])
+                model.owners.add(user_obj)
 
             err = self.update_relationships(
                 model, model_json, request, kwargs.get('parent', None)
