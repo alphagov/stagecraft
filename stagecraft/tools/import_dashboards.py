@@ -81,14 +81,29 @@ def set_dashboard_attributes(dashboard, record, publish):
 
 def import_dashboard(record, summaries, dry_run=True, publish=False,
                      update=False):
-    try:
+
+    if 'tx_truncated' in record and \
+            Dashboard.objects.filter(slug=record['tx_truncated']).count():
+        dashboard = Dashboard.objects.get(slug=record['tx_truncated'])
+        dashboard.slug = record['tx_id']
+        print "Updating truncated slug to {}".format(record['tx_id'])
+
+    elif 'tx_truncated' in record and list(Dashboard.objects.by_tx_id(
+            record['tx_truncated'])):
+        dashboard = list(
+            Dashboard.objects.by_tx_id(record['tx_truncated'])).pop()
+        dashboard.slug = record['tx_id']
+        print "Updating truncated slug to {}".format(record['tx_id'])
+
+    elif Dashboard.objects.filter(slug=record['tx_id']).count():
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
-    except Dashboard.DoesNotExist:
-        dashboards = list(Dashboard.objects.by_tx_id(record['tx_id']))
-        if len(dashboards) > 0:
-            dashboard = dashboards[0]
-        else:
-            dashboard = Dashboard()
+
+    elif list(Dashboard.objects.by_tx_id(record['tx_id'])):
+        dashboard = list(Dashboard.objects.by_tx_id(record['tx_id'])).pop()
+
+    else:
+        dashboard = Dashboard()
+        dashboard.slug = record['tx_id']
 
     if update or not record['high_volume']:
         dashboard = set_dashboard_attributes(dashboard, record, publish)

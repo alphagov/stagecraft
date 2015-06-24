@@ -37,7 +37,7 @@ class Dashboard(models.Model):
         message='Slug can only contain lower case letters, numbers or hyphens'
     )
     slug = models.CharField(
-        max_length=90,
+        max_length=1000,
         unique=True,
         validators=[
             slug_validator
