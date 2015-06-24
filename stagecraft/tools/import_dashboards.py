@@ -82,6 +82,26 @@ def set_dashboard_attributes(dashboard, record, publish):
 def import_dashboard(record, summaries, dry_run=True, publish=False,
                      update=False):
 
+    dashboard = dashboard_from_record(record)
+
+    if update or not record['high_volume']:
+        dashboard = set_dashboard_attributes(dashboard, record, publish)
+
+    if dashboard.pk is None or dashboard.module_set.count() == 0:
+        if not dry_run:
+            dashboard.save()
+        print('Updating modules on {}'.format(dashboard.slug))
+        dataset = get_dataset()
+        import_modules(dashboard, dataset, record, summaries, dry_run)
+
+    if dry_run:
+        dashboard.full_clean()
+    else:
+        dashboard.save()
+
+
+def dashboard_from_record(record):
+
     if 'tx_truncated' in record and \
             Dashboard.objects.filter(slug=record['tx_truncated']).count():
         dashboard = Dashboard.objects.get(slug=record['tx_truncated'])
@@ -105,20 +125,7 @@ def import_dashboard(record, summaries, dry_run=True, publish=False,
         dashboard = Dashboard()
         dashboard.slug = record['tx_id']
 
-    if update or not record['high_volume']:
-        dashboard = set_dashboard_attributes(dashboard, record, publish)
-
-    if dashboard.pk is None or dashboard.module_set.count() == 0:
-        if not dry_run:
-            dashboard.save()
-        print('Updating modules on {}'.format(dashboard.slug))
-        dataset = get_dataset()
-        import_modules(dashboard, dataset, record, summaries)
-
-    if dry_run:
-        dashboard.full_clean()
-    else:
-        dashboard.save()
+    return dashboard
 
 
 def determine_modules_for_dashboard(summaries, tx_id):
@@ -162,7 +169,7 @@ def determine_modules_for_dashboard(summaries, tx_id):
     return module_types
 
 
-def import_modules(dashboard, dataset, record, summaries):
+def import_modules(dashboard, dataset, record, summaries, dry_run):
 
     module_types = determine_modules_for_dashboard(summaries, record['tx_id'])
     modules = []
