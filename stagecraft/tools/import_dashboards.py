@@ -109,6 +109,8 @@ def import_dashboard(record, summaries, dry_run=True, publish=False,
         dashboard = set_dashboard_attributes(dashboard, record, publish)
 
     if dashboard.pk is None or dashboard.module_set.count() == 0:
+        if not dry_run:
+            dashboard.save()
         print('Updating modules on {}'.format(dashboard.slug))
         dataset = get_dataset()
         import_modules(dashboard, dataset, record, summaries)
