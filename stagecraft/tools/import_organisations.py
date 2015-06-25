@@ -285,7 +285,7 @@ def create_edge(parent_id, child_id):
             [child_id, parent_id]
         )
     except django.db.utils.IntegrityError as ie:
-        print str(ie)
+        print(str(ie))
 
 
 def create_nodes(nodes, edges, type_to_NodeType):
@@ -306,7 +306,7 @@ def create_nodes(nodes, edges, type_to_NodeType):
         try:
             db_node.save()
         except django.db.utils.DataError:
-            print db_node.__dict__
+            print(db_node.__dict__)
             continue
 
         nodes_to_db[node[0]] = db_node
