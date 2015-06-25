@@ -279,13 +279,10 @@ def node_types():
 
 def create_edge(parent_id, child_id):
     cursor = connection.cursor()
-    try:
-        cursor.execute(
-            'INSERT INTO organisation_node_parents(from_node_id, to_node_id) VALUES(%s,%s);',  # noqa
-            [child_id, parent_id]
-        )
-    except django.db.utils.IntegrityError as ie:
-        print(str(ie))
+    cursor.execute(
+        'INSERT INTO organisation_node_parents(from_node_id, to_node_id) VALUES(%s,%s);',  # noqa
+        [child_id, parent_id]
+    )
 
 
 def create_nodes(nodes, edges, type_to_NodeType):
@@ -303,11 +300,7 @@ def create_nodes(nodes, edges, type_to_NodeType):
             abbreviation=node[3],
             typeOf=type_to_NodeType[node[4]],
         )
-        try:
-            db_node.save()
-        except django.db.utils.DataError:
-            print(db_node.__dict__)
-            continue
+        db_node.save()
 
         nodes_to_db[node[0]] = db_node
 
