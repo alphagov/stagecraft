@@ -322,10 +322,10 @@ class DataSetsViewsTestCase(TestCase):
             response_object = json.loads(resp.content.decode('utf-8'))
             assert_equal(len(response_object), 6)
 
-    def test_list_returns_all_data_sets_if_user_has_dashboard_editor_permission(self):  # noqa
+    def test_list_returns_all_data_sets_if_user_has_admin_permission(self):  # noqa
         settings.USE_DEVELOPMENT_USERS = False
         signon = govuk_signon_mock(
-            permissions=['signin', 'dataset', 'dashboard-editor'])
+            permissions=['signin', 'admin'])
         with HTTMock(signon):
             resp = self.client.get(
                 '/data-sets',
