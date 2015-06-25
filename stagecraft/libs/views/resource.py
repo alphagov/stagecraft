@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from django.db import DataError, IntegrityError
+from django.db import DataError, IntegrityError, OperationalError
 
 from jsonschema import FormatChecker
 from jsonschema.compat import str_types
@@ -60,6 +60,7 @@ class ResourceView(View):
         'get': None,
         'post': None,
         'put': None,
+        'delete': None,
     }
     id_fields = {
         'id': UUID_RE_STRING,
@@ -288,6 +289,36 @@ class ResourceView(View):
         if err:
             return err
 
+        return self._response(model)
+
+    @method_decorator(atomic_view)
+    def delete(self, request, **kwargs):
+        user, err = self._authorize(request)
+        if err:
+            return err
+
+        id_field, id = self._find_id(kwargs)
+
+        if id is None:
+            return create_http_error(400, 'id not provided', request)
+
+        model = self.by_id(request, id_field, id, user=user)
+        if model is None:
+            return create_http_error(404, 'model not found', request)
+
+        try:
+            if hasattr(model, 'published'):
+                if not model.published:
+                    model.delete()
+                else:
+                    return create_http_error(
+                        400, 'cannot delete published resource', request)
+            else:
+                return create_http_error(
+                    405, 'cannot delete resource', request)
+        except (OperationalError, IntegrityError) as err:
+            return None, create_http_error(400, 'error deleting model: {}'
+                                           .format())
         return self._response(model)
 
     def _authorize(self, request):

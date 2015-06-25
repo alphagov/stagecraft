@@ -711,6 +711,55 @@ class DashboardViewsUpdateTestCase(TestCase):
         assert_that(link.title, equal_to('new link title'))
         assert_that(link.url, equal_to('https://gov.uk/new-link'))
 
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_delete_unpublished_dashboard(self):
+        dashboard = DashboardFactory(
+            title='test delete dashboard', status='unpublished')
+        dashboard.owners.add(self.user)
+        module = ModuleFactory(
+            title='module to remove', dashboard=dashboard)
+
+        resp = self.client.delete(
+            '/dashboard/{}'.format(dashboard.id),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(Dashboard.objects.count(), equal_to(0))
+        assert_that(Module.objects.count(), equal_to(0))
+
+    @with_govuk_signon(permissions=['dashboard'])
+    def test_delete_published_dashboard(self):
+        dashboard = DashboardFactory(title='test delete dashboard')
+        dashboard.owners.add(self.user)
+        module = ModuleFactory(
+            title='module to remove', dashboard=dashboard)
+
+        resp = self.client.delete(
+            '/dashboard/{}'.format(dashboard.id),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(400))
+        assert_that(Dashboard.objects.count(), equal_to(1))
+        assert_that(Module.objects.count(), equal_to(1))
+
+    @with_govuk_signon(permissions=['user'])
+    def test_delete_dashboard_without_permission(self):
+        dashboard = DashboardFactory(title='test delete dashboard')
+        dashboard.owners.add(self.user)
+        module = ModuleFactory(
+            title='module to remove', dashboard=dashboard)
+
+        resp = self.client.delete(
+            '/dashboard/{}'.format(dashboard.id),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(403))
+        assert_that(Dashboard.objects.count(), equal_to(1))
+        assert_that(Module.objects.count(), equal_to(1))
+
 
 class DashboardViewsCreateTestCase(TestCase):
 

@@ -189,6 +189,10 @@ class DashboardView(ResourceView):
     def put(self, request, **kwargs):
         return super(DashboardView, self).put(request, **kwargs)
 
+    @method_decorator(vary_on_headers('Authorization'))
+    def delete(self, request, **kwargs):
+        return super(DashboardView, self).delete(request, **kwargs)
+
     def update_model(self, model, model_json, request, parent):
 
         if model_json.get('organisation'):

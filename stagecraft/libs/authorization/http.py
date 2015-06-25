@@ -73,7 +73,8 @@ def _set_user_to_database(access_token, user):
 def _get_resource_role_permissions(resource, permissions=None):
     if permissions is None:
         permissions = settings.ROLES
-    resource_permissions = {"get": set(), "put": set(), "post": set()}
+    resource_permissions = {
+        "get": set(), "put": set(), "post": set(), "delete": set()}
     for permission in permissions:
         for k, v in permission["permissions"].items():
             if k == resource:
@@ -119,7 +120,7 @@ def authorize(request, permission, anon_allowed=True):
         extra = {
             'token': access_token,
         }
-        if request.method in ['POST', 'PUT']:
+        if request.method in ['POST', 'PUT', 'DELETE']:
             extra['body'] = request.body
         audit_logger.info('Authorised action', extra=extra)
         return user, None

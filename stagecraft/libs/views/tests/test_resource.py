@@ -74,7 +74,8 @@ class TestResourceView(ResourceView):
     was_saved = False
 
     permissions = {
-        'get': set(['anon']), 'post': set(['anon']), 'put': set(['anon'])}
+        'get': set(['anon']), 'post': set(['anon']), 'put': set(['anon']),
+        'delete': set(['anon'])}
 
     def update_relationships(self, model, model_json, request, parent):
         self.was_saved = model.pk is not None
@@ -188,6 +189,8 @@ class ResourceViewTestCase(TestCase):
             response = view.post(request, **args)
         elif action == 'PUT':
             response = view.put(request, **args)
+        elif action == 'DELETE':
+            response = view.delete(request, **args)
         else:
             raise Exception('Invalid action {}'.format(action))
 
@@ -205,6 +208,9 @@ class ResourceViewTestCase(TestCase):
 
     def put(self, body='', content_type='application/json', args={}):
         return self._do('PUT', body, content_type, args)
+
+    def delete(self, body='', content_type='application/json', args={}):
+        return self._do('DELETE', body, content_type, args)
 
     def tearDown(self):
         Node.objects.all().delete()
@@ -484,3 +490,34 @@ class ResourceViewTestCase(TestCase):
         assert_that(error.status_code, equal_to(400))
         assert_that(err["errors"][0]["detail"],
                     equal_to("Detail for 400 Bad Request"))
+
+    def test_delete(self):
+        node = NodeFactory()
+        Node.published = False
+        try:
+            status_code, response = self.delete(args={
+                'id': node.id,
+            })
+            assert_that(status_code, is_(200))
+            assert_that(len(Node.objects.filter(id=node.id)), equal_to(0))
+        finally:
+            delattr(Node, "published")
+
+    def test_delete_no_published_attr(self):
+        node = NodeFactory()
+        status_code, response = self.delete(args={
+            'id': node.id,
+        })
+        assert_that(status_code, is_(405))
+
+    def test_delete_published(self):
+        node = NodeFactory()
+        Node.published = True
+        try:
+            status_code, response = self.delete(args={
+                'id': node.id,
+            })
+            assert_that(status_code, is_(400))
+            assert_that(len(Node.objects.filter(id=node.id)), equal_to(1))
+        finally:
+            delattr(Node, "published")
