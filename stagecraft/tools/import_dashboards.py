@@ -101,19 +101,20 @@ def import_dashboard(record, summaries, dry_run=True, publish=False,
 
 
 def dashboard_from_record(record):
+    def set_truncated_slug_to_full_slug(full_slug):
+        dashboard.slug = full_slug
+        print("Setting truncated slug to {}".format(full_slug))
 
     if 'tx_truncated' in record and \
             Dashboard.objects.filter(slug=record['tx_truncated']).count():
         dashboard = Dashboard.objects.get(slug=record['tx_truncated'])
-        dashboard.slug = record['tx_id']
-        print("Updating truncated slug to {}".format(record['tx_id']))
+        set_truncated_slug_to_full_slug(record['tx_id'])
 
     elif 'tx_truncated' in record and list(Dashboard.objects.by_tx_id(
             record['tx_truncated'])):
         dashboard = list(
             Dashboard.objects.by_tx_id(record['tx_truncated'])).pop()
-        dashboard.slug = record['tx_id']
-        print("Updating truncated slug to {}".format(record['tx_id']))
+        set_truncated_slug_to_full_slug(record['tx_id'])
 
     elif Dashboard.objects.filter(slug=record['tx_id']).count():
         dashboard = Dashboard.objects.get(slug=record['tx_id'])
