@@ -301,6 +301,7 @@ def create_nodes(nodes, edges, type_to_NodeType):
             typeOf=type_to_NodeType[node[4]],
         )
         db_node.save()
+
         nodes_to_db[node[0]] = db_node
 
     for edge in edges:
