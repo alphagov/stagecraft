@@ -252,7 +252,7 @@ class SpreadsheetMunger:
             tx_id = self._replace_unicode(record['tx_id'])
             if len(tx_id) > 90:
                 print('Truncated slug: {} to {}'.format(tx_id, tx_id[:90]))
-                tx_id = tx_id[:90]
+                record['tx_truncated'] = tx_id[:90]
             record['tx_id'] = tx_id
 
     def load(self, client_email, private_key):

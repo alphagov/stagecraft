@@ -1,5 +1,7 @@
 import json
 
+import random
+
 from mock import Mock
 from hamcrest import (
     assert_that, has_properties, has_entries
@@ -8,7 +10,8 @@ from hamcrest import (
 from stagecraft.apps.dashboards.models import Dashboard
 
 from ..spreadsheets import SpreadsheetMunger
-from ..import_dashboards import (set_dashboard_attributes,
+from ..import_dashboards import (dashboard_from_record,
+                                 set_dashboard_attributes,
                                  determine_modules_for_dashboard)
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
@@ -55,6 +58,43 @@ def test_attributes_from_record():
         'customer_type': record['customer_type'],
         'business_model': record['business_model'],
         'published': False
+    }))
+
+
+def test_truncated_slug_is_replaced():
+
+    munger = SpreadsheetMunger({
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
+        'names_tx_id': 19,
+        'names_other_notes': 17,
+        'names_notes': 3,
+        'names_description': 8,
+    })
+
+    mock_account = Mock()
+    mock_account.open_by_key() \
+        .worksheet().get_all_values.return_value = tx_worksheet
+    tx = munger.load_tx_worksheet(mock_account)
+
+    mock_account = Mock()
+    mock_account.open_by_key() \
+        .worksheet().get_all_values.return_value = names_worksheet
+    names = munger.load_names_worksheet(mock_account)
+
+    record = munger.merge(tx, names)[0]
+    truncated_slug = 'truncated-{}'.format(random.randrange(1e7))
+    record['tx_truncated'] = truncated_slug
+
+    dashboard = Dashboard()
+    dashboard.slug = truncated_slug
+    dashboard.save()
+    dashboard = dashboard_from_record(record)
+
+    assert_that(dashboard, has_properties({
+        'slug': record['tx_id']
     }))
 
 
