@@ -4,14 +4,20 @@ import random
 
 from mock import Mock
 from hamcrest import (
-    assert_that, has_properties, has_entries
+    assert_that, has_properties, has_entries,
+    equal_to
 )
 
-from stagecraft.apps.dashboards.models import Dashboard
+from stagecraft.apps.dashboards.models import Dashboard, Module
+from stagecraft.apps.dashboards.tests.factories.factories import(
+    ModuleTypeFactory, DashboardFactory)
+from stagecraft.apps.datasets.tests.factories import(
+    DataSetFactory)
 
 from ..spreadsheets import SpreadsheetMunger
 from ..import_dashboards import (dashboard_from_record,
                                  set_dashboard_attributes,
+                                 import_dashboard,
                                  determine_modules_for_dashboard)
 
 with open('stagecraft/tools/fixtures/tx.json') as f:
@@ -88,14 +94,96 @@ def test_truncated_slug_is_replaced():
     truncated_slug = 'truncated-{}'.format(random.randrange(1e7))
     record['tx_truncated'] = truncated_slug
 
-    dashboard = Dashboard()
-    dashboard.slug = truncated_slug
-    dashboard.save()
+    dashboard = DashboardFactory(slug=truncated_slug)
     dashboard = dashboard_from_record(record)
 
     assert_that(dashboard, has_properties({
         'slug': record['tx_id']
     }))
+
+
+def test_truncated_slug_is_replaced_in_modules():
+    DataSetFactory(
+        data_group__name='transactional-services',
+        data_type__name='summaries')
+    ModuleTypeFactory(name='kpi')
+    ModuleTypeFactory(name='bar_chart_with_number')
+
+    munger = SpreadsheetMunger({
+        'names_transaction_name': 11,
+        'names_transaction_slug': 12,
+        'names_service_name': 9,
+        'names_service_slug': 10,
+        'names_tx_id': 19,
+        'names_other_notes': 17,
+        'names_notes': 3,
+        'names_description': 8,
+    })
+
+    mock_account = Mock()
+    mock_account.open_by_key() \
+        .worksheet().get_all_values.return_value = tx_worksheet
+    tx = munger.load_tx_worksheet(mock_account)
+
+    mock_account = Mock()
+    mock_account.open_by_key() \
+        .worksheet().get_all_values.return_value = names_worksheet
+    names = munger.load_names_worksheet(mock_account)
+
+    record = munger.merge(tx, names)[0]
+    truncated_slug = 'truncated-{}'.format(random.randrange(1e7))
+    full_tx_id = record['tx_id']
+    record['tx_id'] = truncated_slug
+
+    DashboardFactory(slug=truncated_slug)
+    summaries = [
+        {
+            'service_id': record['tx_id'],
+            'type': 'quarterly',
+            'cost_per_transaction': 0,
+            'digital_takeup': 0
+        },
+        {
+            'service_id': record['tx_id'],
+            'type': 'seasonally-adjusted',
+            'total_cost': 0
+        },
+        {
+            'service_id': full_tx_id,
+            'type': 'quarterly',
+            'cost_per_transaction': 0,
+            'digital_takeup': 0
+        },
+        {
+            'service_id': full_tx_id,
+            'type': 'seasonally-adjusted',
+            'total_cost': 0
+        }
+    ]
+    import_dashboard(record, summaries, dry_run=False)
+    initial_modules = Module.objects.all()
+    service_id_filters = set(
+        [module.query_parameters['filter_by'][0] for
+         module in initial_modules])
+    assert_that(len(service_id_filters), equal_to(1))
+    assert_that(
+        service_id_filters.pop(),
+        equal_to('service_id:{}'.format(truncated_slug)))
+
+    record['tx_id'] = full_tx_id
+    record['tx_truncated'] = truncated_slug
+
+    import_dashboard(record, summaries, dry_run=False)
+    new_modules = Module.objects.all()
+    assert_that(len(new_modules), equal_to(len(initial_modules)))
+
+    service_id_filters = set(
+        [module.query_parameters['filter_by'][0] for
+         module in new_modules])
+    assert_that(len(service_id_filters), equal_to(1))
+    assert_that(
+        service_id_filters.pop(),
+        equal_to('service_id:{}'.format(full_tx_id)))
 
 
 def test_published_unmodified():
