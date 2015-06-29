@@ -183,7 +183,7 @@ def import_modules(dashboard, dataset, record, summaries, dry_run):
         modules.append(import_tc_module(record, dashboard, dataset))
     if module_types.get('cost_per_transaction'):
         modules.append(import_cpt_module(record, dashboard, dataset))
-    if module_types.get('transactions_per_year'):
+    if module_types.get('transactions_per_quarter'):
         modules.append(import_tpq_module(record, dashboard, dataset))
     if module_types.get('digital_takeup'):
         modules.append(import_dtu_module(record, dashboard, dataset))
