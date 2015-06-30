@@ -87,7 +87,8 @@ def import_dashboard(record, summaries, dry_run=True, publish=False,
     if update or not record['high_volume']:
         dashboard = set_dashboard_attributes(dashboard, record, publish)
 
-    if dashboard.pk is None or dashboard.module_set.count() == 0:
+    if(dashboard.pk is None or dashboard.module_set.count() == 0
+       or 'tx_truncated' in record):
         if not dry_run:
             dashboard.save()
         print('Updating modules on {}'.format(dashboard.slug))
