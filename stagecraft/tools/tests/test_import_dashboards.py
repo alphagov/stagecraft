@@ -342,3 +342,71 @@ def test_cost_per_transaction_present():
         'transactions_per_quarter': True,
         'cost_per_transaction': True,
     }))
+
+
+def test_digital_takeup_present_seasonal_when_0():
+    summaries = [
+        {
+            'service_id': 'tx_id',
+            'type': 'seasonally-adjusted',
+            'digital_takeup': 0,
+        }
+    ]
+    module_types = determine_modules_for_dashboard(summaries, 'tx_id')
+
+    assert_that(module_types, has_entries({
+        'transactions_per_year': True,
+        'transactions_per_quarter': True,
+        'digital_takeup': True,
+    }))
+
+
+def test_digital_takeup_present_quarterly_when_0():
+    summaries = [
+        {
+            'service_id': 'tx_id',
+            'type': 'quarterly',
+            'digital_takeup': 0,
+        }
+    ]
+    module_types = determine_modules_for_dashboard(summaries, 'tx_id')
+
+    assert_that(module_types, has_entries({
+        'transactions_per_year': True,
+        'transactions_per_quarter': True,
+        'digital_takeup': True,
+    }))
+
+
+def test_total_cost_present_when_0():
+    summaries = [
+        {
+            'service_id': 'tx_id',
+            'type': 'seasonally-adjusted',
+            'total_cost': 0,
+        }
+    ]
+    module_types = determine_modules_for_dashboard(summaries, 'tx_id')
+
+    assert_that(module_types, has_entries({
+        'transactions_per_year': True,
+        'transactions_per_quarter': True,
+        'total_cost': True,
+    }))
+
+
+def test_cost_per_transaction_present_when_0():
+    summaries = [
+        {
+            'service_id': 'tx_id',
+            'type': 'seasonally-adjusted',
+            'cost_per_transaction': 0,
+        }
+    ]
+    module_types = determine_modules_for_dashboard(summaries, 'tx_id')
+
+    assert_that(module_types, has_entries({
+        'transactions_per_year': True,
+        'transactions_per_quarter': True,
+        'cost_per_transaction': True,
+    }))
