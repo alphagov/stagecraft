@@ -274,7 +274,8 @@ class CheckPermissionTestCase(TestCase):
             {
                 'get': set(['admin', 'dashboard-editor']),
                 'post': set(['dashboard-editor']),
-                'put': set()
+                'put': set(),
+                'delete': set()
             }
         ))
         permissions = _get_resource_role_permissions(
@@ -283,7 +284,8 @@ class CheckPermissionTestCase(TestCase):
             {
                 'get': set(['admin']),
                 'post': set(),
-                'put': set()
+                'put': set(),
+                'delete': set()
             }
         ))
 

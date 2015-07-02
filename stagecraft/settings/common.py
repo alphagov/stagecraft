@@ -126,9 +126,9 @@ ROLES = [
     {
         "role": "dashboard",
         "permissions": {
-            "Dashboard": ["get", "post", "put"],
-            "Module": ["get", "post", "put"],
-            "ModuleType": ["get", "post", "put"],
+            "Dashboard": ["get", "post", "put", "delete"],
+            "Module": ["get", "post", "put", "delete"],
+            "ModuleType": ["get", "post", "put", "delete"],
         },
     },
     {
@@ -148,43 +148,43 @@ ROLES = [
     {
         "role": "admin",
         "permissions": {
-            "Dashboard": ["get", "post", "put"],
-            "Module": ["get", "post", "put"],
-            "ModuleType": ["get", "post", "put"],
-            "DataGroup": ["get", "post", "put"],
-            "DataSet": ["get", "post", "put"],
-            "Node": ["get", "post", "put"],
-            "NodeType": ["get", "post", "put"],
-            "Transform": ["get", "post", "put"],
-            "TransformType": ["get", "post", "put"],
-            "User": ["get", "post", "put"],
+            "Dashboard": ["get", "post", "put", "delete"],
+            "Module": ["get", "post", "put", "delete"],
+            "ModuleType": ["get", "post", "put", "delete"],
+            "DataGroup": ["get", "post", "put", "delete"],
+            "DataSet": ["get", "post", "put", "delete"],
+            "Node": ["get", "post", "put", "delete"],
+            "NodeType": ["get", "post", "put", "delete"],
+            "Transform": ["get", "post", "put", "delete"],
+            "TransformType": ["get", "post", "put", "delete"],
+            "User": ["get", "post", "put", "delete"],
         },
     },
     {
         "role": "signin",
         "permissions": {
-            "DataGroup": ["get", "post", "put"],
-            "DataSet": ["get", "post", "put"],
+            "DataGroup": ["get", "post", "put", "delete"],
+            "DataSet": ["get", "post", "put", "delete"],
         },
     },
     {
         "role": "organisation",
         "permissions": {
-            "Node": ["get", "post", "put"],
-            "NodeType": ["get", "post", "put"],
+            "Node": ["get", "post", "put", "delete"],
+            "NodeType": ["get", "post", "put", "delete"],
         },
     },
     {
         "role": "transforms",
         "permissions": {
-            "Transform": ["get", "post", "put"],
-            "TransformType": ["get", "post", "put"],
+            "Transform": ["get", "post", "put", "delete"],
+            "TransformType": ["get", "post", "put", "delete"],
         },
     },
     {
         "role": "user",
         "permissions": {
-            "User": ["get", "post", "put"],
+            "User": ["get", "post", "put", "delete"],
         },
     },
     {
