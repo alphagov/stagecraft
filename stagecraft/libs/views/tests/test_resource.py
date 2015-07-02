@@ -442,6 +442,14 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(sub_resource, contains(has_entry("foo", "bar")))
 
+    def test_sub_resource_delete_returns_405(self):
+        node = NodeFactory()
+        status_code, sub_resource = self.delete(args={
+            "id": node.id,
+            "sub_resource": "child"})
+
+        assert_that(status_code, is_(405))
+
     def test_if_post_with_id_bad_request(self):
         status_code, resp = self.post(args={
             'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4',

@@ -302,6 +302,10 @@ class ResourceView(View):
         if id is None:
             return create_http_error(400, 'id not provided', request)
 
+        if kwargs.get('sub_resource'):
+            return create_http_error(
+                405, 'cannot delete a sub_resource', request)
+
         model = self.by_id(request, id_field, id, user=user)
         if model is None:
             return create_http_error(404, 'model not found', request)
