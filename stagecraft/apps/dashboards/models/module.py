@@ -255,6 +255,12 @@ query_param_schema = {
             "items": {
                 "type": "string"
             }
-        }
+        },
+        "filter_by_prefix": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
     }
 }
