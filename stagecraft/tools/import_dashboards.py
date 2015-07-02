@@ -158,11 +158,11 @@ def determine_modules_for_dashboard(summaries, tx_id):
 
     digital_takeup = False
     for datum in seasonal_data:
-        if datum.get('digital_takeup'):
+        if datum.get('digital_takeup') is not None:
             digital_takeup = True
             break
     for datum in quarterly_data:
-        if datum.get('digital_takeup'):
+        if datum.get('digital_takeup') is not None:
             digital_takeup = True
             break
     if digital_takeup:
