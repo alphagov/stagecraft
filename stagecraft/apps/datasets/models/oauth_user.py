@@ -27,7 +27,7 @@ class OAuthUserManager(models.Manager):
         except OAuthUser.DoesNotExist:
             pass
         except InternalError as e:
-            statsd.counter.increment('oauth_user.internal_error.count')
+            statsd.incr('oauth_user.internal_error.count')
             log.error(e)
 
     def cache_user(self, access_token, user):
@@ -44,7 +44,7 @@ class OAuthUserManager(models.Manager):
             # in which case, we can just trust what's in there
             pass
         except InternalError as e:
-            statsd.counter.increment('oauth_user.internal_error.count')
+            statsd.incr('oauth_user.internal_error.count')
             log.error(e)
 
     def purge_user(self, uid):
