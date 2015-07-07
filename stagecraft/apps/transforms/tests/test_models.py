@@ -4,9 +4,15 @@ from hamcrest import (
     assert_that, is_, contains_string
 )
 
+from nose.tools import assert_equal
+
 from .factories import TransformTypeFactory, TransformFactory
 
+from stagecraft.apps.datasets.tests.factories import DataTypeFactory
+
 from ..models import Transform, TransformType
+
+from stagecraft.apps.users.models import User
 
 
 class TransformTest(unittest.TestCase):
@@ -55,6 +61,43 @@ class TransformTest(unittest.TestCase):
         transform.query_parameters['start_at'] = '2014-09-11'
 
         assert_that(transform.validate(), is_(None))
+
+    def test_can_create_transform_with_owner(self):
+        transform = Transform()
+        data_type_input = DataTypeFactory()
+        data_type_output = DataTypeFactory()
+        transform_type = TransformTypeFactory()
+
+        transform1 = Transform(
+            input_type=data_type_input,
+            output_type=data_type_output,
+            type=transform_type
+            )
+        user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+        transform1.save()
+        transform1.owners.add(user)
+
+        assert_equal('foobar.lastname@gov.uk', transform1.owners.first().email)
+
+    def test_can_create_transform_without_owner(self):
+        transform = Transform()
+        data_type_input = DataTypeFactory()
+        data_type_output = DataTypeFactory()
+        transform_type = TransformTypeFactory()
+
+        transform1 = Transform(
+            input_type=data_type_input,
+            output_type=data_type_output,
+            type=transform_type
+            )
+        transform1.save()
+
+        assert_equal(len(transform1.owners.all()), 0)
+
+    def test_can_create_transform_without_owner_in_forms(self):
+
+        assert_equal(Transform._meta.get_field('owners').blank, True)
 
 
 class TransformTypeTest(unittest.TestCase):

@@ -63,7 +63,7 @@ class Transform(models.Model):
 
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(TransformType)
-    owners = models.ManyToManyField(User)
+    owners = models.ManyToManyField(User, blank=True)
 
     input_group = models.ForeignKey(
         DataGroup, null=True,
