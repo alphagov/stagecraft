@@ -59,8 +59,6 @@ class SpreadsheetMunger:
         self.names_service_name = positions['names_service_name']
         # "Proposed URL1 (name of service) e.g. /carers-allowance",
         self.names_service_slug = positions['names_service_slug']
-        # "Liz notes",
-        self.names_notes = positions['names_notes']
         # "Other notes",
         self.names_other_notes = positions['names_other_notes']
         # "Slug [do not edit]"
@@ -145,9 +143,6 @@ class SpreadsheetMunger:
 
         if row[self.names_description]:
             record['description'] = row[self.names_description]
-        # description-extra is not present in the names spreadsheet
-        if row[self.names_notes]:
-            record['costs'] = row[self.names_notes]
         if row[self.names_other_notes]:
             record['other_notes'] = row[self.names_other_notes]
 

@@ -36,7 +36,6 @@ def test_attributes_from_record():
         'names_service_slug': 10,
         'names_tx_id': 19,
         'names_other_notes': 17,
-        'names_notes': 3,
         'names_description': 8,
     })
 
@@ -76,7 +75,6 @@ def test_truncated_slug_is_replaced():
         'names_service_slug': 10,
         'names_tx_id': 19,
         'names_other_notes': 17,
-        'names_notes': 3,
         'names_description': 8,
     })
 
@@ -116,7 +114,6 @@ def test_truncated_slug_is_replaced_in_modules():
         'names_service_slug': 10,
         'names_tx_id': 19,
         'names_other_notes': 17,
-        'names_notes': 3,
         'names_description': 8,
     })
 
