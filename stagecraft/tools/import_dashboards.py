@@ -59,6 +59,8 @@ def set_dashboard_attributes(dashboard, record, publish):
         dashboard.description = record['description']
     if record.get('costs'):
         dashboard.costs = record['costs']
+    else:
+        dashboard.costs = ''
     if record.get('other_notes'):
         dashboard.other_notes = record['other_notes']
     if record.get('customer_type'):
