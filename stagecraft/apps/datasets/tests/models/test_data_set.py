@@ -21,6 +21,7 @@ from stagecraft.libs.backdrop_client import (
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
 from stagecraft.apps.datasets.models.data_set import ImmutableFieldError, \
     DataSetQuerySet
+from stagecraft.apps.users.models import User
 
 
 class DataSetTestCase(TestCase):
@@ -68,6 +69,35 @@ class DataSetTestCase(TestCase):
             pass
         data_sets = DataSet.objects.filter(name='data_group1_data_type1')
         assert_equal(len(data_sets), 1)
+
+    def test_can_create_dataset_with_owner(self):
+        DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set1 = DataSet.objects.get(name='data_group1_data_type1')
+        user, _ = User.objects.get_or_create(
+            email='foobar.lastname@gov.uk')
+        data_set1.save()
+        data_set1.owners.add(user)
+
+        assert_equal('foobar.lastname@gov.uk', data_set1.owners.first().email)
+
+    def test_can_create_dataset_without_owner(self):
+        DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        data_set1 = DataSet.objects.get(name='data_group1_data_type1')
+        data_set1.save()
+
+        assert_equal(len(data_set1.owners.all()), 0)
+
+    def test_can_create_dataset_without_owner_in_forms(self):
+        '''
+        Test to check that adding an owner is optional in django admin
+        interface and forms, and not only optional when interacting
+        directly with the ORM.
+        '''
+        assert_equal(DataSet._meta.get_field('owners').blank, True)
 
     @disable_backdrop_connection
     @mock.patch('stagecraft.apps.datasets.models.data_set.delete_data_set')
