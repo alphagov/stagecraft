@@ -27,3 +27,4 @@ branches:
 notifications:
   email: false
 cache: pip
+sudo: false
