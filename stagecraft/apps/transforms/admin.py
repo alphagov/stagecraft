@@ -10,6 +10,7 @@ class TransformTypeAdmin(admin.ModelAdmin):
 class TransformAdmin(admin.ModelAdmin):
     list_display = (
         'input_group', 'input_type', 'output_group', 'output_type',)
+    filter_horizontal = ('owners',)
 
 
 admin.site.register(TransformType, TransformTypeAdmin)
