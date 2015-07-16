@@ -48,6 +48,8 @@ class DataSetAdmin(reversion.VersionAdmin):
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location',
                     'created', 'modified', 'published')
+    filter_horizontal = ('owners',)
+
     fields = (
         'data_group',
         'data_type',
