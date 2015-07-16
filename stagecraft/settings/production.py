@@ -57,13 +57,13 @@ LOGGING = {
         'json_log': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR + "/log/stagecraft.log.json",
+            'filename': BASE_DIR + "/log/production.json.log",
             'formatter': 'logstash_json',
         },
         'json_audit_log': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR + "/log/audit/stagecraft.log.json",
+            'filename': BASE_DIR + "/log/audit/stagecraft.json.log",
             'maxBytes': 4 * 1024 * 1024,
             'backupCount': 2,
             'formatter': 'logstash_json',
