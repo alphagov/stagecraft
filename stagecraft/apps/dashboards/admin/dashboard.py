@@ -8,5 +8,6 @@ class DashboardAdmin(admin.ModelAdmin):
     ordering = ('title',)
     fields = ('title', 'owners')
     readonly_fields = ('title',)
+    filter_horizontal = ('owners',)
 
 admin.site.register(Dashboard, DashboardAdmin)
