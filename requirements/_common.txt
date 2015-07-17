@@ -2,6 +2,7 @@
 
 django==1.8.2
 django-dbarray==0.2
+-e git+https://github.com/incuna/django-field-cryptography.git@v1.0.1#egg=django-field-cryptography
 django-mptt==0.6.1
 django-reversion==1.8.7
 jsonfield==0.9.22
@@ -9,6 +10,7 @@ requests==2.6.0
 logstash_formatter==0.5.7
 
 jsonschema==2.3.0
+cryptography==0.9.3
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.4
