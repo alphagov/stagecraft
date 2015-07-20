@@ -72,7 +72,7 @@ class TransformTest(unittest.TestCase):
             input_type=data_type_input,
             output_type=data_type_output,
             type=transform_type
-            )
+        )
         user, _ = User.objects.get_or_create(
             email='foobar.lastname@gov.uk')
         transform1.save()
@@ -90,7 +90,7 @@ class TransformTest(unittest.TestCase):
             input_type=data_type_input,
             output_type=data_type_output,
             type=transform_type
-            )
+        )
         transform1.save()
 
         assert_equal(len(transform1.owners.all()), 0)
