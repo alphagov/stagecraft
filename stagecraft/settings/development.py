@@ -93,7 +93,7 @@ else:
             'NAME': 'stagecraft',
             'USER': 'stagecraft',
             'PASSWORD': 'securem8',
-            'HOST': 'postgresql-primary',  # localhost
+            'HOST': 'localhost',  # localhost
             'PORT': '5432',
         }
     }
