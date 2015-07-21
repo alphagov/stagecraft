@@ -61,8 +61,15 @@ then
     vagrant ssh development-1 -c "sudo su postgres -c \"psql -c \\\"ALTER ROLE stagecraft WITH PASSWORD 'securem8'\\\"\" -- -t"
     vagrant ssh development-1 -c "sudo su postgres -c \"psql -c \\\"ALTER ROLE stagecraft WITH SUPERUSER\\\"\" -- -t"
     popd
+elif [ "$2" = 'govuk_dev' ]; then
+    pushd ../../puppet/development
+    vagrant ssh -c "sudo su postgres -c \"psql -c \\\"DROP DATABASE IF EXISTS stagecraft;\\\"\" -- -t"
+    vagrant ssh -c "cd /var/govuk/stagecraft/tools && sudo su postgres -c \"gunzip -c ${FILENAME} | psql\" -- -t"
+    vagrant ssh -c "sudo su postgres -c \"psql -c \\\"ALTER ROLE stagecraft WITH PASSWORD 'securem8'\\\"\" -- -t"
+    vagrant ssh -c "sudo su postgres -c \"psql -c \\\"ALTER ROLE stagecraft WITH SUPERUSER\\\"\" -- -t"
+    popd
 else
     echo "Remote restore has not been implemented yet."
 fi
 
-rm $FILENAME
+# rm $FILENAME
