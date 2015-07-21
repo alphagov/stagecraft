@@ -1,13 +1,13 @@
 import json
 import jsonschema
 import uuid
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django_field_cryptography import fields as encrypted_fields
 from jsonfield import JSONField
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.apps.users.models import User
-from jsonschema import ValidationError, Draft3Validator, SchemaError
 
 
 class Provider(models.Model):
@@ -18,11 +18,21 @@ class Provider(models.Model):
 
     def validate(self):
         try:
-            Draft3Validator.check_schema(self.credentials_schema)
-        except SchemaError as err:
+            jsonschema.Draft3Validator.check_schema(self.credentials_schema)
+        except jsonschema.SchemaError as err:
             return 'schema is invalid: {}'.format(err)
 
         return None
+
+    def clean(self, *args, **kwargs):
+        super(Provider, self).clean(*args, **kwargs)
+        validation = self.validate()
+
+        if validation is not None:
+            raise ValidationError(validation)
+
+    def __str__(self):
+        return "{}".format(self.name)
 
 
 class DataSource(models.Model):
@@ -44,10 +54,20 @@ class DataSource(models.Model):
         try:
             jsonschema.validate(credentials_json,
                                 self.provider.credentials_schema)
-        except ValidationError as err:
+        except jsonschema.ValidationError as err:
             return 'credentials are invalid: {}'.format(err)
 
         return None
+
+    def clean(self, *args, **kwargs):
+        super(DataSource, self).clean(*args, **kwargs)
+        validation = self.validate()
+
+        if validation is not None:
+            raise ValidationError(validation)
+
+    def __str__(self):
+        return "{}: {}".format(self.provider.name, self.name)
 
 
 class CollectorType(models.Model):
@@ -73,22 +93,33 @@ class CollectorType(models.Model):
 
     def validate(self):
         try:
-            Draft3Validator.check_schema(self.query_schema)
-        except SchemaError as err:
+            jsonschema.Draft3Validator.check_schema(self.query_schema)
+        except jsonschema.SchemaError as err:
             return 'query schema is invalid: {}'.format(err)
 
         try:
-            Draft3Validator.check_schema(self.options_schema)
-        except SchemaError as err:
+            jsonschema.Draft3Validator.check_schema(self.options_schema)
+        except jsonschema.SchemaError as err:
             return 'options schema is invalid: {}'.format(err)
 
         return None
+
+    def clean(self, *args, **kwargs):
+        super(CollectorType, self).clean(*args, **kwargs)
+        validation = self.validate()
+
+        if validation is not None:
+            raise ValidationError(validation)
+
+    def __str__(self):
+        return "{}: {}".format(self.provider.name, self.name)
 
 
 class Collector(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     type = models.ForeignKey(CollectorType)
+    collector_choices = ('test', 'test')
     data_source = models.ForeignKey(DataSource)
     data_set = models.ForeignKey(DataSet)
 
@@ -110,13 +141,13 @@ class Collector(models.Model):
         try:
             jsonschema.validate(self.query,
                                 self.type.query_schema)
-        except ValidationError as err:
+        except jsonschema.ValidationError as err:
             return 'query is invalid: {}'.format(err)
 
         try:
             jsonschema.validate(self.options,
                                 self.type.options_schema)
-        except ValidationError as err:
+        except jsonschema.ValidationError as err:
             return 'options are invalid: {}'.format(err)
 
         if self.type.provider.id != self.data_source.provider.id:
@@ -133,3 +164,13 @@ class Collector(models.Model):
                 return 'the current user is not an owner of the data set'
 
         return None
+
+    def clean(self, *args, **kwargs):
+        super(Collector, self).clean(*args, **kwargs)
+        validation = self.validate()
+
+        if validation is not None:
+            raise ValidationError(validation)
+
+    def __str__(self):
+        return "{}".format(self.name)
