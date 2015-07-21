@@ -175,3 +175,32 @@ migrate_data_set(mapping['old_data_set'],
 This will not delete the old data set. This should be done later when you are happy with the result.
 
 Tests which further specify the behaviour of this can be found in `test_copy_dataset_with_new_mapping.py`.
+
+# Running on gov.uk dev vm
+
+To run on the [gov.uk dev vm](https://github.gds/gds/puppet/tree/master/development),
+you must make sure you provision the trusty vm, as this contains the correct
+version of postgres, 9.3, that stagecraft relies on. To do this, make sure you
+
+`export govuk_dev_dist=trusty`
+
+before running vagrant up. You will need to do this whenever running the vm - if
+you are only working on performance platform, you may want to add this to your
+shell config so it is always set.
+
+You will then need to add a hosts entry in your /etc/hosts file for 
+
+`192.168.185.152 stagecraft.dev.gov.uk`
+
+You will also need to sync data to the vm -
+
+`bash tools/replicate-db.sh api-postgresql-primary-1.api.preview govuk_dev`
+
+This will create the necessary database
+
+Then, change to the directory and run the start app script
+
+```
+cd /var/govuk/stagecraft
+./start-app.sh
+```
