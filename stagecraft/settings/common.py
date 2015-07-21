@@ -22,7 +22,6 @@ BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 sys.path.append(pjoin(BASE_DIR, 'apps'))
 sys.path.append(pjoin(BASE_DIR, 'libs'))
 
-
 # Defined here for safety, they should also be defined in each environment.
 DEBUG = False
 TEMPLATE_DEBUG = False
@@ -66,6 +65,7 @@ INSTALLED_APPS = (
 
     'reversion',
 
+    'stagecraft.apps.collectors',
     'stagecraft.apps.datasets',
     'stagecraft.apps.dashboards',
     'stagecraft.apps.organisation',
