@@ -8,7 +8,7 @@ In **development** start the app
 
 then you should be able to do:
 
-```curl -i -H "Authorization: Bearer development-oauth-access-token" http://0.0.0.0:3204/data-sets```
+```curl -i -H "Authorization: Bearer development-oauth-access-token" http://0.0.0.0:3103/data-sets```
 
 In **production** curl requests should look something like this:
 

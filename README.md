@@ -83,7 +83,7 @@ python manage.py migrate [app_name]
 To run the development server:
 
 ```
-python manage.py runserver 0.0.0.0:3204
+python manage.py runserver 0.0.0.0:3103
 ```
 
 or use the Pinfile in `https://github.com/alphagov/pp-puppet/tree/master/development`:
