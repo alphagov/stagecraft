@@ -22,6 +22,9 @@ BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 sys.path.append(pjoin(BASE_DIR, 'apps'))
 sys.path.append(pjoin(BASE_DIR, 'libs'))
 
+# detect is the test manage command was used
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+
 # Defined here for safety, they should also be defined in each environment.
 DEBUG = False
 TEMPLATE_DEBUG = False
