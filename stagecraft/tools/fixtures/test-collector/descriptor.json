@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+        "name": {
+            "type": "string",
+            "pattern": "^[a-z-]+$"
+        },
+        "provider": {
+            "type": "string"
+        },
+        "entry_point": {
+            "type": "string",
+            "pattern": "^[a-z_\\.]+$"
+        }
+    },
+    "title": "Test Collector",
+    "type": "object",
+    "additionalProperties": false
+}
