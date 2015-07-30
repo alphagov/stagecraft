@@ -12,6 +12,7 @@ from stagecraft.apps.users.models import User
 
 class Provider(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
 
     credentials_schema = JSONField(default={}, blank=True)
@@ -37,6 +38,7 @@ class Provider(models.Model):
 
 class DataSource(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
 
     provider = models.ForeignKey(Provider)
@@ -72,6 +74,7 @@ class DataSource(models.Model):
 
 class CollectorType(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
 
     provider = models.ForeignKey(Provider)
@@ -117,6 +120,7 @@ class CollectorType(models.Model):
 
 class Collector(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    slug = models.SlugField(max_length=100, unique=True)
 
     type = models.ForeignKey(CollectorType)
     collector_choices = ('test', 'test')

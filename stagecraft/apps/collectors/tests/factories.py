@@ -13,6 +13,7 @@ class ProviderFactory(factory.DjangoModelFactory):
         model = Provider
         django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: 'provider-%s' % n)
+    slug = factory.Sequence(lambda n: 'provider-%s' % n)
 
 
 class CollectorTypeFactory(factory.DjangoModelFactory):
@@ -21,6 +22,7 @@ class CollectorTypeFactory(factory.DjangoModelFactory):
         model = CollectorType
 
     name = factory.Sequence(lambda n: 'collector-type-%s' % n)
+    slug = factory.Sequence(lambda n: 'collector-type-%s' % n)
     provider = factory.SubFactory(ProviderFactory)
     entry_point = factory.Sequence(lambda n: 'entry_point_%s' % n)
 
@@ -31,6 +33,7 @@ class DataSourceFactory(factory.DjangoModelFactory):
         model = DataSource
         django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: 'data-source-%s' % n)
+    slug = factory.Sequence(lambda n: 'data-source-%s' % n)
     provider = factory.SubFactory(ProviderFactory)
 
 
@@ -39,6 +42,7 @@ class CollectorFactory(factory.DjangoModelFactory):
     class Meta:
         model = Collector
 
+    slug = factory.Sequence(lambda n: 'collector-%s' % n)
     type = factory.SubFactory(CollectorTypeFactory)
     data_source = factory.SubFactory(
         DataSourceFactory, provider=factory.SelfAttribute('..type.provider'))
