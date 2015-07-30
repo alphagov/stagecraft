@@ -158,6 +158,10 @@ ROLES = [
             "Transform": ["get", "post", "put", "delete"],
             "TransformType": ["get", "post", "put", "delete"],
             "User": ["get", "post", "put", "delete"],
+            "Provider": ["get", "post", "put", "delete"],
+            "DataSource": ["get", "post", "put", "delete"],
+            "CollectorType": ["get", "post", "put", "delete"],
+            "Collector": ["get", "post", "put", "delete"],
         },
     },
     {
