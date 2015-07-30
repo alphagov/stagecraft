@@ -4,6 +4,7 @@ from django.views.generic.base import RedirectView
 
 import stagecraft.apps.organisation.views as organisation_views
 import stagecraft.apps.transforms.views as transforms_views
+import stagecraft.apps.collectors.views as collectors_views
 
 from stagecraft.apps.datasets.views import auth as auth_views
 from stagecraft.apps.datasets.views import data_set as datasets_views
@@ -75,5 +76,9 @@ urlpatterns = patterns(
     resource_url('module-type', module_views.ModuleTypeView),
     resource_url('module', module_views.ModuleView),
     resource_url('dashboard', dashboard_views.DashboardView),
-    resource_url('users', user_views.UserView)
+    resource_url('users', user_views.UserView),
+    resource_url('provider', collectors_views.ProviderView),
+    resource_url('data-source', collectors_views.DataSourceView),
+    resource_url('collector-type', collectors_views.CollectorTypeView),
+    resource_url('collector', collectors_views.CollectorView)
 )
