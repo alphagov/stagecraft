@@ -11,6 +11,7 @@ class ProviderFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Provider
+        django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: 'provider-%s' % n)
 
 
@@ -28,7 +29,7 @@ class DataSourceFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = DataSource
-
+        django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: 'data-source-%s' % n)
     provider = factory.SubFactory(ProviderFactory)
 
