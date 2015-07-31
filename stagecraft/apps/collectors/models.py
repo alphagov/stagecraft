@@ -19,7 +19,7 @@ class Provider(models.Model):
 
     def validate(self):
         try:
-            jsonschema.Draft3Validator.check_schema(self.credentials_schema)
+            jsonschema.Draft4Validator.check_schema(self.credentials_schema)
         except jsonschema.SchemaError as err:
             return 'schema is invalid: {}'.format(err)
 
@@ -96,12 +96,12 @@ class CollectorType(models.Model):
 
     def validate(self):
         try:
-            jsonschema.Draft3Validator.check_schema(self.query_schema)
+            jsonschema.Draft4Validator.check_schema(self.query_schema)
         except jsonschema.SchemaError as err:
             return 'query schema is invalid: {}'.format(err)
 
         try:
-            jsonschema.Draft3Validator.check_schema(self.options_schema)
+            jsonschema.Draft4Validator.check_schema(self.options_schema)
         except jsonschema.SchemaError as err:
             return 'options schema is invalid: {}'.format(err)
 
