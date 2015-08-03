@@ -54,4 +54,4 @@ class CollectorModelChoiceIteratorTestCase(TestCase):
 
         assert_that(first_value, not_none)
         assert_that(second_value, not_none)
-        assert_that(third_value, contains_string('provider-1: data-source-1'))
+        assert_that(third_value, not_none)
