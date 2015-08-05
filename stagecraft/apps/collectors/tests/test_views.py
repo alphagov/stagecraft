@@ -1,7 +1,8 @@
 import json
 import uuid
 from django.test import TestCase
-from hamcrest import assert_that, equal_to, has_key
+from hamcrest import assert_that, equal_to, has_key, has_entries, \
+    match_equality
 from stagecraft.apps.collectors.tests.factories import ProviderFactory, \
     DataSourceFactory, CollectorTypeFactory, CollectorFactory
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
@@ -45,7 +46,8 @@ class ProviderViewTestCase(TestCase):
 
     def test_post(self):
         provider = {
-            "name": "some-provider"
+            "name": "some-provider",
+            "slug": "some-provider"
         }
 
         resp = self.client.post(
@@ -60,10 +62,12 @@ class ProviderViewTestCase(TestCase):
 
         assert_that(resp_json, has_key('id'))
         assert_that(resp_json['name'], equal_to('some-provider'))
+        assert_that(resp_json['slug'], equal_to('some-provider'))
 
     def test_post_from_unauthorised_client_fails(self):
         provider = {
-            'name': 'some-provider'
+            'name': 'some-provider',
+            "slug": "some-provider"
         }
         resp = self.client.post(
             '/provider',
@@ -110,7 +114,8 @@ class DataSourceViewTestCase(TestCase):
     def test_post(self):
         data_source = {
             "name": "some-data-source",
-            "provider": self.provider.id
+            "slug": "some-data-source",
+            "provider_id": self.provider.id
         }
 
         resp = self.client.post(
@@ -125,12 +130,14 @@ class DataSourceViewTestCase(TestCase):
 
         assert_that(resp_json, has_key('id'))
         assert_that(resp_json['name'], equal_to('some-data-source'))
+        assert_that(resp_json['slug'], equal_to('some-data-source'))
         assert_that(resp_json['provider']['name'], equal_to(
             self.provider.name))
 
     def test_post_from_unauthorised_client_fails(self):
         data_source = {
-            'name': 'some-data-source',
+            "name": "some-data-source",
+            "slug": "some-data-source",
             "provider": self.provider.id
         }
         resp = self.client.post(
@@ -144,7 +151,8 @@ class DataSourceViewTestCase(TestCase):
         provider = uuid.UUID('01234a12-1234-1234-5b6c-0de12e3a4f15').hex
         data_source = {
             'name': 'some-data-source',
-            'provider': provider
+            'slug': 'some-data-source',
+            'provider_id': provider
         }
         response = self.client.post(
             '/data-source',
@@ -188,6 +196,7 @@ class CollectorTypeViewTestCase(TestCase):
         resp_json = json.loads(response.content)
 
         assert_that(resp_json['id'], equal_to(str(collector_type.id)))
+        assert_that(resp_json['slug'], equal_to(collector_type.slug))
         assert_that(resp_json['name'], equal_to(collector_type.name))
         assert_that(resp_json['entry_point'], equal_to(
             collector_type.entry_point))
@@ -205,11 +214,30 @@ class CollectorTypeViewTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(403))
 
+    def test_list(self):
+        collector_type_1 = CollectorTypeFactory()
+        collector_type_2 = CollectorTypeFactory()
+
+        response = self.client.get(
+            '/collector-type',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+
+        resp_json = json.loads(response.content)
+
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": collector_type_1.slug})))
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": collector_type_2.slug})))
+
     def test_post(self):
         collector_type = {
+            "slug": "some-collector-type",
             "name": "some-collector-type",
             "entry_point": "some.collector.type",
-            "provider": self.provider.id
+            "provider_id": self.provider.id
         }
 
         resp = self.client.post(
@@ -223,6 +251,7 @@ class CollectorTypeViewTestCase(TestCase):
         resp_json = json.loads(resp.content)
 
         assert_that(resp_json, has_key('id'))
+        assert_that(resp_json['slug'], equal_to('some-collector-type'))
         assert_that(resp_json['name'], equal_to('some-collector-type'))
         assert_that(resp_json['entry_point'], equal_to('some.collector.type'))
         assert_that(resp_json['provider']['name'], equal_to(
@@ -230,7 +259,8 @@ class CollectorTypeViewTestCase(TestCase):
 
     def test_post_from_unauthorised_client_fails(self):
         collector_type = {
-            'name': 'some-collector-type',
+            "slug": "some-collector-type",
+            "name": "some-collector-type",
             "entry_point": "some.collector.type",
             "provider": self.provider.id
         }
@@ -244,9 +274,10 @@ class CollectorTypeViewTestCase(TestCase):
     def test_post_with_non_existent_provider_fails(self):
         provider = uuid.UUID('01234a12-1234-1234-5b6c-0de12e3a4f15').hex
         collector_type = {
-            'name': 'some-collector-type',
+            "slug": "some-collector-type",
+            "name": "some-collector-type",
             "entry_point": "some.collector.type",
-            'provider': provider
+            "provider_id": provider
         }
         response = self.client.post(
             '/collector-type',
@@ -261,7 +292,7 @@ class CollectorTypeViewTestCase(TestCase):
             "No provider with id '{}' found".format(provider)))
 
 
-class CollectorViewTest(TestCase):
+class CollectorViewTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -283,7 +314,7 @@ class CollectorViewTest(TestCase):
     def test_get(self):
         collector = CollectorFactory()
         response = self.client.get(
-            '/collector/{}'.format(collector.name),
+            '/collector/{}'.format(collector.slug),
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
             content_type='application/json')
 
@@ -291,30 +322,50 @@ class CollectorViewTest(TestCase):
 
         resp_json = json.loads(response.content)
 
-        assert_that(resp_json[0]['id'], equal_to(str(collector.id)))
-        assert_that(resp_json[0]['name'], equal_to(collector.name))
-        assert_that(resp_json[0]['type']['name'], equal_to(
+        assert_that(resp_json['id'], equal_to(str(collector.id)))
+        assert_that(resp_json['slug'], equal_to(collector.slug))
+        assert_that(resp_json['name'], equal_to(collector.name))
+        assert_that(resp_json['type']['name'], equal_to(
             collector.type.name))
         assert_that(
-            resp_json[0]['data_source']['name'], equal_to(
+            resp_json['data_source']['name'], equal_to(
                 collector.data_source.name))
-        assert_that(resp_json[0]['data_set']['data_type'], equal_to(
+        assert_that(resp_json['data_set']['data_type'], equal_to(
             collector.data_set.data_type.name))
-        assert_that(resp_json[0]['data_set']['data_group'], equal_to(
+        assert_that(resp_json['data_set']['data_group'], equal_to(
             collector.data_set.data_group.name))
-        assert_that(resp_json[0]['query'], equal_to(collector.query))
-        assert_that(resp_json[0]['options'], equal_to(collector.options))
+        assert_that(resp_json['query'], equal_to(collector.query))
+        assert_that(resp_json['options'], equal_to(collector.options))
 
     def test_get_from_unauthorised_client_fails(self):
         collector = CollectorFactory()
         resp = self.client.get(
-            '/collector/{}'.format(collector.name))
+            '/collector/{}'.format(collector.slug))
 
         assert_that(resp.status_code, equal_to(403))
 
+    def test_list(self):
+        collector_1 = CollectorFactory()
+        collector_2 = CollectorFactory()
+
+        response = self.client.get(
+            '/collector',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+
+        resp_json = json.loads(response.content)
+
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": collector_1.slug})))
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": collector_2.slug})))
+
     def test_post(self):
         collector = {
-            "type": self.collector_type.id,
+            "slug": "some-collector",
+            "type_id": self.collector_type.id,
             "data_source": self.data_source.id,
             "data_set": {
                 "data_type": self.data_set.data_type.name,
@@ -339,6 +390,7 @@ class CollectorViewTest(TestCase):
         resp_json = json.loads(resp.content)
 
         assert_that(resp_json, has_key('id'))
+        assert_that(resp_json['slug'], equal_to("some-collector"))
         assert_that(resp_json['name'], equal_to(expected_collector_name))
         assert_that(resp_json['data_source']['name'],
                     equal_to(self.data_source.name))
@@ -349,7 +401,8 @@ class CollectorViewTest(TestCase):
 
     def test_post_from_unauthorised_client_fails(self):
         collector = {
-            "type": self.collector_type.id,
+            "slug": "some-collector",
+            "type_id": self.collector_type.id,
             "data_source": self.data_source.id,
             "data_set": {
                 "data_type": self.data_set.data_type.name,
@@ -366,7 +419,8 @@ class CollectorViewTest(TestCase):
     def test_post_with_non_existent_data_source_fails(self):
         data_source = uuid.UUID('01234a12-1234-1234-5b6c-0de12e3a4f15').hex
         collector = {
-            "type": self.collector_type.id,
+            "slug": "some-collector",
+            "type_id": self.collector_type.id,
             "data_source": data_source,
             "data_set": {
                 "data_type": self.data_set.data_type.name,
@@ -388,7 +442,8 @@ class CollectorViewTest(TestCase):
     def test_post_with_non_existent_collector_type_fails(self):
         collector_type = uuid.UUID('01234a12-1234-1234-5b6c-0de12e3a4f15').hex
         collector = {
-            "type": collector_type,
+            "slug": "some-collector",
+            "type_id": collector_type,
             "data_source": self.data_source.id,
             "data_set": {
                 "data_type": self.data_set.data_type.name,
@@ -413,7 +468,8 @@ class CollectorViewTest(TestCase):
             "data_group": "some-data-group"
         }
         collector = {
-            "type": self.collector_type.id,
+            "slug": "some-collector",
+            "type_id": self.collector_type.id,
             "data_source": self.data_source.id,
             "data_set": data_set
         }

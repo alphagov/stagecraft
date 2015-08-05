@@ -20,6 +20,9 @@ class ProviderView(ResourceView):
         "$schema": "http://json-schema.org/schema#",
         "type": "object",
         "properties": {
+            "slug": {
+                "type": "string",
+            },
             "name": {
                 "type": "string"
             },
@@ -27,13 +30,13 @@ class ProviderView(ResourceView):
                 "type": "object"
             }
         },
-        "required": ["name"],
+        "required": ["name", "slug"],
         "additionalProperties": False,
     }
 
     id_fields = {
         'id': UUID_RE_STRING,
-        'name': '[\w-]+',
+        'slug': '[\w-]+',
     }
     list_filters = {
         "name": "name__iexact"
@@ -64,6 +67,7 @@ class ProviderView(ResourceView):
     def serialize(model):
         return {
             'id': str(model.id),
+            'slug': model.slug,
             'name': model.name,
             'credentials_schema': model.credentials_schema
         }
@@ -76,23 +80,26 @@ class DataSourceView(ResourceView):
         "$schema": "http://json-schema.org/schema#",
         "type": "object",
         "properties": {
+            "slug": {
+                "type": "string"
+            },
             "name": {
                 "type": "string"
             },
-            "provider": {
+            "provider_id": {
                 "type": "string"
             },
             "credentials": {
                 "type": "object"
             }
         },
-        "required": ["name", "provider"],
+        "required": ["name", "slug", "provider_id"],
         "additionalProperties": False,
     }
 
     id_fields = {
         'id': UUID_RE_STRING,
-        'name': '[\w-]+',
+        'slug': '[\w-]+',
     }
     list_filters = {
         "name": "name__iexact"
@@ -118,27 +125,26 @@ class DataSourceView(ResourceView):
     def update_model(self, model, model_json, request, parent):
         logger.setLevel('ERROR')
         try:
-            provider = Provider.objects.get(id=model_json['provider'])
+            provider = Provider.objects.get(id=model_json['provider_id'])
             model_json['provider'] = provider
             for (key, value) in model_json.items():
                 setattr(model, key, value)
         except Provider.DoesNotExist:
             message = "No provider with id '{}' found".format(
-                model_json['provider'])
+                model_json['provider_id'])
             return create_http_error(400, message, request, logger=logger)
 
     @staticmethod
     def serialize(model):
-        serialized_data = {
+        return {
             'id': str(model.id),
+            'slug': model.slug,
             'name': model.name,
-        }
-        if model.provider:
-            serialized_data["provider"] = {
+            'provider': {
                 'id': str(model.provider.id),
                 'name': model.provider.name
             }
-        return serialized_data
+        }
 
 
 class CollectorTypeView(ResourceView):
@@ -148,10 +154,13 @@ class CollectorTypeView(ResourceView):
         "$schema": "http://json-schema.org/schema#",
         "type": "object",
         "properties": {
+            "slug": {
+                "type": "string"
+            },
             "name": {
                 "type": "string"
             },
-            "provider": {
+            "provider_id": {
                 "type": "string"
             },
             "entry_point": {
@@ -164,13 +173,13 @@ class CollectorTypeView(ResourceView):
                 "type": "object"
             }
         },
-        "required": ["name", "provider", "entry_point"],
+        "required": ["name", "slug", "provider_id", "entry_point"],
         "additionalProperties": False,
     }
 
     id_fields = {
         'id': UUID_RE_STRING,
-        'name': '[\w-]+',
+        'slug': '[\w-]+',
     }
     list_filters = {
         "name": "name__iexact"
@@ -196,30 +205,29 @@ class CollectorTypeView(ResourceView):
     def update_model(self, model, model_json, request, parent):
         logger.setLevel('ERROR')
         try:
-            provider = Provider.objects.get(id=model_json['provider'])
+            provider = Provider.objects.get(id=model_json['provider_id'])
             model_json['provider'] = provider
             for (key, value) in model_json.items():
                 setattr(model, key, value)
         except Provider.DoesNotExist:
             message = "No provider with id '{}' found".format(
-                model_json['provider'])
+                model_json['provider_id'])
             return create_http_error(400, message, request, logger=logger)
 
     @staticmethod
     def serialize(model):
-        serialized_data = {
+        return {
             'id': str(model.id),
+            'slug': model.slug,
             'name': model.name,
             'entry_point': model.entry_point,
             'query_schema': model.query_schema,
-            'options_schema': model.options_schema
-        }
-        if model.provider:
-            serialized_data["provider"] = {
+            'options_schema': model.options_schema,
+            'provider': {
                 'id': str(model.provider.id),
                 'name': model.provider.name
             }
-        return serialized_data
+        }
 
 
 class CollectorView(ResourceView):
@@ -229,7 +237,10 @@ class CollectorView(ResourceView):
         "$schema": "http://json-schema.org/schema#",
         "type": "object",
         "properties": {
-            "type": {
+            "slug": {
+                "type": "string"
+            },
+            "type_id": {
                 "type": "string"
             },
             "data_source": {
@@ -245,12 +256,13 @@ class CollectorView(ResourceView):
                 "type": "object"
             }
         },
-        "required": ["type", "data_source", "data_set"],
+        "required": ["slug", "type_id", "data_source", "data_set"],
         "additionalProperties": False,
     }
 
     id_fields = {
-        'id': UUID_RE_STRING
+        'id': UUID_RE_STRING,
+        'slug': '[\w-]+',
     }
     list_filters = {
         "name": "name__iexact"
@@ -277,7 +289,7 @@ class CollectorView(ResourceView):
         logger.setLevel('ERROR')
         try:
             collector_type = CollectorType.objects.get(
-                id=model_json['type'])
+                id=model_json['type_id'])
             data_source = DataSource.objects.get(
                 id=model_json['data_source'])
             data_set = DataSet.objects.get(
@@ -291,7 +303,7 @@ class CollectorView(ResourceView):
                 setattr(model, key, value)
         except CollectorType.DoesNotExist:
             message = "No collector type with id '{}' found".format(
-                model_json['type'])
+                model_json['type_id'])
             return create_http_error(400, message, request, logger=logger)
         except DataSource.DoesNotExist:
             message = "No data source with id '{}' found".format(
@@ -305,25 +317,22 @@ class CollectorView(ResourceView):
 
     @staticmethod
     def serialize(model):
-        serialized_data = {
+        return {
             'id': str(model.id),
+            'slug': model.slug,
             'name': model.name,
             'query': model.query,
-            'options': model.options
-        }
-        if model.type:
-            serialized_data['type'] = {
+            'options': model.options,
+            'type': {
                 'id': str(model.type.id),
                 'name': model.type.name
-            }
-        if model.data_source:
-            serialized_data['data_source'] = {
+            },
+            'data_source': {
                 'id': str(model.data_source.id),
                 'name': model.data_source.name
-            }
-        if model.data_set:
-            serialized_data['data_set'] = {
+            },
+            'data_set': {
                 'data_type': model.data_set.data_type.name,
                 'data_group': model.data_set.data_group.name
             }
-        return serialized_data
+        }
