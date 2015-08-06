@@ -203,3 +203,5 @@ LOGGING = {
 }
 
 TRANSFORMED_DATA_SET_TOKEN = 'this-token-is-irrelevant'
+
+BROKER_URL = 'amqp://stagecraft:stagecraft@localhost//stagecraft'
