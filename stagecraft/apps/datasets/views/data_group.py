@@ -1,10 +1,6 @@
 from stagecraft.libs.views.resource import ResourceView
 from stagecraft.apps.datasets.models import DataGroup
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-from django.views.decorators.vary import vary_on_headers
-from stagecraft.libs.authorization.http import (
-    permission_required, _get_resource_role_permissions)
+from stagecraft.libs.views.utils import add_items_to_model
 
 
 class DataGroupView(ResourceView):
@@ -16,23 +12,8 @@ class DataGroupView(ResourceView):
         "name": "name"
     }
 
-    permissions = _get_resource_role_permissions('DataGroup')
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(DataGroupView, self).get(
-            request,
-            **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(DataGroupView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
-        for (key, value) in model_json.items():
-            setattr(model, key, value)
+        add_items_to_model(model, model_json)
 
     @staticmethod
     def serialize(model):

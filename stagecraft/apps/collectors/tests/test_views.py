@@ -6,6 +6,8 @@ from hamcrest import assert_that, equal_to, has_key, has_entries, \
 from stagecraft.apps.collectors.tests.factories import ProviderFactory, \
     DataSourceFactory, CollectorTypeFactory, CollectorFactory
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
+from stagecraft.apps.users.models import User
+from stagecraft.libs.authorization.tests.test_http import with_govuk_signon
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from stagecraft.libs.views.utils import to_json
 
@@ -33,6 +35,7 @@ class ProviderViewTestCase(TestCase):
         resp_json = json.loads(response.content)
 
         assert_that(resp_json['id'], equal_to(str(provider.id)))
+        assert_that(resp_json['slug'], equal_to(provider.slug))
         assert_that(resp_json['name'], equal_to(provider.name))
         assert_that(resp_json['credentials_schema'], equal_to(
             provider.credentials_schema))
@@ -99,10 +102,12 @@ class DataSourceViewTestCase(TestCase):
         resp_json = json.loads(response.content)
 
         assert_that(resp_json['id'], equal_to(str(data_source.id)))
+        assert_that(resp_json['slug'], equal_to(data_source.slug))
         assert_that(resp_json['name'], equal_to(data_source.name))
         assert_that(
             resp_json['provider']['name'], equal_to(data_source.provider.name))
         assert_that(resp_json, not(has_key('credentials')))
+        assert_that(resp_json, not(has_key('owners')))
 
     def test_get_from_unauthorised_client_fails(self):
         data_source = DataSourceFactory()
@@ -165,6 +170,19 @@ class DataSourceViewTestCase(TestCase):
         resp_json = json.loads(response.content)
         assert_that(resp_json['message'], equal_to(
             "No provider with id '{}' found".format(provider)))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_404_when_user_not_in_ownership_array(self):
+        data_source = DataSourceFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        data_source.owners.add(user)
+
+        resp = self.client.get(
+            '/data-source/{}'.format(data_source.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
 
 
 class CollectorTypeViewTestCase(TestCase):
@@ -336,6 +354,7 @@ class CollectorViewTestCase(TestCase):
             collector.data_set.data_group.name))
         assert_that(resp_json['query'], equal_to(collector.query))
         assert_that(resp_json['options'], equal_to(collector.options))
+        assert_that(resp_json, not(has_key('owners')))
 
     def test_get_from_unauthorised_client_fails(self):
         collector = CollectorFactory()
@@ -485,3 +504,52 @@ class CollectorViewTestCase(TestCase):
         assert_that(resp_json['message'], equal_to(
             "No data set with data group '{}' and data type '{}' found"
             "".format(data_set['data_group'], data_set['data_type'])))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_404_when_user_not_in_ownership_array(self):
+        collector = CollectorFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        collector.owners.add(user)
+
+        resp = self.client.get(
+            '/collector/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_404_when_user_not_in_data_source_ownership_array(self):
+        data_source = DataSourceFactory()
+        data_source_user, _ = User.objects.get_or_create(
+            email='data_source_user.lastname@gov.uk')
+        data_source.owners.add(data_source_user)
+
+        collector = CollectorFactory(data_source=data_source)
+        collector_user, _ = User.objects.get_or_create(
+            email='some.user@digital.cabinet-office.gov.uk')
+        collector.owners.add(collector_user)
+
+        resp = self.client.get(
+            '/collector/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_404_when_user_not_in_data_set_ownership_array(self):
+        data_set = DataSetFactory()
+        data_set_user, _ = User.objects.get_or_create(
+            email='data_source_user.lastname@gov.uk')
+        data_set.owners.add(data_set_user)
+
+        collector = CollectorFactory(data_set=data_set)
+        collector_user, _ = User.objects.get_or_create(
+            email='some.user@digital.cabinet-office.gov.uk')
+        collector.owners.add(collector_user)
+
+        resp = self.client.get(
+            '/collector/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(404))

@@ -1,16 +1,24 @@
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-from django.views.decorators.vary import vary_on_headers
+import logging
+
 from stagecraft.apps.collectors.models import Provider, DataSource, \
     CollectorType, Collector
 from stagecraft.apps.datasets.models import DataSet
-from stagecraft.libs.authorization.http import _get_resource_role_permissions
 from stagecraft.libs.views.resource import ResourceView, UUID_RE_STRING
-from stagecraft.libs.views.utils import create_http_error
-import logging
+from stagecraft.libs.views.utils import create_http_error, add_items_to_model
 
 logger = logging.getLogger(__name__)
 logger.setLevel('ERROR')
+
+
+def add_provider_to_model(model, model_json, request):
+    try:
+        provider = Provider.objects.get(id=model_json['provider_id'])
+        model_json['provider'] = provider
+        add_items_to_model(model, model_json)
+    except Provider.DoesNotExist:
+        message = "No provider with id '{}' found".format(
+            model_json['provider_id'])
+        return create_http_error(400, message, request, logger=logger)
 
 
 class ProviderView(ResourceView):
@@ -42,26 +50,8 @@ class ProviderView(ResourceView):
         "name": "name__iexact"
     }
 
-    permissions = _get_resource_role_permissions('Provider')
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(ProviderView, self).get(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(ProviderView, self).post(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def put(self, request, **kwargs):
-        return super(ProviderView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
-        for (key, value) in model_json.items():
-            setattr(model, key, value)
+        add_items_to_model(model, model_json)
 
     @staticmethod
     def serialize(model):
@@ -106,33 +96,8 @@ class DataSourceView(ResourceView):
         "name": "name__iexact"
     }
 
-    permissions = _get_resource_role_permissions('DataSource')
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(DataSourceView, self).get(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(DataSourceView, self).post(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def put(self, request, **kwargs):
-        return super(DataSourceView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
-        try:
-            provider = Provider.objects.get(id=model_json['provider_id'])
-            model_json['provider'] = provider
-            for (key, value) in model_json.items():
-                setattr(model, key, value)
-        except Provider.DoesNotExist:
-            message = "No provider with id '{}' found".format(
-                model_json['provider_id'])
-            return create_http_error(400, message, request, logger=logger)
+        return add_provider_to_model(model, model_json, request)
 
     @staticmethod
     def serialize(model):
@@ -187,33 +152,8 @@ class CollectorTypeView(ResourceView):
         "name": "name__iexact"
     }
 
-    permissions = _get_resource_role_permissions('CollectorType')
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(CollectorTypeView, self).get(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(CollectorTypeView, self).post(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def put(self, request, **kwargs):
-        return super(CollectorTypeView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
-        try:
-            provider = Provider.objects.get(id=model_json['provider_id'])
-            model_json['provider'] = provider
-            for (key, value) in model_json.items():
-                setattr(model, key, value)
-        except Provider.DoesNotExist:
-            message = "No provider with id '{}' found".format(
-                model_json['provider_id'])
-            return create_http_error(400, message, request, logger=logger)
+        return add_provider_to_model(model, model_json, request)
 
     @staticmethod
     def serialize(model):
@@ -272,23 +212,6 @@ class CollectorView(ResourceView):
         "name": "name__iexact"
     }
 
-    permissions = _get_resource_role_permissions('Collector')
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(CollectorView, self).get(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(CollectorView, self).post(request, **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def put(self, request, **kwargs):
-        return super(CollectorView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
         try:
             collector_type = CollectorType.objects.get(
@@ -302,8 +225,7 @@ class CollectorView(ResourceView):
             model_json['data_source'] = data_source
             model_json['data_set'] = data_set
 
-            for (key, value) in model_json.items():
-                setattr(model, key, value)
+            add_items_to_model(model, model_json)
         except CollectorType.DoesNotExist:
             message = "No collector type with id '{}' found".format(
                 model_json['type_id'])

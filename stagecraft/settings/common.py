@@ -124,6 +124,16 @@ DOGSLOW_LOG_LEVEL = 'INFO'
 
 ROLES = [
     {
+        "role": "collector",
+        "permissions": {
+            "DataSet": ["get"],
+            "Provider": ["get", "post", "put", "delete"],
+            "DataSource": ["get", "post", "put", "delete"],
+            "CollectorType": ["get", "post", "put", "delete"],
+            "Collector": ["get", "post", "put", "delete"]
+        }
+    },
+    {
         "role": "dashboard",
         "permissions": {
             "Dashboard": ["get", "post", "put", "delete"],

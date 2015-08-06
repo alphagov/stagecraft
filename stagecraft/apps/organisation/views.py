@@ -5,7 +5,6 @@ from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.resource import ResourceView
 from .models import Node, NodeType
 from stagecraft.libs.views.utils import create_http_error
-from stagecraft.libs.authorization.http import _get_resource_role_permissions
 
 
 class NodeTypeView(ResourceView):
@@ -25,12 +24,6 @@ class NodeTypeView(ResourceView):
     list_filters = {
         'name': 'name__iexact',
     }
-
-    permissions = _get_resource_role_permissions('NodeType')
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(NodeTypeView, self).get(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
         model.name = model_json['name']
@@ -76,18 +69,12 @@ class NodeView(ResourceView):
         'type': 'typeOf__name',
     }
 
-    permissions = _get_resource_role_permissions('Node')
-
     def list(self, request, **kwargs):
         if 'parent' in kwargs:
             include_self = request.GET.get('self', 'false') == 'true'
             return kwargs['parent'].get_ancestors(include_self=include_self)
         else:
             return super(NodeView, self).list(request, **kwargs)
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(NodeView, self).get(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
         try:

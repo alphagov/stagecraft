@@ -72,3 +72,8 @@ def create_http_error(status, message, request, code='', title='',
         logger.error(error)
 
     return HttpResponse(to_json(error), status=status)
+
+
+def add_items_to_model(model, model_json):
+    for (key, value) in model_json.items():
+        setattr(model, key, value)

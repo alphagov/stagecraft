@@ -1,15 +1,3 @@
-import json
-
-from django.http import HttpResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
-from django.views.decorators.cache import never_cache
-
-from stagecraft.libs.authorization.http import (
-    permission_required, _get_resource_role_permissions)
-from stagecraft.libs.validation.validation import is_uuid
-
 from stagecraft.apps.datasets.models import DataGroup, DataType
 from .models import Transform, TransformType
 
@@ -58,12 +46,6 @@ class TransformTypeView(ResourceView):
         "required": ["name", "function", "schema"],
         "additionalProperties": False,
     }
-
-    permissions = _get_resource_role_permissions('TransformType')
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(TransformTypeView, self).get(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
         model.name = model_json['name']
@@ -134,12 +116,6 @@ class TransformView(ResourceView):
         ],
         "additionalProperties": False,
     }
-
-    permissions = _get_resource_role_permissions('Transform')
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(TransformView, self).get(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
         try:

@@ -13,8 +13,7 @@ from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.validation.validation import is_uuid
 
 from ..models import Dashboard, Module, ModuleType
-from stagecraft.libs.views.utils import create_http_error
-from stagecraft.libs.authorization.http import _get_resource_role_permissions
+from stagecraft.libs.views.utils import create_http_error, add_items_to_model
 
 
 def json_response(obj):
@@ -173,8 +172,6 @@ class ModuleView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = _get_resource_role_permissions('Module')
-
     def list(self, request, **kwargs):
         query_set = super(ModuleView, self).list(request, **kwargs)
 
@@ -184,12 +181,10 @@ class ModuleView(ResourceView):
         return query_set
 
     @csrf_exempt
-    @method_decorator(never_cache)
     def get(self, request, **kwargs):
         return super(ModuleView, self).get(request, **kwargs)
 
     @csrf_exempt
-    @method_decorator(never_cache)
     def put(self, request, **kwargs):
         return create_http_error(
             405,
@@ -287,15 +282,8 @@ class ModuleTypeView(ResourceView):
         'name': 'name__iexact'
     }
 
-    permissions = _get_resource_role_permissions('ModuleType')
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(ModuleTypeView, self).get(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
-        for (key, value) in model_json.items():
-            setattr(model, key, value)
+        add_items_to_model(model, model_json)
 
     @staticmethod
     def serialize(model):

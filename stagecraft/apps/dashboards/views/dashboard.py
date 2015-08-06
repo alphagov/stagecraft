@@ -1,21 +1,15 @@
 import logging
 
 from django.conf import settings
-from django.http import (HttpResponse,
-                         HttpResponseNotFound)
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-from django.views.decorators.vary import vary_on_headers
+from django.http import (HttpResponse)
 
 from stagecraft.apps.dashboards.models.dashboard import Dashboard
 from stagecraft.apps.organisation.models import Node
 from stagecraft.libs.validation.validation import is_uuid
 from stagecraft.libs.views.resource import ResourceView, UUID_RE_STRING
-from stagecraft.libs.views.utils import to_json, create_error, \
-    create_http_error
+from stagecraft.libs.views.utils import to_json, create_http_error
 from .module import add_module_to_dashboard, ModuleView
 import time
-from stagecraft.libs.authorization.http import _get_resource_role_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -174,24 +168,6 @@ class DashboardView(ResourceView):
         'id': 'id__iexact',
         'slug': 'slug_iexact'
     }
-
-    permissions = _get_resource_role_permissions('Dashboard')
-
-    @method_decorator(never_cache)
-    def get(self, request, **kwargs):
-        return super(DashboardView, self).get(request, **kwargs)
-
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(DashboardView, self).post(request, **kwargs)
-
-    @method_decorator(vary_on_headers('Authorization'))
-    def put(self, request, **kwargs):
-        return super(DashboardView, self).put(request, **kwargs)
-
-    @method_decorator(vary_on_headers('Authorization'))
-    def delete(self, request, **kwargs):
-        return super(DashboardView, self).delete(request, **kwargs)
 
     def update_model(self, model, model_json, request, parent):
 
