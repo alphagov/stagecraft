@@ -79,6 +79,37 @@ class ProviderViewTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(403))
 
+    def test_put(self):
+        provider = ProviderFactory()
+        credentials_schema = {
+            "$schema": "http://json-schema.org/schema#",
+            "type": "object",
+            "properties": {
+                    "password": {"type": "string"},
+            },
+            "required": ["password"],
+            "additionalProperties": False,
+        }
+
+        provider_update = {
+            "name": provider.name,
+            "slug": provider.slug,
+            "credentials_schema": credentials_schema
+        }
+
+        response = self.client.put(
+            '/provider/{}'.format(provider.id),
+            data=json.dumps(provider_update),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+
+        resp_json = json.loads(response.content)
+
+        assert_that(resp_json['credentials_schema'],
+                    equal_to(credentials_schema))
+
 
 class DataSourceViewTestCase(TestCase):
 
@@ -172,7 +203,7 @@ class DataSourceViewTestCase(TestCase):
             "No provider with id '{}' found".format(provider)))
 
     @with_govuk_signon(permissions=['collector'])
-    def test_404_when_user_not_in_ownership_array(self):
+    def test_get_404_when_user_not_in_ownership_array(self):
         data_source = DataSourceFactory()
         user, _ = User.objects.get_or_create(
             email='not_correct_user.lastname@gov.uk')
@@ -183,6 +214,25 @@ class DataSourceViewTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, equal_to(404))
+
+    def test_put(self):
+        data_source = DataSourceFactory()
+
+        data_source_update = {
+            "name": data_source.name,
+            "slug": "new_slug",
+            "provider_id": data_source.provider.id
+        }
+
+        response = self.client.put(
+            '/data-source/{}'.format(data_source.slug),
+            data=to_json(data_source_update),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+        resp_json = json.loads(response.content)
+        assert_that(resp_json['slug'], equal_to("new_slug"))
 
 
 class CollectorTypeViewTestCase(TestCase):
@@ -308,6 +358,26 @@ class CollectorTypeViewTestCase(TestCase):
         resp_json = json.loads(response.content)
         assert_that(resp_json['message'], equal_to(
             "No provider with id '{}' found".format(provider)))
+
+    def test_put(self):
+        collector_type = CollectorTypeFactory()
+
+        collector_type_update = {
+            "name": collector_type.name,
+            "slug": collector_type.slug,
+            "entry_point": "new.entry.point",
+            "provider_id": collector_type.provider.id
+        }
+
+        response = self.client.put(
+            '/collector-type/{}'.format(collector_type.slug),
+            data=to_json(collector_type_update),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+        resp_json = json.loads(response.content)
+        assert_that(resp_json['entry_point'], equal_to("new.entry.point"))
 
 
 class CollectorViewTestCase(TestCase):
@@ -506,7 +576,7 @@ class CollectorViewTestCase(TestCase):
             "".format(data_set['data_group'], data_set['data_type'])))
 
     @with_govuk_signon(permissions=['collector'])
-    def test_404_when_user_not_in_ownership_array(self):
+    def test_get_404_when_user_not_in_ownership_array(self):
         collector = CollectorFactory()
         user, _ = User.objects.get_or_create(
             email='not_correct_user.lastname@gov.uk')
@@ -519,7 +589,7 @@ class CollectorViewTestCase(TestCase):
         assert_that(resp.status_code, equal_to(404))
 
     @with_govuk_signon(permissions=['collector'])
-    def test_404_when_user_not_in_data_source_ownership_array(self):
+    def test_get_404_when_user_not_in_data_source_ownership_array(self):
         data_source = DataSourceFactory()
         data_source_user, _ = User.objects.get_or_create(
             email='data_source_user.lastname@gov.uk')
@@ -537,7 +607,7 @@ class CollectorViewTestCase(TestCase):
         assert_that(resp.status_code, equal_to(404))
 
     @with_govuk_signon(permissions=['collector'])
-    def test_404_when_user_not_in_data_set_ownership_array(self):
+    def test_get_404_when_user_not_in_data_set_ownership_array(self):
         data_set = DataSetFactory()
         data_set_user, _ = User.objects.get_or_create(
             email='data_source_user.lastname@gov.uk')
@@ -553,3 +623,90 @@ class CollectorViewTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer correct-token')
 
         assert_that(resp.status_code, equal_to(404))
+
+    def test_put(self):
+        collector = CollectorFactory()
+
+        data_source = DataSourceFactory(provider=collector.type.provider)
+
+        collector_update = {
+            "slug": collector.slug,
+            "type_id": collector.type.id,
+            "data_source_id": data_source.id,
+            "data_set": {
+                "data_type": collector.data_set.data_type.name,
+                "data_group": collector.data_set.data_group.name
+            }
+        }
+
+        response = self.client.put(
+            '/collector/{}'.format(collector.slug),
+            data=to_json(collector_update),
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+        resp_json = json.loads(response.content)
+        assert_that(resp_json['data_source']['name'],
+                    equal_to(data_source.name))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_put_404_when_user_not_in_data_set_ownership_array(self):
+
+        collector = CollectorFactory()
+        collector_user, _ = User.objects.get_or_create(
+            email='some.user@digital.cabinet-office.gov.uk')
+        collector.owners.add(collector_user)
+
+        data_set = DataSetFactory()
+        data_set_user, _ = User.objects.get_or_create(
+            email='data_source_user.lastname@gov.uk')
+        data_set.owners.add(data_set_user)
+
+        collector_update = {
+            "slug": collector.slug,
+            "type_id": collector.type.id,
+            "data_source_id": collector.data_source.id,
+            "data_set": {
+                "data_type": data_set.data_type.name,
+                "data_group": data_set.data_group.name
+            }
+        }
+
+        response = self.client.put(
+            '/collector/{}'.format(collector.slug),
+            data=to_json(collector_update),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_put_404_when_user_not_in_data_source_ownership_array(self):
+        collector = CollectorFactory()
+        collector_user, _ = User.objects.get_or_create(
+            email='some.user@digital.cabinet-office.gov.uk')
+        collector.owners.add(collector_user)
+
+        data_source = DataSourceFactory()
+        data_source_user, _ = User.objects.get_or_create(
+            email='data_source_user.lastname@gov.uk')
+        data_source.owners.add(data_source_user)
+
+        collector_update = {
+            "slug": collector.slug,
+            "type_id": collector.type.id,
+            "data_source_id": data_source.id,
+            "data_set": {
+                "data_type": collector.data_set.data_type.name,
+                "data_group": collector.data_set.data_group.name
+            }
+        }
+
+        response = self.client.put(
+            '/collector/{}'.format(collector.slug),
+            data=to_json(collector_update),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(404))
