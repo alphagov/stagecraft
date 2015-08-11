@@ -293,7 +293,8 @@ class DashboardView(ResourceView):
             if model.get_transaction_link():
                 links.append(model.get_transaction_link().serialize())
             if model.get_other_links():
-                links.append(model.get_other_links().serialize())
+                for link in model.get_other_links():
+                    links.append(link.serialize())
             serialized_data["links"] = links
 
         return serialized_data
