@@ -4,7 +4,8 @@ import json
 from django.test import TestCase
 from hamcrest import (
     assert_that, equal_to, is_, has_property,
-    contains, has_entry, has_entries, has_key, starts_with, has_length
+    contains, has_entry, has_entries, has_key, starts_with, has_length,
+    has_item
 )
 from django_nose.tools import assert_redirects
 from mock import patch
@@ -452,6 +453,22 @@ class DashboardViewsGetTestCase(TestCase):
                     "other_notes": ""
                 }
             )
+        )
+
+    @with_govuk_signon(permissions=['dashboard', 'user'])
+    def test_an_existing_dashboard_with_other_links_returns_a_dashboard(self):
+        dashboard = DashboardFactory(slug='slug1')
+        link = LinkFactory(dashboard=dashboard, link_type='other')
+        dashboard.owners.add(self.user)
+
+        resp = self.client.get(
+            '/dashboard/{}'.format(dashboard.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(
+            json.loads(resp.content),
+            has_entry('links', has_item(has_key('url')))
         )
 
 
