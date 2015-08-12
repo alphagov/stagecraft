@@ -30,7 +30,7 @@ class RequestLoggerMiddleware(object):
                 'request_method': request.method,
                 'http_host': request.META.get('HTTP_HOST'),
                 'http_path': request.get_full_path(),
-                'request_id': request.META.get('HTTP_REQUEST_ID')
+                'govuk_request_id': request.META.get('HTTP_GOVUK_REQUEST_ID')
         })
 
     def process_response(self, request, response):
@@ -59,5 +59,5 @@ class AdditionalFieldsFilter(logging.Filter):
             record.request_method = request.method,
             record.http_host = request.META.get('HTTP_HOST'),
             record.http_path = request.get_full_path(),
-            record.request_id = request.META.get('HTTP_REQUEST_ID')
+            record.govuk_request_id = request.META.get('HTTP_GOVUK_REQUEST_ID')
         return 1
