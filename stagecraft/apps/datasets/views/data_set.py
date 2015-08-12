@@ -1,15 +1,13 @@
 from stagecraft.libs.views.utils import(
     to_json,
     long_cache,
-    create_http_error)
-from stagecraft.libs.authorization.http import (
-    permission_required, _get_resource_role_permissions)
+    create_http_error, add_items_to_model)
+from stagecraft.libs.authorization.http import permission_required
 import logging
 
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
-from django.utils.decorators import method_decorator
 
 from stagecraft.apps.datasets.models import(
     DataSet,
@@ -86,8 +84,6 @@ class DataSetView(ResourceView):
         "additionalProperties": False,
     }
 
-    permissions = _get_resource_role_permissions('DataSet')
-
     def list(self, request, **kwargs):
         '''
         Override ResourceView's list function (called by its 'get' function)
@@ -97,18 +93,6 @@ class DataSetView(ResourceView):
         queryset = super(DataSetView, self).list(request, **kwargs)
         return queryset.select_related('data_group', 'data_type')
 
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def get(self, request, **kwargs):
-        return super(DataSetView, self).get(
-            request,
-            **kwargs)
-
-    @method_decorator(never_cache)
-    @method_decorator(vary_on_headers('Authorization'))
-    def post(self, request, **kwargs):
-        return super(DataSetView, self).post(request, **kwargs)
-
     def update_model(self, model, model_json, request, parent):
         logger.setLevel('ERROR')
         try:
@@ -116,8 +100,7 @@ class DataSetView(ResourceView):
             data_type = DataType.objects.get(name=model_json['data_type'])
             model_json['data_group'] = data_group
             model_json['data_type'] = data_type
-            for (key, value) in model_json.items():
-                setattr(model, key, value)
+            add_items_to_model(model, model_json)
         except DataGroup.DoesNotExist:
             message = "No data group with name '{}' found".format(
                 model_json['data_group'])

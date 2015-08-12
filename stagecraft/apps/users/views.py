@@ -1,13 +1,6 @@
-from collections import OrderedDict
 import logging
 
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-from django.views.decorators.vary import vary_on_headers
-
 from stagecraft.apps.users.models import User
-from stagecraft.libs.authorization.http import (
-    permission_required, _get_resource_role_permissions)
 from stagecraft.libs.views.resource import ResourceView
 
 logger = logging.getLogger(__name__)
@@ -36,23 +29,6 @@ class UserView(ResourceView):
     list_filters = {
         'email': 'email__iexact',
     }
-
-    permissions = _get_resource_role_permissions('User')
-
-    @never_cache
-    @vary_on_headers('Authorization')
-    def get(self, request, *args, **kwargs):
-        return super(UserView, self).get(request, **kwargs)
-
-    @never_cache
-    @vary_on_headers('Authorization')
-    def post(self, request, **kwargs):
-        return super(UserView, self).post(request, **kwargs)
-
-    @never_cache
-    @vary_on_headers('Authorization')
-    def put(self, request, **kwargs):
-        return super(UserView, self).put(request, **kwargs)
 
     def update_model(self, model, model_json, request):
         model.email = model_json['email']

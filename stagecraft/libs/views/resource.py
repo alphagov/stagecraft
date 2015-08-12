@@ -1,9 +1,12 @@
 import json
+from django.views.decorators.cache import never_cache
+from django.views.decorators.vary import vary_on_headers
 import jsonschema
 import logging
 import re
 from stagecraft.apps.users.models import User
-from stagecraft.libs.authorization.http import authorize
+from stagecraft.libs.authorization.http import authorize, \
+    _get_resource_role_permissions
 
 from django.http import HttpResponse
 from django.conf.urls import url
@@ -55,13 +58,20 @@ def is_uuid(instance):
 
 class ResourceView(View):
 
+    def __init__(self):
+        if self.model:
+            self.permissions = _get_resource_role_permissions(
+                self.model.__name__)
+        else:
+            self.permissions = {
+                'get': None,
+                'post': None,
+                'put': None,
+                'delete': None,
+            }
+
     model = None
-    permissions = {
-        'get': None,
-        'post': None,
-        'put': None,
-        'delete': None,
-    }
+
     id_fields = {
         'id': UUID_RE_STRING,
     }
@@ -142,6 +152,8 @@ class ResourceView(View):
     def update_relationships(self, model, model_json, request, parent):
         pass
 
+    @method_decorator(never_cache)
+    @method_decorator(vary_on_headers('Authorization'))
     def get(self, request, **kwargs):
         user, err = self._authorize(request)
         if err:
@@ -202,7 +214,9 @@ class ResourceView(View):
 
         return None
 
+    @method_decorator(never_cache)
     @method_decorator(atomic_view)
+    @method_decorator(vary_on_headers('Authorization'))
     def post(self, request, **kwargs):
         user, err = self._authorize(request)
         if err:
@@ -255,7 +269,9 @@ class ResourceView(View):
 
             return self._response(model)
 
+    @method_decorator(never_cache)
     @method_decorator(atomic_view)
+    @method_decorator(vary_on_headers('Authorization'))
     def put(self, request, **kwargs):
         user, err = self._authorize(request)
         if err:
@@ -291,7 +307,9 @@ class ResourceView(View):
 
         return self._response(model)
 
+    @method_decorator(never_cache)
     @method_decorator(atomic_view)
+    @method_decorator(vary_on_headers('Authorization'))
     def delete(self, request, **kwargs):
         user, err = self._authorize(request)
         if err:

@@ -73,10 +73,6 @@ class TestResourceView(ResourceView):
 
     was_saved = False
 
-    permissions = {
-        'get': set(['anon']), 'post': set(['anon']), 'put': set(['anon']),
-        'delete': set(['anon'])}
-
     def update_relationships(self, model, model_json, request, parent):
         self.was_saved = model.pk is not None
 
@@ -183,6 +179,8 @@ class ResourceViewTestCase(TestCase):
         request = HttpRequest()
         request.method = action
         request.META['CONTENT_TYPE'] = content_type
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer development-oauth-access-token'
         request._body = body
 
         if action == 'POST':
@@ -421,6 +419,8 @@ class ResourceViewTestCase(TestCase):
         request = HttpRequest()
         request.method = 'POST'
         request.META['CONTENT_TYPE'] = 'application/json'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer development-oauth-access-token'
         request._body = json.dumps({
             'type_id': str(node_type.id),
             'name': 'foo',
