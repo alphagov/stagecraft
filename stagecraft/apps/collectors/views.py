@@ -248,6 +248,7 @@ class CollectorView(ResourceView):
             'name': model.name,
             'query': model.query,
             'options': model.options,
+            'entry_point': model.type.entry_point,
             'type': {
                 'id': str(model.type.id),
                 'slug': model.type.slug,
@@ -260,6 +261,12 @@ class CollectorView(ResourceView):
             },
             'data_set': {
                 'data_type': model.data_set.data_type.name,
-                'data_group': model.data_set.data_group.name
+                'data_group': model.data_set.data_group.name,
+                'bearer_token': model.data_set.bearer_token
+            },
+            'provider': {
+                'id': str(model.type.provider.id),
+                'slug': model.type.provider.slug,
+                'name': model.type.provider.name
             }
         }

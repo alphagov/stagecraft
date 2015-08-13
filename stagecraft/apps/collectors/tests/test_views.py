@@ -415,6 +415,10 @@ class CollectorViewTestCase(TestCase):
         assert_that(resp_json['name'], equal_to(collector.name))
         assert_that(resp_json['type']['name'], equal_to(
             collector.type.name))
+        assert_that(resp_json['type']['slug'], equal_to(
+            collector.type.slug))
+        assert_that(resp_json['entry_point'], equal_to(
+            collector.type.entry_point))
         assert_that(
             resp_json['data_source']['name'], equal_to(
                 collector.data_source.name))
@@ -422,8 +426,13 @@ class CollectorViewTestCase(TestCase):
             collector.data_set.data_type.name))
         assert_that(resp_json['data_set']['data_group'], equal_to(
             collector.data_set.data_group.name))
+        assert_that(resp_json['data_set'], has_key('bearer_token'))
         assert_that(resp_json['query'], equal_to(collector.query))
         assert_that(resp_json['options'], equal_to(collector.options))
+        assert_that(resp_json['provider']['slug'], equal_to(
+            collector.type.provider.slug))
+        assert_that(resp_json['provider']['name'], equal_to(
+            collector.type.provider.name))
         assert_that(resp_json, not(has_key('owners')))
 
     def test_get_from_unauthorised_client_fails(self):
