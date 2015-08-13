@@ -4,11 +4,14 @@ from unittest import TestCase
 from hamcrest import (
     assert_that, is_, calling, raises, is_not,
     instance_of, starts_with, has_key, has_entry,
-    contains, equal_to)
+    contains, equal_to, contains_inanyorder)
 from django.http import HttpRequest, HttpResponse
 from jsonschema import FormatError
 
 from stagecraft.apps.organisation.models import Node, NodeType
+from stagecraft.apps.collectors.models import Collector
+from stagecraft.apps.collectors.tests.factories import(
+    CollectorFactory, CollectorTypeFactory)
 from stagecraft.apps.organisation.tests.factories import (
     NodeFactory, NodeTypeFactory
 )
@@ -16,6 +19,12 @@ from ..resource import (
     FORMAT_CHECKER, ResourceView, resource_re_string,
     UUID_RE_STRING)
 from stagecraft.libs.views.utils import create_http_error
+
+from django.conf import settings
+from httmock import HTTMock
+from stagecraft.apps.datasets.models import OAuthUser
+from stagecraft.libs.authorization.tests.test_http import(
+    govuk_signon_mock)
 
 
 class FormatCheckerTestCase(TestCase):
@@ -106,6 +115,42 @@ class TestResourceView(ResourceView):
         }
 
 
+# To test a class which does not allow anon users to get
+class TestResourceViewCollector(TestResourceView):
+    model = Collector
+
+    @staticmethod
+    def serialize(model):
+        return {
+            'id': str(model.id),
+            'slug': model.slug,
+            'name': model.name,
+            'query': model.query,
+            'options': model.options,
+            'entry_point': model.type.entry_point,
+            'type': {
+                'id': str(model.type.id),
+                'slug': model.type.slug,
+                'name': model.type.name
+            },
+            'data_source': {
+                'id': str(model.data_source.id),
+                'slug': model.data_source.slug,
+                'name': model.data_source.name
+            },
+            'data_set': {
+                'data_type': model.data_set.data_type.name,
+                'data_group': model.data_set.data_group.name,
+                'bearer_token': model.data_set.bearer_token
+            },
+            'provider': {
+                'id': str(model.type.provider.id),
+                'slug': model.type.provider.slug,
+                'name': model.type.provider.name
+            }
+        }
+
+
 class TestResourceViewChild(TestResourceView):
 
     def update_relationships(self, model, model_json, request, parent):
@@ -151,6 +196,17 @@ class TestResourceViewMultipleIDs(ResourceView):
 
 
 class ResourceViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.collector_type1 = CollectorTypeFactory(name="a_collector_type1")
+        cls.collector1 = CollectorFactory(type=cls.collector_type1)
+        cls.collector_type2 = CollectorTypeFactory(name="a_collector_type2")
+        cls.collector2 = CollectorFactory(type=cls.collector_type2)
+
+    def tearDown(self):
+        Node.objects.all().delete()
+        OAuthUser.objects.all().delete()
+        settings.USE_DEVELOPMENT_USERS = True
 
     def get(self, args={}, query={}, cls=TestResourceView, user=None):
         view = cls()
@@ -159,8 +215,6 @@ class ResourceViewTestCase(TestCase):
         request.method = 'GET'
         for (k, v) in query.items():
             request.GET[k] = v
-
-        view.permissions = {'get': set(['anon'])}
 
         response = view.get(request, **args)
 
@@ -210,9 +264,6 @@ class ResourceViewTestCase(TestCase):
     def delete(self, body='', content_type='application/json', args={}):
         return self._do('DELETE', body, content_type, args)
 
-    def tearDown(self):
-        Node.objects.all().delete()
-
     def test_user_filtering_only_with_user_set(self):
         node = NodeFactory()
 
@@ -246,7 +297,7 @@ class ResourceViewTestCase(TestCase):
         assert_that(status_code, is_(200))
         assert_that(json_response[0]['in_list'], is_(True))
 
-    def test_list_serializes_with_diff_func(self):
+    def test_list_serializes_with_diff_func_allows_ordering(self):
         NodeFactory(name='foo-node-1', slug='b')
         NodeFactory(name='foo-node-2', slug='a')
 
@@ -314,13 +365,178 @@ class ResourceViewTestCase(TestCase):
         assert_that(json_response['name'], is_(node.name))
 
     def test_get_does_not_exist(self):
-        node = NodeFactory()
+        NodeFactory()
 
         status_code, json_response = self.get({
             'id': 'fc1457d3-d4fe-41a5-8717-b412bee388e4'
         })
 
         assert_that(status_code, is_(404))
+
+    def test_list_returns_all_instances_if_user_has_admin_permission(self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['admin'])
+        with HTTMock(signon):
+            response = view.get(request)
+
+            try:
+                json_response = json.loads(response.content)
+            except ValueError:
+                json_response = None
+
+            assert_that(response.status_code, is_(200))
+            assert_that(len(json_response), is_(2))
+            assert_that(json_response, contains_inanyorder(
+                has_entry("name", starts_with(
+                    self.__class__.collector_type1.name)),
+                has_entry("name", starts_with(
+                    self.__class__.collector_type2.name))))
+
+    def test_detail_returns_unowned_if_user_has_admin_permission(self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['admin'])
+        with HTTMock(signon):
+            response = view.get(request, **{'id': self.collector1.id})
+
+            try:
+                json_response = json.loads(response.content)
+            except ValueError:
+                json_response = None
+
+            assert_that(response.status_code, is_(200))
+            assert_that(json_response['id'], equal_to(
+                str(self.__class__.collector1.id)))
+
+    def test_list_returns_all_if_omniscient_nd_collector_view_but_no_ownership(
+            self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['omniscient', 'collector-view'])
+        with HTTMock(signon):
+            response = view.get(request)
+
+            try:
+                json_response = json.loads(response.content)
+            except ValueError:
+                json_response = None
+
+            assert_that(response.status_code, is_(200))
+            assert_that(len(json_response), is_(2))
+            assert_that(json_response, contains_inanyorder(
+                has_entry("name", starts_with(
+                    self.__class__.collector_type1.name)),
+                has_entry("name", starts_with(
+                    self.__class__.collector_type2.name))))
+
+    def test_list_returns_403_if_omniscient_no_collector_view(
+            self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['omniscient'])
+        with HTTMock(signon):
+            response = view.get(request)
+            assert_that(response.status_code, is_(403))
+
+    def test_list_returns_empty_list_if_collector_view_not_omniscient(
+            self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['collector-view'])
+        with HTTMock(signon):
+            response = view.get(request)
+
+            try:
+                json_response = json.loads(response.content)
+            except ValueError:
+                json_response = None
+
+            assert_that(response.status_code, is_(200))
+            assert_that(len(json_response), is_(0))
+
+    def test_detail_returns_if_omniscient_nd_collector_view_no_ownership(self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['omniscient', 'collector-view'])
+        with HTTMock(signon):
+            response = view.get(request, **{'id': self.collector1.id})
+
+            try:
+                json_response = json.loads(response.content)
+            except ValueError:
+                json_response = None
+
+            assert_that(response.status_code, is_(200))
+            assert_that(json_response['id'], equal_to(
+                str(self.__class__.collector1.id)))
+
+    def test_detail_returns_403_if_omniscient_no_collector_view(self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(
+            permissions=['omniscient'])
+        with HTTMock(signon):
+            response = view.get(request, **{'id': self.collector1.id})
+            assert_that(response.status_code, is_(403))
+
+    def test_detail_returns_404_if_collector_view_not_omniscient(self):
+        view = TestResourceViewCollector()
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.META['HTTP_AUTHORIZATION'] = \
+            'Bearer correct-token'
+
+        settings.USE_DEVELOPMENT_USERS = False
+        signon = govuk_signon_mock(permissions=['collector-view'])
+        with HTTMock(signon):
+            response = view.get(request, **{'id': self.collector1.id})
+            assert_that(response.status_code, is_(404))
 
     # --------------------------------------
     # sub view tests

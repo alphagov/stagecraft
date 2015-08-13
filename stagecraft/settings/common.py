@@ -134,6 +134,13 @@ ROLES = [
         }
     },
     {
+        "role": "collector-view",
+        "permissions": {
+            "CollectorType": ["get"],
+            "Collector": ["get"]
+        }
+    },
+    {
         "role": "dashboard",
         "permissions": {
             "Dashboard": ["get", "post", "put", "delete"],
@@ -172,6 +179,11 @@ ROLES = [
             "DataSource": ["get", "post", "put", "delete"],
             "CollectorType": ["get", "post", "put", "delete"],
             "Collector": ["get", "post", "put", "delete"],
+        },
+    },
+    {
+        "role": "omniscient",
+        "permissions": {
         },
     },
     {

@@ -85,7 +85,7 @@ class ResourceView(View):
     def list(self, request, **kwargs):
         user = kwargs.get('user', None)
         additional_filters = kwargs.get('additional_filters', {})
-        unfiltered_roles = {'admin'}
+        unfiltered_roles = {'admin', 'omniscient'}
 
         should_filter = user and (len(set(user['permissions']).intersection(
             unfiltered_roles)) == 0)
@@ -183,11 +183,12 @@ class ResourceView(View):
         return None, None
 
     def _user_missing_model_permission(self, user, model):
-        user_is_not_admin = 'admin' not in user['permissions']
+        user_does_not_see_all = ('admin' not in user['permissions'] and
+                                 'omniscient' not in user['permissions'])
         user_is_not_assigned = hasattr(model, 'owners') and \
             model.owners.filter(email=user['email']).count() == 0
 
-        return user_is_not_admin and user_is_not_assigned
+        return user_does_not_see_all and user_is_not_assigned
 
     def _get_sub_resource(self, request, sub_resource, model):
         sub_resource = str(sub_resource.strip().lower())
