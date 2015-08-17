@@ -17,6 +17,12 @@ from stagecraft.libs.authorization.http import (
 
 
 def govuk_signon_mock(**kwargs):
+    # So that this behaves as expected, when we use
+    # it be sure to clean out any existing users.
+    # This will prevent loading them from the database
+    # instead of using the signon mock.
+    OAuthUser.objects.all().delete()
+
     @urlmatch(netloc=r'.*signon.*')
     def func(url, request):
         if request.headers['Authorization'] == 'Bearer correct-token':
@@ -148,7 +154,8 @@ class CheckPermissionTestCase(TestCase):
 
         assert_that(has_permission, equal_to(False))
 
-    def test_user_with_returns_object_and_true_when_permissions_is_list(self):
+    def test_check_permission_returns_object_and_true_when_permissions_list(
+            self):
         settings.USE_DEVELOPMENT_USERS = False
 
         OAuthUser.objects.create(access_token='correct-token',
