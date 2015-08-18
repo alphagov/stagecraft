@@ -47,6 +47,37 @@ class ProviderViewTestCase(TestCase):
 
         assert_that(resp.status_code, equal_to(403))
 
+    def test_list(self):
+        provider_1 = ProviderFactory()
+        provider_2 = ProviderFactory()
+
+        response = self.client.get(
+            '/provider',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+
+        resp_json = json.loads(response.content)
+
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": provider_1.slug})))
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": provider_2.slug})))
+
+    # The list route requires for_user if you're not an admin and the model
+    # has an owner attribute. This test implicitly tests whether the for_user
+    # method and the accompanying model Manager class is required.
+    @with_govuk_signon(permissions=['collector'])
+    def test_can_list_providers_with_collector_permission(self):
+        provider = ProviderFactory()
+
+        response = self.client.get(
+            '/provider',
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(response.status_code, equal_to(200))
+
     def test_post(self):
         provider = {
             "name": "some-provider",
@@ -146,6 +177,37 @@ class DataSourceViewTestCase(TestCase):
             '/data-source/{}'.format(data_source.name))
 
         assert_that(resp.status_code, equal_to(403))
+
+    def test_list(self):
+        data_source_1 = DataSourceFactory()
+        data_source_2 = DataSourceFactory()
+
+        response = self.client.get(
+            '/data-source',
+            HTTP_AUTHORIZATION='Bearer development-oauth-access-token',
+            content_type='application/json')
+
+        assert_that(response.status_code, equal_to(200))
+
+        resp_json = json.loads(response.content)
+
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": data_source_1.slug})))
+        assert_that(resp_json, match_equality(
+            has_entries({"slug": data_source_2.slug})))
+
+    # The list route requires for_user if you're not an admin and the model
+    # has an owner attribute. This test implicitly tests whether the for_user
+    # method and the accompanying model Manager class is required.
+    @with_govuk_signon(permissions=['collector'])
+    def test_can_list_data_sources_with_collector_permission(self):
+        data_source = DataSourceFactory()
+
+        response = self.client.get(
+            '/data-source',
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(response.status_code, equal_to(200))
 
     def test_post(self):
         data_source = {
@@ -299,6 +361,19 @@ class CollectorTypeViewTestCase(TestCase):
             has_entries({"slug": collector_type_1.slug})))
         assert_that(resp_json, match_equality(
             has_entries({"slug": collector_type_2.slug})))
+
+    # The list route requires for_user if you're not an admin and the model
+    # has an owner attribute. This test implicitly tests whether the for_user
+    # method and the accompanying model Manager class is required.
+    @with_govuk_signon(permissions=['collector'])
+    def test_can_list_collector_types_with_collector_permission(self):
+        collector_type = CollectorTypeFactory()
+
+        response = self.client.get(
+            '/collector-type',
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(response.status_code, equal_to(200))
 
     def test_post(self):
         collector_type = {
@@ -459,6 +534,19 @@ class CollectorViewTestCase(TestCase):
             has_entries({"slug": collector_1.slug})))
         assert_that(resp_json, match_equality(
             has_entries({"slug": collector_2.slug})))
+
+    # The list route requires for_user if you're not an admin and the model
+    # has an owner attribute. This test implicitly tests whether the for_user
+    # method and the accompanying model Manager class is required.
+    @with_govuk_signon(permissions=['collector'])
+    def test_can_list_collectors_with_collector_permission(self):
+        collector = CollectorFactory()
+
+        response = self.client.get(
+            '/collector',
+            HTTP_AUTHORIZATION='Bearer correct-token')
+
+        assert_that(response.status_code, equal_to(200))
 
     def test_post(self):
         collector = {

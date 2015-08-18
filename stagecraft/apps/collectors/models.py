@@ -8,6 +8,7 @@ from django_field_cryptography import fields as encrypted_fields
 from jsonfield import JSONField
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.apps.users.models import User
+from django.db.models.query import QuerySet
 
 
 class Provider(models.Model):
@@ -36,7 +37,18 @@ class Provider(models.Model):
         return "{}".format(self.name)
 
 
+class DataSourceManager(models.Manager):
+
+    def get_query_set(self):
+        return QuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_query_set().filter(owners=user)
+
+
 class DataSource(models.Model):
+    objects = DataSourceManager()
+
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
@@ -118,7 +130,18 @@ class CollectorType(models.Model):
         return "{}: {}".format(self.provider.name, self.name)
 
 
+class CollectorManager(models.Manager):
+
+    def get_query_set(self):
+        return QuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_query_set().filter(owners=user)
+
+
 class Collector(models.Model):
+    objects = CollectorManager()
+
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     slug = models.SlugField(max_length=100, unique=True)
 
