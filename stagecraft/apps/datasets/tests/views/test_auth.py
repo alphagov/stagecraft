@@ -60,7 +60,7 @@ class OAuthInvalidateTestCase(TestCase):
                 HTTP_AUTHORIZATION='Bearer correct-token')
             assert_that(resp, is_forbidden())
             assert_that(
-                OAuthUser.objects.get_by_access_token('the-token'),
+                OAuthUser.objects.get_by_access_token('correct-token'),
                 is_not(None))
 
     def test_invalidate_returns_200_if_user_is_not_found(self):
