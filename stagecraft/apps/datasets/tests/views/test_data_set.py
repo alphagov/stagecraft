@@ -322,18 +322,6 @@ class DataSetsViewsTestCase(TestCase):
             response_object = json.loads(resp.content.decode('utf-8'))
             assert_equal(len(response_object), 6)
 
-    def test_list_returns_all_data_sets_if_user_has_admin_permission(self):  # noqa
-        settings.USE_DEVELOPMENT_USERS = False
-        signon = govuk_signon_mock(
-            permissions=['signin', 'admin'])
-        with HTTMock(signon):
-            resp = self.client.get(
-                '/data-sets',
-                HTTP_AUTHORIZATION='Bearer correct-token')
-            assert_equal(resp.status_code, 200)
-            response_object = json.loads(resp.content.decode('utf-8'))
-            assert_equal(len(response_object), 6)
-
     def test_list_returns_no_data_sets_if_there_is_no_backdrop_user(self):
         settings.USE_DEVELOPMENT_USERS = False
         signon = govuk_signon_mock(permissions=['signin', 'dataset'])

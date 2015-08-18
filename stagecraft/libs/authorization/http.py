@@ -106,6 +106,12 @@ def forbidden(request, message):
     return create_http_error(403, 'Forbidden: {}'.format(message), request)
 
 
+# anon_allowed is for non resource view views to allow (or not)
+# people who are not signed in to see a view. This means that there is some
+# control even if these views do not have the power of the permissions model
+# used by resource views. In the case of resource views, because of the
+# permissions model we can have this set to True as you will still have to
+# allow permission 'anon' in the permissions for a user to see the view
 def authorize(request, permission, anon_allowed=True):
     access_token = extract_bearer_token(request)
     (user, has_permission) = check_permission(
