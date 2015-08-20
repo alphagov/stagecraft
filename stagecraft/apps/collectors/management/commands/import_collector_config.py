@@ -67,6 +67,13 @@ entrypoint_information = {
 
 
 class Command(BaseCommand):
+
+    '''
+    Usage: python manage.py import_collector_config <config_dir>
+
+    config_dir: do include the queries directory in config path.
+    '''
+
     args = '<config_dir>'
     help = 'Import collector configuration from repo.'
 
