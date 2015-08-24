@@ -196,7 +196,7 @@ class DataSet(models.Model):
 
     def data_location(self):
         path = '{backdrop_url}/data/{data_group}/{data_type}'.format(
-            backdrop_url=settings.BACKDROP_URL,
+            backdrop_url=settings.BACKDROP_PUBLIC_URL,
             data_group=self.data_group,
             data_type=self.data_type)
         return '<a href="{0}?limit=10">{0}</a>'.format(path)

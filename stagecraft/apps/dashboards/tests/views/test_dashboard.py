@@ -47,10 +47,8 @@ class DashboardViewsListTestCase(TestCase):
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
         response_object = json.loads(resp.content)
 
-        public_url = ('http://spotlight.development.performance.service'
-                      '.gov.uk/performance/dashboard')
-        internal_url = ('http://stagecraft.development.performance.service'
-                        '.gov.uk/dashboard/')
+        public_url = ('http://spotlight.dev.gov.uk/performance/dashboard')
+        internal_url = ('http://stagecraft.dev.gov.uk/dashboard/')
         base_expectation = {
             'title': 'Dashboard',
             'public-url': public_url,
