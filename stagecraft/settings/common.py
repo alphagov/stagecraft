@@ -22,6 +22,10 @@ BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 sys.path.append(pjoin(BASE_DIR, 'apps'))
 sys.path.append(pjoin(BASE_DIR, 'libs'))
 
+import djcelery
+
+djcelery.setup_loader()
+
 # Defined here for safety, they should also be defined in each environment.
 DEBUG = False
 TEMPLATE_DEBUG = False
@@ -63,6 +67,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'djcelery',
     'reversion',
 
     'stagecraft.apps.collectors',
@@ -121,6 +126,15 @@ DOGSLOW_LOG_TO_FILE = False
 DOGSLOW_TIMER = 1
 DOGSLOW_LOGGER = 'stagecraft.apps'
 DOGSLOW_LOG_LEVEL = 'INFO'
+
+#: Only add pickle to this list if your broker is secured
+#: from unwanted access (see userguide/security.html)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_RESULT_BACKEND = 'djcelery.backends.database.DatabaseBackend'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 ROLES = [
     {
