@@ -1,5 +1,8 @@
 import pickle
 import string
+import sys
+
+from django.conf import settings
 
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -17,6 +20,12 @@ REPLACE_TABLE = {
 class SpreadsheetMunger:
 
     def __init__(self, positions={}):
+        if not settings.TESTING:
+            sys.exit("\n***Column positions have changes in the "
+                     "transactions explorer spreadsheet.***\n"
+                     "\nPlease update and remove this message"
+                     " before continuing.\n")
+
         # The transaction explorer spreadsheet is less likely
         # to change so we can set defaults for these positions.
         # The comments on these are the column names for the positions
