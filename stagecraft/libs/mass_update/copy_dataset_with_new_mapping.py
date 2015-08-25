@@ -88,7 +88,7 @@ def get_or_create_new_data_set(new_attributes):
 
 
 def get_qualified_backdrop_url():
-    return settings.BACKDROP_URL + '/data'
+    return settings.BACKDROP_WRITE_URL + '/data'
 
 
 def get_old_data(data_group_name, data_type_name):

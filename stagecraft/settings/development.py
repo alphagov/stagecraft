@@ -23,11 +23,11 @@ FERNET_KEY = b'gv95z8H_O1ChE7oADZSxH6LE25ntDavlqoZJ11YZe4Q='
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-APP_HOSTNAME = 'stagecraft.development.performance.service.gov.uk'
-ENV_HOSTNAME = '.development.performance.service.gov.uk'
+APP_HOSTNAME = 'stagecraft.dev.gov.uk'
+ENV_HOSTNAME = '.dev.gov.uk'
 
 APP_ROOT = 'http://{0}'.format(APP_HOSTNAME)
-GOVUK_ROOT = 'http://spotlight.development.performance.service.gov.uk'
+GOVUK_ROOT = 'http://spotlight.dev.gov.uk'
 
 SIGNON_URL = 'http://signon.dev.gov.uk'
 SIGNON_CLIENT_ID = 'clientid'
@@ -99,7 +99,9 @@ else:
     }
 
 
-BACKDROP_URL = 'http://www.development.performance.service.gov.uk'
+BACKDROP_PUBLIC_URL = 'http://backdrop-read.dev.gov.uk'
+BACKDROP_READ_URL = 'http://backdrop-read.dev.gov.uk'
+BACKDROP_WRITE_URL = 'http://backdrop-write.dev.gov.uk'
 STAGECRAFT_COLLECTION_ENDPOINT_TOKEN = 'dev-create-endpoint-token'
 
 LOGGING = {
