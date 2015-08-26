@@ -15,6 +15,12 @@
                     "type": "string"
                 }
             }
+        },
+        "chunk-size": {
+            "type": "number"
+        },
+        "empty-data-set": {
+            "type": "boolean"
         }
     },
     "title": "Google Analytics Content Collector Options",
