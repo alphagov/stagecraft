@@ -1,6 +1,13 @@
 {
     "$schema": "http://json-schema.org/schema#",
-        "properties": {},
+        "properties": {
+            "chunk-size": {
+                "type": "number"
+            },
+            "empty-data-set": {
+                "type": "boolean"
+            }
+        },
         "title": "Piwik Realtime Collector Options",
         "type": "object",
         "additionalProperties": false

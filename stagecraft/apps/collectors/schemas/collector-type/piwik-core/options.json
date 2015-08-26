@@ -43,6 +43,12 @@
                 "items": {
                     "type": "string"
                 }
+            },
+            "chunk-size": {
+                "type": "number"
+            },
+            "empty-data-set": {
+                "type": "boolean"
             }
         },
         "title": "Piwik Core Collector Options",
