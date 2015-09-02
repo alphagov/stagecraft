@@ -196,6 +196,7 @@ class TestResourceViewMultipleIDs(ResourceView):
 
 
 class ResourceViewTestCase(TestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.collector_type1 = CollectorTypeFactory(name="a_collector_type1")
