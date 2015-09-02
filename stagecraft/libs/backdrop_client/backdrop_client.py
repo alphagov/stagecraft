@@ -107,8 +107,8 @@ def delete_data_set(name):
     Connect to Backdrop and delete a collection called ``name``.
     """
 
-    endpoint_url = '{url}/data-sets/{name}'.format(url=settings.BACKDROP_URL,
-                                                   name=name)
+    endpoint_url = '{url}/data-sets/{name}'.format(
+        url=settings.BACKDROP_WRITE_URL, name=name)
 
     backdrop_request = lambda: requests.delete(
         endpoint_url,
