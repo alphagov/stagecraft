@@ -138,7 +138,7 @@ class ResourceView(View):
 
         try:
             model = self.model.objects.get(**get_args)
-            if user and self._user_missing_model_permission(user, model):
+            if user and user_missing_model_permission(user, model):
                 logger.warn("Unauthorized access to '{}' by '{}'".format(
                     id, user['email']))
                 raise self.model.DoesNotExist()
@@ -181,14 +181,6 @@ class ResourceView(View):
                 return key, args[key]
 
         return None, None
-
-    def _user_missing_model_permission(self, user, model):
-        user_does_not_see_all = ('admin' not in user['permissions'] and
-                                 'omniscient' not in user['permissions'])
-        user_is_not_assigned = hasattr(model, 'owners') and \
-            model.owners.filter(email=user['email']).count() == 0
-
-        return user_does_not_see_all and user_is_not_assigned
 
     def _get_sub_resource(self, request, sub_resource, model):
         sub_resource = str(sub_resource.strip().lower())
@@ -406,3 +398,12 @@ class ResourceView(View):
             json.dumps(obj),
             content_type='application/json'
         )
+
+
+def user_missing_model_permission(user, model):
+    user_does_not_see_all = ('admin' not in user['permissions'] and
+                             'omniscient' not in user['permissions'])
+    user_is_not_assigned = hasattr(model, 'owners') and \
+        model.owners.filter(email=user['email']).count() == 0
+
+    return user_does_not_see_all and user_is_not_assigned
