@@ -67,6 +67,8 @@ urlpatterns = patterns(
     url(r'^transactions-explorer-service/(?P<identifier>[-a-z0-9]+)/dashboard',
         transactions_explorer_views.dashboards_by_tx, name='dashboards_by_tx'),
 
+    url(r'^collector-run/(?P<slug>[\w-]+)$', collectors_views.run_collector),
+
     resource_url('organisation/node', organisation_views.NodeView),
     resource_url('organisation/type', organisation_views.NodeTypeView),
     resource_url('transform-type', transforms_views.TransformTypeView),

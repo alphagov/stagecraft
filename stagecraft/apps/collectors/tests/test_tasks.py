@@ -3,8 +3,7 @@ from hamcrest import assert_that, equal_to
 from mock import patch
 from stagecraft.apps.collectors.models import CollectorType
 from stagecraft.apps.collectors.tasks import run_collector
-from stagecraft.apps.collectors.tests.factories import CollectorFactory, \
-    CollectorTypeFactory
+from stagecraft.apps.collectors.tests.factories import CollectorFactory
 
 
 class TestCeleryTasks(TestCase):

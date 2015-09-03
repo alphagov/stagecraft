@@ -33,7 +33,7 @@ def run_collector(collector_slug, start=None, end=None):
             token={
                 "token": collector.type.provider.slug
             },
-            dry_run=True,
+            dry_run=False,
             start_at=start_at,
             end_at=end_at
         )
