@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 from argparse import Namespace
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from performanceplatform.collector.main import _run_collector
 from django.conf import settings
 from stagecraft.apps.collectors.models import Collector
+import json
 
 logger = get_task_logger(__name__)
 
@@ -21,7 +23,7 @@ def run_collector(collector_slug, start=None, end=None):
             performanceplatform={
                 "backdrop_url": settings.BACKDROP_WRITE_URL + '/data'
             },
-            credentials=collector.data_source.credentials,
+            credentials=json.loads(collector.data_source.credentials),
             query={
                 "data-set": {
                     "data-group": collector.data_set.data_group,
