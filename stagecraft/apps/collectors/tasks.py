@@ -16,8 +16,8 @@ def log(message):
 
 
 @shared_task
-def run_collector(collector_slug, start=None, end=None):
-    def get_config(collector_slug, start_at, end_at):
+def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
+    def get_config(collector_slug, start, end):
         collector = Collector.objects.get(slug=collector_slug)
         config = Namespace(
             performanceplatform={
@@ -35,11 +35,11 @@ def run_collector(collector_slug, start=None, end=None):
             token={
                 "token": collector.type.provider.slug
             },
-            dry_run=False,
-            start_at=start_at,
-            end_at=end_at
+            dry_run=dry_run,
+            start_at=start,
+            end_at=end
         )
         return collector.type.entry_point, config
 
-    entry_point, args = get_config(collector_slug, start, end)
+    entry_point, args = get_config(collector_slug, start_at, end_at)
     _run_collector(entry_point, args)

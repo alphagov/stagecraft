@@ -284,8 +284,9 @@ class CollectorView(ResourceView):
 @csrf_exempt
 @permission_required(set(['collector', 'admin']))
 def run_collector(user, request, slug):
-    start_at = request.GET.get('start_at', None)
-    end_at = request.GET.get('end_at', None)
+    start_at = request.GET.get('start-at', None)
+    end_at = request.GET.get('end-at', None)
+    dry_run = request.GET.get('dry-run', "False")
     collector = get_object_or_404(Collector, slug=slug)
 
     if user_missing_model_permission(user, collector):
@@ -295,8 +296,11 @@ def run_collector(user, request, slug):
         message = 'You must either specify a both start date and an end ' \
                   'date for the collector run, or neither'
         return create_http_error(400, message, request)
-    elif start_at and end_at:
-        run_collector_task.delay(slug, start_at, end_at)
-    else:
-        run_collector_task.delay(slug)
+
+    run_collector_task.delay(
+        slug,
+        start_at=start_at,
+        end_at=end_at,
+        dry_run=(True if dry_run.lower() == "true" else False))
+
     return HttpResponse('', content_type='application/json')
