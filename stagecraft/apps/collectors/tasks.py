@@ -4,6 +4,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from performanceplatform.collector.main import _run_collector
 from django.conf import settings
+from stagecraft.apps.collectors.libs.ga import CredentialStorage
 from stagecraft.apps.collectors.models import Collector
 import json
 
