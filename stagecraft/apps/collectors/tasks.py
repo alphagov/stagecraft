@@ -20,15 +20,23 @@ def log(message):
 def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
     def get_config(collector_slug, start, end):
         collector = Collector.objects.get(slug=collector_slug)
+
+        credentials = json.loads(collector.data_source.credentials)
+        if ("CLIENT_SECRETS" in credentials and
+                "OAUTH2_CREDENTIALS" in credentials):
+            data_source = collector.data_source
+            storage_object = CredentialStorage(data_source)
+            credentials['OAUTH2_CREDENTIALS'] = storage_object
+
         config = Namespace(
             performanceplatform={
                 "backdrop_url": settings.BACKDROP_WRITE_URL + '/data'
             },
-            credentials=json.loads(collector.data_source.credentials),
+            credentials=credentials,
             query={
                 "data-set": {
-                    "data-group": collector.data_set.data_group,
-                    "data-type": collector.data_set.data_type
+                    "data-group": str(collector.data_set.data_group),
+                    "data-type": str(collector.data_set.data_type)
                 },
                 "query": collector.query,
                 "options": collector.options
