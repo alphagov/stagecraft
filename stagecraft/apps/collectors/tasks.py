@@ -42,7 +42,7 @@ def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
                 "options": collector.options
             },
             token={
-                "token": collector.type.provider.slug
+                "token": collector.data_set.bearer_token
             },
             dry_run=dry_run,
             start_at=start,

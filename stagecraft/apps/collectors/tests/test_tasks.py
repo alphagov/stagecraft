@@ -12,6 +12,7 @@ import json
 
 
 class TestCeleryTasks(TestCase):
+
     @patch("performanceplatform.collector.ga.main")
     def test_run_collector(self, mock_ga_collector):
         # Collector Types are created through a migration and should exist in
