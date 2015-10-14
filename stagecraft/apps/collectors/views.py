@@ -1,10 +1,19 @@
 import logging
+from operator import xor
+from django.views.decorators.csrf import csrf_exempt
 
 from stagecraft.apps.collectors.models import Provider, DataSource, \
     CollectorType, Collector
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.libs.views.resource import ResourceView, UUID_RE_STRING
-from stagecraft.libs.views.utils import create_http_error, add_items_to_model
+from stagecraft.libs.views.utils import add_items_to_model
+from stagecraft.apps.collectors.tasks import run_collector as \
+    run_collector_task
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from stagecraft.libs.authorization.http import permission_required
+from stagecraft.libs.views.resource import user_missing_model_permission
+from stagecraft.libs.views.utils import create_http_error
 
 logger = logging.getLogger(__name__)
 logger.setLevel('ERROR')
@@ -270,3 +279,28 @@ class CollectorView(ResourceView):
                 'name': model.type.provider.name
             }
         }
+
+
+@csrf_exempt
+@permission_required(set(['collector', 'admin']))
+def run_collector(user, request, slug):
+    start_at = request.GET.get('start-at', None)
+    end_at = request.GET.get('end-at', None)
+    dry_run = request.GET.get('dry-run', "False")
+    collector = get_object_or_404(Collector, slug=slug)
+
+    if user_missing_model_permission(user, collector):
+        return create_http_error(404, 'Not Found', request)
+
+    if xor(bool(start_at), bool(end_at)):
+        message = 'You must either specify a both start date and an end ' \
+                  'date for the collector run, or neither'
+        return create_http_error(400, message, request)
+
+    run_collector_task.delay(
+        slug,
+        start_at=start_at,
+        end_at=end_at,
+        dry_run=(True if dry_run.lower() == "true" else False))
+
+    return HttpResponse('', content_type='application/json')

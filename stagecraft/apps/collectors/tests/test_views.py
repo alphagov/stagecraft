@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import datetime
 from django.test import TestCase
 from hamcrest import assert_that, equal_to, has_key, has_entries, \
     match_equality
@@ -10,6 +11,7 @@ from stagecraft.apps.users.models import User
 from stagecraft.libs.authorization.tests.test_http import with_govuk_signon
 from stagecraft.libs.backdrop_client import disable_backdrop_connection
 from stagecraft.libs.views.utils import to_json
+from mock import patch
 
 
 class ProviderViewTestCase(TestCase):
@@ -807,3 +809,128 @@ class CollectorViewTestCase(TestCase):
             content_type='application/json')
 
         assert_that(response.status_code, equal_to(404))
+
+
+@patch('stagecraft.apps.collectors.views.run_collector_task')
+class RunCollectorTest(TestCase):
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_run_collector(self, run_collector_mock):
+        collector = CollectorFactory()
+        response = self.client.post(
+            '/collector-run/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(200))
+        run_collector_mock.delay.assert_called_with(
+            collector.slug, start_at=None, end_at=None, dry_run=False)
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_returns_404_if_collector_does_not_exist(self, run_collector_mock):
+        response = self.client.post(
+            '/collector-run/{}'.format('non-existent-slug'),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['collector'])
+    def test_returns_404_if_user_not_owner(self, run_collector_mock):
+        collector = CollectorFactory()
+        user, _ = User.objects.get_or_create(
+            email='not_correct_user.lastname@gov.uk')
+        collector.owners.add(user)
+        response = self.client.post(
+            '/collector-run/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(404))
+
+    @with_govuk_signon(permissions=['signin'])
+    def test_requires_collectors_permission(self, run_collector_mock):
+        collector = CollectorFactory()
+        response = self.client.post(
+            '/collector-run/{}'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(403))
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_run_collector_with_start_and_end_dates(self, run_collector_mock):
+        collector = CollectorFactory()
+        start_date = datetime(2015, 8, 1).strftime('%Y-%m-%d')
+        end_date = datetime(2015, 8, 9).strftime('%Y-%m-%d')
+
+        response = self.client.post(
+            '/collector-run/{}?start-at={}&end-at={}'.format(
+                collector.slug, start_date, end_date),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(200))
+        run_collector_mock.delay.assert_called_with(
+            collector.slug,
+            start_at="2015-08-01",
+            end_at="2015-08-09",
+            dry_run=False)
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_400_if_only_start_date(self, run_collector_mock):
+        collector = CollectorFactory()
+        start_date = datetime(2015, 8, 1).strftime('%Y-%m-%d')
+
+        response = self.client.post(
+            '/collector-run/{}?start-at={}'.format(
+                collector.slug, start_date),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(400))
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_400_if_only_end_date(self, run_collector_mock):
+        collector = CollectorFactory()
+        end_date = datetime(2015, 8, 9).strftime('%Y-%m-%d')
+
+        response = self.client.post(
+            '/collector-run/{}?end-at={}'.format(
+                collector.slug, end_date),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(400))
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_dry_run(self, run_collector_mock):
+        collector = CollectorFactory()
+
+        response = self.client.post(
+            '/collector-run/{}?dry-run=True'.format(collector.slug),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(200))
+        run_collector_mock.delay.assert_called_with(
+            collector.slug, start_at=None, end_at=None, dry_run=True)
+
+    @with_govuk_signon(permissions=['admin'])
+    def test_dry_run_with_start_and_end_dates(self, run_collector_mock):
+        collector = CollectorFactory()
+        start_date = datetime(2015, 8, 1).strftime('%Y-%m-%d')
+        end_date = datetime(2015, 8, 9).strftime('%Y-%m-%d')
+
+        response = self.client.post(
+            '/collector-run/{}?start-at={}&end-at={}&dry-run=True'.format(
+                collector.slug, start_date, end_date),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(200))
+        run_collector_mock.delay.assert_called_with(
+            collector.slug,
+            start_at="2015-08-01",
+            end_at="2015-08-09",
+            dry_run=True)

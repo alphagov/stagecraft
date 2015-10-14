@@ -146,7 +146,6 @@ class Collector(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
 
     type = models.ForeignKey(CollectorType)
-    collector_choices = ('test', 'test')
     data_source = models.ForeignKey(DataSource)
     data_set = models.ForeignKey(DataSet)
 
