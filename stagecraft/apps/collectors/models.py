@@ -145,7 +145,7 @@ class Collector(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     slug = models.SlugField(max_length=100, unique=True)
 
-    type = models.ForeignKey(CollectorType)
+    type = models.ForeignKey(CollectorType, related_name='collectors')
     data_source = models.ForeignKey(DataSource)
     data_set = models.ForeignKey(DataSet)
 

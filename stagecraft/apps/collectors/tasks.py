@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 from argparse import Namespace
-from celery import shared_task
+from celery import shared_task, group
 from celery.utils.log import get_task_logger
 from performanceplatform.collector.main import _run_collector
 from django.conf import settings
 from stagecraft.apps.collectors.libs.ga import CredentialStorage
-from stagecraft.apps.collectors.models import Collector
+from stagecraft.apps.collectors.models import Collector, CollectorType
 import json
 
 logger = get_task_logger(__name__)
@@ -14,6 +14,15 @@ logger = get_task_logger(__name__)
 @shared_task
 def log(message):
     logger.info(message)
+
+
+@shared_task
+def run_collectors_by_type(*args):
+    for slug in args:
+        collector_type = CollectorType.objects\
+            .prefetch_related('collectors').get(slug=slug)
+        slugs = [c.slug for c in collector_type.collectors.all()]
+        group(run_collector.s(slug) for slug in slugs)()
 
 
 @shared_task
