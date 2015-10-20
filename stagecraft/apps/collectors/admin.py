@@ -9,6 +9,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from stagecraft.apps.collectors import models
+from stagecraft.apps.collectors.tasks import run_collector
 
 
 class SelectWithData(Select):
@@ -82,6 +83,16 @@ class CollectorAdminForm(ModelForm):
         fields = '__all__'
 
 
+def run_now(modeladmin, request, queryset):
+    for collector in queryset:
+        print collector.slug
+        run_collector(collector.slug)
+    # slug = queryset.first().slug
+    # print type(slug)
+    # run_collector(slug)
+run_now.short_description = "Run collector"
+
+
 @admin.register(models.Collector)
 class CollectorAdmin(admin.ModelAdmin):
 
@@ -90,6 +101,7 @@ class CollectorAdmin(admin.ModelAdmin):
 
     form = CollectorAdminForm
     filter_horizontal = ('owners',)
+    actions = [run_now]
 
 
 @admin.register(models.DataSource)
