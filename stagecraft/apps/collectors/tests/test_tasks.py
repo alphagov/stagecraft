@@ -3,7 +3,10 @@ from hamcrest import assert_that, equal_to
 from mock import patch, ANY
 from stagecraft.apps.collectors.libs.ga import CredentialStorage
 from stagecraft.apps.collectors.models import CollectorType
-from stagecraft.apps.collectors.tasks import run_collector
+from stagecraft.apps.collectors.tasks import (
+    run_collector,
+    run_collectors_by_type
+)
 from stagecraft.apps.collectors.tests.factories import (
     CollectorFactory,
     DataSourceFactory
@@ -23,6 +26,19 @@ class TestCeleryTasks(TestCase):
         run_collector(collector.slug, "2015-08-01", "2015-08-08")
 
         assert_that(mock_ga_collector.called, equal_to(True))
+
+    @patch("stagecraft.apps.collectors.tasks.group")
+    def test_run_collectors_by_type(self, mock_group):
+        collector_type = CollectorType.objects.get(slug='ga')
+        CollectorFactory(type=collector_type)
+        CollectorFactory(type=collector_type)
+        another_collector_type = CollectorType.objects.get(slug='gcloud')
+        CollectorFactory(type=another_collector_type)
+
+        run_collectors_by_type(
+            collector_type.slug, another_collector_type.slug)
+
+        assert_that(mock_group.call_count, equal_to(2))
 
     @patch("performanceplatform.collector.ga.main")
     def test_run_collector_with_no_start_and_end_dates(

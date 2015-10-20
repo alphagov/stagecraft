@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import sys
 from os.path import abspath, dirname, join as pjoin
+from datetime import timedelta
 
 try:
     from urllib.parse import urlparse  # Python 3
@@ -23,6 +24,7 @@ sys.path.append(pjoin(BASE_DIR, 'apps'))
 sys.path.append(pjoin(BASE_DIR, 'libs'))
 
 import djcelery
+from celery.schedules import crontab
 
 djcelery.setup_loader()
 
@@ -135,6 +137,27 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_RESULT_BACKEND = 'djcelery.backends.database.DatabaseBackend'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERYBEAT_SCHEDULE = {
+    'realtime': {
+        'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
+        'schedule': timedelta(minutes=5),
+        'args': ('ga-realtime', 'piwik-realtime')
+    },
+    'daily': {
+        'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
+        'schedule': crontab(minute=0, hour=0),
+        'args': (
+            'ga',
+            'ga-contrib-content-table',
+            'ga-trending',
+            'gcloud',
+            'pingdom',
+            'piwik-core',
+            'webtrends-keymetrics',
+            'webtrends-reports'
+        )
+    },
+}
 
 ROLES = [
     {
