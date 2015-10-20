@@ -97,9 +97,9 @@ def run_now(modeladmin, request, queryset):
     end_date = request.POST['end_date']
 
     if xor(bool(start_date), bool(end_date)):
-        modeladmin.message_user(request, (
-            "You must either specify a both start date and an end date for "
-            "the collector run, or neither"), messages.ERROR)
+        message = "You must either specify a both start date and an end " \
+                  "date for the collector run, or neither"
+        modeladmin.message_user(request, message, messages.ERROR)
     else:
         start_at = None
         end_at = None
@@ -109,7 +109,14 @@ def run_now(modeladmin, request, queryset):
             end_at = datetime.strptime(end_date, '%Y-%m-%d')
 
         for collector in queryset:
-            run_collector(collector.slug, start_at=start_at, end_at=end_at)
+            try:
+                run_collector(collector.slug, start_at=start_at, end_at=end_at)
+            except SystemExit:
+                message = "An exception has occurred. " \
+                          "Please check you are not trying to backfill a " \
+                          "realtime collector"
+                modeladmin.message_user(request, message, messages.ERROR)
+
 run_now.short_description = "Run collector"
 
 
