@@ -128,6 +128,9 @@ class CollectorAdmin(admin.ModelAdmin):
 
     form = CollectorAdminForm
     action_form = CollectorActionForm
+    list_display = ('slug', 'name')
+    ordering = ('slug', )
+    search_fields = ['slug']
     filter_horizontal = ('owners',)
     actions = [run_now]
 
