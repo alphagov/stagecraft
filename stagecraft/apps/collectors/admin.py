@@ -1,12 +1,16 @@
+from operator import xor
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import widgets
+from django.contrib.admin.helpers import ActionForm
+from django.core.checks import messages
 from django.forms import Select, ModelChoiceField, ModelForm
 from django.forms.models import ModelChoiceIterator
 from django.forms.fields import ChoiceField
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from datetime import datetime
 
 from stagecraft.apps.collectors import models
 from stagecraft.apps.collectors.tasks import run_collector
@@ -83,13 +87,29 @@ class CollectorAdminForm(ModelForm):
         fields = '__all__'
 
 
+class CollectorActionForm(ActionForm):
+    start_date = forms.DateField(required=False)
+    end_date = forms.DateField(required=False)
+
+
 def run_now(modeladmin, request, queryset):
-    for collector in queryset:
-        print collector.slug
-        run_collector(collector.slug)
-    # slug = queryset.first().slug
-    # print type(slug)
-    # run_collector(slug)
+    start_date = request.POST['start_date']
+    end_date = request.POST['end_date']
+
+    if xor(bool(start_date), bool(end_date)):
+        modeladmin.message_user(request, (
+            "You must either specify a both start date and an end date for "
+            "the collector run, or neither"), messages.ERROR)
+    else:
+        start_at = None
+        end_at = None
+
+        if start_date and end_date:
+            start_at = datetime.strptime(start_date, '%Y-%m-%d')
+            end_at = datetime.strptime(end_date, '%Y-%m-%d')
+
+        for collector in queryset:
+            run_collector(collector.slug, start_at=start_at, end_at=end_at)
 run_now.short_description = "Run collector"
 
 
@@ -100,6 +120,7 @@ class CollectorAdmin(admin.ModelAdmin):
         js = ('admin/js/filterselect.js',)
 
     form = CollectorAdminForm
+    action_form = CollectorActionForm
     filter_horizontal = ('owners',)
     actions = [run_now]
 
