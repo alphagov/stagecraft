@@ -1,5 +1,6 @@
 import logging
 from operator import xor
+from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 
 from stagecraft.apps.collectors.models import Provider, DataSource, \
@@ -14,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from stagecraft.libs.authorization.http import permission_required
 from stagecraft.libs.views.resource import user_missing_model_permission
 from stagecraft.libs.views.utils import create_http_error
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel('ERROR')
@@ -296,6 +298,14 @@ def run_collector(user, request, slug):
         message = 'You must either specify a both start date and an end ' \
                   'date for the collector run, or neither'
         return create_http_error(400, message, request)
+
+    if start_at and end_at:
+        try:
+            datetime.strptime(start_at, '%Y-%m-%d')
+            datetime.strptime(end_at, '%Y-%m-%d')
+        except ValueError:
+            message = "Incorrect date format, should be YYYY-MM-DD"
+            return create_http_error(400, message, request)
 
     run_collector_task.delay(
         slug,

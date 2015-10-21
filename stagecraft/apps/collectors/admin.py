@@ -1,14 +1,19 @@
+from operator import xor
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import widgets
+from django.contrib.admin.helpers import ActionForm
+from django.core.checks import messages
 from django.forms import Select, ModelChoiceField, ModelForm
 from django.forms.models import ModelChoiceIterator
 from django.forms.fields import ChoiceField
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from datetime import datetime
 
 from stagecraft.apps.collectors import models
+from stagecraft.apps.collectors.tasks import run_collector
 
 
 class SelectWithData(Select):
@@ -82,6 +87,41 @@ class CollectorAdminForm(ModelForm):
         fields = '__all__'
 
 
+class CollectorActionForm(ActionForm):
+    start_date = forms.DateField(required=False)
+    end_date = forms.DateField(required=False)
+
+
+def run_now(modeladmin, request, queryset):
+    start_at = request.POST['start_date']
+    end_at = request.POST['end_date']
+
+    if xor(bool(start_at), bool(end_at)):
+        message = "You must either specify a both start date and an end " \
+                  "date for the collector run, or neither"
+        modeladmin.message_user(request, message, messages.ERROR)
+
+    if start_at and end_at:
+        try:
+            datetime.strptime(start_at, '%Y-%m-%d')
+            datetime.strptime(end_at, '%Y-%m-%d')
+        except ValueError:
+            message = "Incorrect date format, should be YYYY-MM-DD"
+            modeladmin.message_user(request, message, messages.ERROR)
+
+    for collector in queryset:
+        try:
+            run_collector.delay(
+                collector.slug, start_at=start_at, end_at=end_at)
+        except SystemExit:
+            message = "An exception has occurred. " \
+                      "Please check you are not trying to backfill a " \
+                      "realtime collector"
+            modeladmin.message_user(request, message, messages.ERROR)
+
+run_now.short_description = "Run collector"
+
+
 @admin.register(models.Collector)
 class CollectorAdmin(admin.ModelAdmin):
 
@@ -89,7 +129,12 @@ class CollectorAdmin(admin.ModelAdmin):
         js = ('admin/js/filterselect.js',)
 
     form = CollectorAdminForm
+    action_form = CollectorActionForm
+    list_display = ('slug', 'name')
+    ordering = ('slug', )
+    search_fields = ['slug']
     filter_horizontal = ('owners',)
+    actions = [run_now]
 
 
 @admin.register(models.DataSource)
