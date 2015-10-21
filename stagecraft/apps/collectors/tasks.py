@@ -60,4 +60,7 @@ def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
         return collector.type.entry_point, config
 
     entry_point, args = get_config(collector_slug, start_at, end_at)
-    _run_collector(entry_point, args)
+    if settings.DISABLE_COLLECTORS:
+        return 'Collectors Disabled'
+    else:
+        _run_collector(entry_point, args)
