@@ -93,29 +93,31 @@ class CollectorActionForm(ActionForm):
 
 
 def run_now(modeladmin, request, queryset):
-    start_date = request.POST['start_date']
-    end_date = request.POST['end_date']
+    start_at = request.POST['start_date']
+    end_at = request.POST['end_date']
 
-    if xor(bool(start_date), bool(end_date)):
+    if xor(bool(start_at), bool(end_at)):
         message = "You must either specify a both start date and an end " \
                   "date for the collector run, or neither"
         modeladmin.message_user(request, message, messages.ERROR)
-    else:
-        start_at = None
-        end_at = None
 
-        if start_date and end_date:
-            start_at = datetime.strptime(start_date, '%Y-%m-%d')
-            end_at = datetime.strptime(end_date, '%Y-%m-%d')
+    if start_at and end_at:
+        try:
+            datetime.strptime(start_at, '%Y-%m-%d')
+            datetime.strptime(end_at, '%Y-%m-%d')
+        except ValueError:
+            message = "Incorrect date format, should be YYYY-MM-DD"
+            modeladmin.message_user(request, message, messages.ERROR)
 
-        for collector in queryset:
-            try:
-                run_collector(collector.slug, start_at=start_at, end_at=end_at)
-            except SystemExit:
-                message = "An exception has occurred. " \
-                          "Please check you are not trying to backfill a " \
-                          "realtime collector"
-                modeladmin.message_user(request, message, messages.ERROR)
+    for collector in queryset:
+        try:
+            run_collector.delay(
+                collector.slug, start_at=start_at, end_at=end_at)
+        except SystemExit:
+            message = "An exception has occurred. " \
+                      "Please check you are not trying to backfill a " \
+                      "realtime collector"
+            modeladmin.message_user(request, message, messages.ERROR)
 
 run_now.short_description = "Run collector"
 
