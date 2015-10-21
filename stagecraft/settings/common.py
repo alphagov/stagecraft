@@ -143,21 +143,21 @@ CELERYBEAT_SCHEDULE = {
         'schedule': timedelta(minutes=5),
         'args': ('ga-realtime', 'piwik-realtime')
     },
-    'daily': {
-        'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
-        'schedule': crontab(minute=0, hour=0),
-        'args': (
-            'ga',
-            'ga-contrib-content-table',
-            'ga-trending',
-            'gcloud',
-            'pingdom',
-            'piwik-core',
-            'webtrends-keymetrics',
-            'webtrends-reports'
-        )
-    },
 }
+#    'daily': {
+#        'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
+#        'schedule': crontab(minute=0, hour=0),
+#        'args': (
+#            'ga',
+#            'ga-contrib-content-table',
+#            'ga-trending',
+#            'gcloud',
+#            'pingdom',
+#            'piwik-core',
+#            'webtrends-keymetrics',
+#            'webtrends-reports'
+#        )
+#    },
 
 ROLES = [
     {
