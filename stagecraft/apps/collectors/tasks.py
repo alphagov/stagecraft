@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from argparse import Namespace
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from datetime import datetime
 from performanceplatform.collector.main import _run_collector
 from django.conf import settings
 from stagecraft.apps.collectors.libs.ga import CredentialStorage
@@ -45,8 +46,8 @@ def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
                 "token": collector.data_set.bearer_token
             },
             dry_run=dry_run,
-            start_at=start,
-            end_at=end
+            start_at=(datetime.strptime(start, '%Y-%m-%d') if start else None),
+            end_at=(datetime.strptime(end, '%Y-%m-%d') if end else None)
         )
         return collector.type.entry_point, config
 

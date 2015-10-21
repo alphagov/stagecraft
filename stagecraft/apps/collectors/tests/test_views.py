@@ -904,6 +904,20 @@ class RunCollectorTest(TestCase):
         assert_that(response.status_code, equal_to(400))
 
     @with_govuk_signon(permissions=['admin'])
+    def test_400_if_wrong_date_format(self, run_collector_mock):
+        collector = CollectorFactory()
+        start_date = datetime(2015, 8, 1).strftime('%d/%m/%Y')
+        end_date = datetime(2015, 8, 9).strftime('%d/%m/%Y')
+
+        response = self.client.post(
+            '/collector-run/{}?start-at={}&end-at={}'.format(
+                collector.slug, start_date, end_date),
+            HTTP_AUTHORIZATION='Bearer correct-token',
+            content_type='application/json'
+        )
+        assert_that(response.status_code, equal_to(400))
+
+    @with_govuk_signon(permissions=['admin'])
     def test_dry_run(self, run_collector_mock):
         collector = CollectorFactory()
 
