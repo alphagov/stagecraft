@@ -263,3 +263,5 @@ ROLES = [
         },
     },
 ]
+
+DISABLE_COLLECTORS = False
