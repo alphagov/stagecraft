@@ -146,7 +146,7 @@ CELERYBEAT_SCHEDULE = {
     'hourly': {
         'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
         'schedule': timedelta(hours=1),
-        'args': ('pingdom')
+        'args': ('pingdom',)
     },
     'daily': {
         'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
