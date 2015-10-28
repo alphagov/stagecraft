@@ -56,7 +56,8 @@ def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
             },
             dry_run=dry_run,
             start_at=(datetime.strptime(start, '%Y-%m-%d') if start else None),
-            end_at=(datetime.strptime(end, '%Y-%m-%d') if end else None)
+            end_at=(datetime.strptime(end, '%Y-%m-%d') if end else None),
+            console_logging=False
         )
         return collector.type.entry_point, config
 
@@ -64,4 +65,5 @@ def run_collector(collector_slug, start_at=None, end_at=None, dry_run=False):
     if settings.DISABLE_COLLECTORS:
         return 'Collectors Disabled'
     else:
-        _run_collector(entry_point, args)
+        logfile_path = settings.BASE_DIR + "/log"
+        _run_collector(entry_point, args, logfile_path, 'collectors')
