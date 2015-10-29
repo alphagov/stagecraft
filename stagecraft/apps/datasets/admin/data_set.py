@@ -66,7 +66,7 @@ class DataSetAdmin(reversion.VersionAdmin):
     change_form_template = 'data_set/change_form.html'
 
     readonly_after_created = set(
-        ['name', 'data_group', 'data_type', 'capped_size'])
+        ['name', 'data_group', 'data_type'])
     readonly_fields = ('name', )
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location',

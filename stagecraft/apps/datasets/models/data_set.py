@@ -53,7 +53,7 @@ class DataSet(models.Model):
     # used in clean() below to prevent ORM model changes like
     # e.g. modifying a name after the data_set has been created
     READONLY_AFTER_CREATED = set(
-        ['name', 'capped_size'])
+        ['name'])
 
     objects = DataSetManager()
 

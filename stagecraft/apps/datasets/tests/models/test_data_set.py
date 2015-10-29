@@ -161,20 +161,6 @@ class DataSetTestCase(TestCase):
             data_group=self.data_group1,
             data_type=self.data_type1)
 
-    def test_capped_size_cannot_be_changed(self):
-        data_set = DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-
-        data_set.capped_size = 42
-        assert_raises(ImmutableFieldError, data_set.save)
-
-    def test_capped_size_can_be_set_on_creation(self):
-        DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1,
-            capped_size=42)
-
     def test_cant_delete_referenced_data_group(self):
         refed_data_group = DataGroup.objects.create(name='refed_data_group')
         DataSet.objects.create(
@@ -209,13 +195,6 @@ class DataSetTestCase(TestCase):
             data_group=self.data_group1,
             data_type=self.data_type1)
         data_set.name = "abc"
-        assert_raises(ImmutableFieldError, lambda: data_set.clean())
-
-    def test_clean_raise_immutablefield_cappedsize_change(self):
-        data_set = DataSet.objects.create(
-            data_group=self.data_group1,
-            data_type=self.data_type1)
-        data_set.capped_size = 1000
         assert_raises(ImmutableFieldError, lambda: data_set.clean())
 
     def test_clean_not_raise_immutablefield_no_change(self):
