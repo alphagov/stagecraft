@@ -21,6 +21,7 @@ class NodeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'abbreviation',)
     inlines = (ParentInline,)
     exclude = ('parents',)
+    ordering = ('name', )
 
 
 admin.site.register(NodeType, NodeTypeAdmin)
