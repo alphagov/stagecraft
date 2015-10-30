@@ -140,3 +140,5 @@ class CollectorAdmin(admin.ModelAdmin):
 @admin.register(models.DataSource)
 class DataSourceAdmin(admin.ModelAdmin):
     filter_horizontal = ('owners',)
+    list_display = ('slug', 'name')
+    ordering = ('slug', )
