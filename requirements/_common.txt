@@ -29,4 +29,4 @@ dogslow==0.9.7
 oauth2client==1.4.11
 
 # To query for data from google analytics, webtrends, pingdom etc
-performanceplatform-collector==0.2.5
+performanceplatform-collector==0.2.6
