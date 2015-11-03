@@ -1,6 +1,7 @@
 # Django development
 /db.sqlite3
 /venv
+/log/*.lock
 /log/*.log
 /log/*.log.*
 /log/*.log.json
