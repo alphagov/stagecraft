@@ -71,7 +71,8 @@ class DataSet(models.Model):
                                    verbose_name='created (UTC)')
     modified = models.DateTimeField(auto_now=True,
                                     verbose_name='modified (UTC)')
-    owners = models.ManyToManyField('users.User', blank=True)
+    owners = models.ManyToManyField(
+        'users.User', blank=True, related_name='data_sets')
     data_group = models.ForeignKey(
         DataGroup,
         on_delete=models.PROTECT,
