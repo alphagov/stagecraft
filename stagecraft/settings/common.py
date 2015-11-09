@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import sys
 from os.path import abspath, dirname, join as pjoin
-from datetime import timedelta
 
 try:
     from urllib.parse import urlparse  # Python 3
@@ -140,12 +139,12 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYBEAT_SCHEDULE = {
     'realtime': {
         'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
-        'schedule': timedelta(minutes=5),
+        'schedule': crontab(minute='*/5'),
         'args': ('ga-realtime', 'piwik-realtime')
     },
     'hourly': {
         'task': 'stagecraft.apps.collectors.tasks.run_collectors_by_type',
-        'schedule': timedelta(hours=1),
+        'schedule': crontab(minute=0),
         'args': ('pingdom',)
     },
     'daily': {
