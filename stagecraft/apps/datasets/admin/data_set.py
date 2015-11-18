@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from performanceplatform.client.data_set import DataSet as DataSetClient
 
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.apps.dashboards.models import Module
 
 
 class DataSetAdmin(reversion.VersionAdmin):
@@ -47,6 +48,9 @@ class DataSetAdmin(reversion.VersionAdmin):
         else:
             return self.readonly_fields
 
+    def has_delete_permission(self, request, obj=None):
+        return not get_published_dashboards(obj)
+
     def response_change(self, request, model):
         if '_empty_dataset' in request.POST:
             client = DataSetClient.from_group_and_type(
@@ -62,6 +66,16 @@ class DataSetAdmin(reversion.VersionAdmin):
                 ), args=[model.pk]))
         else:
             return super(DataSetAdmin, self).response_change(request, model)
+
+    def render_change_form(self, request, context, *args, **kwargs):
+        dashboards = get_published_dashboards(kwargs['obj'])
+        extra = {
+            'dashboards': dashboards
+        }
+
+        context.update(extra)
+        return super(DataSetAdmin, self).render_change_form(
+            request, context, *args, **kwargs)
 
     change_form_template = 'data_set/change_form.html'
 
@@ -90,3 +104,13 @@ class DataSetAdmin(reversion.VersionAdmin):
     )
 
 admin.site.register(DataSet, DataSetAdmin)
+
+
+def get_published_dashboards(data_set_name):
+    dashboards = []
+    modules = Module.objects.filter(data_set__name=data_set_name)
+
+    for module in modules:
+        if module.dashboard.published:
+            dashboards.append(module.dashboard.title)
+    return dashboards
