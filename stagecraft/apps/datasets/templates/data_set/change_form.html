@@ -9,13 +9,15 @@
 {% endblock %}
 
 {% block after_related_objects %}
-{% if dashboards %}
+{% if dashboard_titles %}
   <fieldset class="module aligned">
     <div class="form-row">
       <label>Linked dashboards:</label>
-      {% for dashboard in dashboards %}
-        <p>{{ dashboard }}</p>
+      <ul class="columns">
+      {% for title in dashboard_titles %}
+        <li>{{ title }}</li>
       {% endfor %}
+      </ul>
       <p class="help">These dashboards need to be unpublished before the data set can be deleted</p>
     </div>
   </fieldset>

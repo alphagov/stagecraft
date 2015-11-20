@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import random
 import string
+from hamcrest import assert_that, has_item
 
 import mock
 
@@ -15,12 +16,13 @@ from nose.tools import assert_raises, assert_equal
 from django.core.exceptions import ValidationError
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase, TransactionTestCase
+from stagecraft.apps.dashboards.tests.factories.factories import ModuleFactory, \
+    DashboardFactory, ModuleTypeFactory
 
 from stagecraft.libs.backdrop_client import (
     disable_backdrop_connection, BackdropNotFoundError)
 from stagecraft.apps.datasets.models import DataGroup, DataSet, DataType
-from stagecraft.apps.datasets.models.data_set import ImmutableFieldError, \
-    DataSetQuerySet
+from stagecraft.apps.datasets.models.data_set import ImmutableFieldError
 from stagecraft.apps.users.models import User
 
 
@@ -31,12 +33,14 @@ class DataSetTestCase(TestCase):
         cls.data_group1 = DataGroup.objects.create(name='data_group1')
         cls.data_type1 = DataType.objects.create(name='data_type1')
         cls.data_type2 = DataType.objects.create(name='data_type2')
+        cls.module_type = ModuleTypeFactory(name='tab')
 
     @classmethod
     def tearDownClass(cls):
         cls.data_group1.delete()
         cls.data_type1.delete()
         cls.data_type2.delete()
+        cls.module_type.delete()
 
     def test_create_produces_a_name(self):
         with _make_temp_data_group_and_type() as (data_group, data_type):
@@ -210,6 +214,77 @@ class DataSetTestCase(TestCase):
             data_type=self.data_type1)
         data_set.data_type = new_data_type
         data_set.clean()
+
+    def test_modules_property_returns_modules(self):
+        data_set = DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        dashboard = DashboardFactory(status="published")
+        module = ModuleFactory(
+            data_set=data_set, dashboard=dashboard)
+
+        assert_equal(module.slug, data_set.modules[0].slug)
+
+    def test_modules_property_returns_no_modules(self):
+        data_set = DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+
+        assert_equal([], data_set.modules)
+
+    def test_modules_property_returns_tabbed_modules(self):
+        data_set = DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        dashboard = DashboardFactory(status="published")
+        options = {
+            'tabs': [
+                {
+                    'data-source': {
+                        u'data-group': data_set.data_group.name,
+                        u'data-type': data_set.data_type.name,
+                        u'query-params': {}
+                    },
+                    'module-type': u'single_timeseries',
+                    'title': 'title_1'
+                }
+            ]
+        }
+        module = ModuleFactory(
+            dashboard=dashboard,
+            type=self.module_type,
+            options=options)
+
+        assert_equal(module.slug, data_set.modules[0].slug)
+
+    def test_modules_property_returns_tabbed_modules_from_data_source(self):
+        data_set = DataSet.objects.create(
+            data_group=self.data_group1,
+            data_type=self.data_type1)
+        dashboard = DashboardFactory(status="published")
+        options = {
+            'tabs': [
+                {
+                    'data-source': {
+                        u'data-group': "some-thing-group",
+                        u'data-type': "some-thing-time",
+                        u'query-params': {}
+                    },
+                    'module-type': u'single_timeseries',
+                    'title': "Title 1 {}".format(
+                        data_set.data_group.name),
+                    'other_title': "Title 2 {}".format(
+                        data_set.data_type.name)
+                }
+            ]
+        }
+
+        ModuleFactory(
+            dashboard=dashboard,
+            type=self.module_type,
+            options=options)
+
+        assert_equal([], data_set.modules)
 
 
 def test_character_allowed_in_name():

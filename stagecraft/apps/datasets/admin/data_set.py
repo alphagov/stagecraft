@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 import logging
+from sets import Set
+
 logger = logging.getLogger(__name__)
 
 from django.contrib import admin
@@ -13,7 +15,6 @@ from django.shortcuts import redirect
 from performanceplatform.client.data_set import DataSet as DataSetClient
 
 from stagecraft.apps.datasets.models.data_set import DataSet
-from stagecraft.apps.dashboards.models import Module
 
 
 class DataSetAdmin(reversion.VersionAdmin):
@@ -35,6 +36,8 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     actions = None
 
+    DO_NOT_DELETE = ('transactional_services_summaries', )
+
     class Media:
         css = {
             "all": ("admin/css/datasets.css",),
@@ -49,7 +52,15 @@ class DataSetAdmin(reversion.VersionAdmin):
             return self.readonly_fields
 
     def has_delete_permission(self, request, obj=None):
-        return not get_published_dashboards(obj)
+        if obj:
+            if obj in self.DO_NOT_DELETE:
+                return False
+            data_set = DataSet.objects.get(name=obj)
+            for m in data_set.modules:
+                if m.dashboard.published:
+                    return False
+            return True
+        return super(DataSetAdmin, self).has_delete_permission(request, obj)
 
     def response_change(self, request, model):
         if '_empty_dataset' in request.POST:
@@ -68,9 +79,19 @@ class DataSetAdmin(reversion.VersionAdmin):
             return super(DataSetAdmin, self).response_change(request, model)
 
     def render_change_form(self, request, context, *args, **kwargs):
-        dashboards = get_published_dashboards(kwargs['obj'])
+        dashboard_titles = []
+
+        data_set = DataSet.objects.get(name=kwargs['obj'])
+        if data_set.name in self.DO_NOT_DELETE:
+            dashboard_titles.append(
+                'This dashboard should never be deleted.')
+        else:
+            for m in data_set.modules:
+                if m.dashboard.published:
+                    dashboard_titles.append(m.dashboard.title)
+
         extra = {
-            'dashboards': dashboards
+            'dashboard_titles': sorted(Set(dashboard_titles))
         }
 
         context.update(extra)
@@ -104,13 +125,3 @@ class DataSetAdmin(reversion.VersionAdmin):
     )
 
 admin.site.register(DataSet, DataSetAdmin)
-
-
-def get_published_dashboards(data_set_name):
-    dashboards = []
-    modules = Module.objects.filter(data_set__name=data_set_name)
-
-    for module in modules:
-        if module.dashboard.published:
-            dashboards.append(module.dashboard.title)
-    return dashboards

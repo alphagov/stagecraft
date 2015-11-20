@@ -1,14 +1,10 @@
 from django.http import HttpRequest, HttpResponseRedirect
 from hamcrest import (
-    assert_that, is_, instance_of, contains_string,
-    equal_to)
+    assert_that, is_, instance_of, contains_string)
 from httmock import urlmatch, HTTMock
 from unittest import TestCase
-from stagecraft.apps.dashboards.tests.factories.factories import \
-    DashboardFactory, ModuleFactory
 
-from stagecraft.apps.datasets.admin.data_set import DataSetAdmin, \
-    get_published_dashboards
+from stagecraft.apps.datasets.admin.data_set import DataSetAdmin
 from stagecraft.apps.datasets.tests.factories import DataSetFactory
 
 
@@ -46,23 +42,3 @@ class DataSetAdminTestCase(TestCase):
         )))
         assert_that(response, instance_of(HttpResponseRedirect))
         assert_that(str(response.url), contains_string(str(dataset.pk)))
-
-    def test_data_set_linked_to_published_dashboard(self):
-        data_set = DataSetFactory()
-        dashboard = DashboardFactory(status="published")
-        ModuleFactory(data_set=data_set, dashboard=dashboard)
-
-        assert_that(get_published_dashboards(data_set.name),
-                    equal_to([dashboard.title]))
-
-    def test_data_set_linked_to_unpublished_dashboard(self):
-        data_set = DataSetFactory()
-        dashboard = DashboardFactory(status="unpublished")
-        ModuleFactory(data_set=data_set, dashboard=dashboard)
-
-        assert_that(get_published_dashboards(data_set.name), equal_to([]))
-
-    def test_data_set_not_linked_to_dashboard(self):
-        data_set = DataSetFactory()
-
-        assert_that(get_published_dashboards(data_set.name), equal_to([]))
