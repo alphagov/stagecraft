@@ -290,6 +290,9 @@ class Dashboard(models.Model):
 
         return serialized
 
+    def __str__(self):
+        return self.slug
+
     def serialized_modules(self):
         return [m.serialize()
                 for m in self.module_set.filter(parent=None).order_by('order')]
@@ -390,6 +393,10 @@ class Link(models.Model):
         max_length=20,
         choices=list_to_tuple_pairs(link_types),
     )
+
+    def link_url(self):
+        return '<a href="{0}">{0}</a>'.format(self.url)
+    link_url.allow_tags = True
 
     def serialize(self):
         return {
