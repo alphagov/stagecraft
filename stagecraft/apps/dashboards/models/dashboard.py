@@ -2,9 +2,9 @@ from __future__ import unicode_literals
 import uuid
 from django.core.validators import RegexValidator
 from django.db import models
+from stagecraft.apps.organisation.models import Node
 
 from stagecraft.apps.users.models import User
-from stagecraft.apps.organisation.views import NodeView
 from django.db.models.query import QuerySet
 
 
@@ -279,7 +279,7 @@ class Dashboard(models.Model):
             serialized['published'] = False
 
         if self.organisation:
-            serialized['organisation'] = NodeView.serialize(self.organisation)
+            serialized['organisation'] = Node.serialize(self.organisation)
         else:
             serialized['organisation'] = None
 

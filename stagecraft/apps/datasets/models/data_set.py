@@ -19,6 +19,8 @@ from stagecraft.libs.schemas import get_schema
 
 from ..helpers.validators import data_set_name_validator
 
+from stagecraft.apps.dashboards.models import Module
+
 import reversion
 import logging
 
@@ -275,7 +277,6 @@ class DataSet(models.Model):
     def _get_tabbed_modules(self):
         modules = []
 
-        from stagecraft.apps.dashboards.models import Module
         for m in Module.objects.filter(type__name='tab'):
             for tab in m.options['tabs']:
                 if (tab['data-source']['data-group'] ==
