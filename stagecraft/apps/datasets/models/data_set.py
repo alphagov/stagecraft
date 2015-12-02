@@ -19,6 +19,8 @@ from stagecraft.libs.schemas import get_schema
 
 from ..helpers.validators import data_set_name_validator
 
+from stagecraft.apps.dashboards.models import Module
+
 import reversion
 import logging
 
@@ -271,6 +273,28 @@ class DataSet(models.Model):
         return generate_data_set_name(
             self.data_group.name,
             self.data_type.name)
+
+    def _get_tabbed_modules(self):
+        modules = []
+
+        for m in Module.objects.filter(type__name='tab'):
+            for tab in m.options['tabs']:
+                if (tab['data-source']['data-group'] ==
+                        self.data_group.name) \
+                        and (tab['data-source']['data-type'] ==
+                             self.data_type.name):
+                    modules.append(m)
+        return modules
+
+    @property
+    def modules(self):
+        modules = []
+        for m in self.module_set.all():
+            modules.append(m)
+
+        modules.extend(self._get_tabbed_modules())
+
+        return modules
 
     @property
     def is_capped(self):

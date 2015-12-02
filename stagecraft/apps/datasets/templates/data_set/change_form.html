@@ -6,4 +6,20 @@
     <input type="submit" value="{% trans 'Empty dataset' %}" name="_empty_dataset" />
   </div>
   {% submit_row %}
-{% endblock %} 
+{% endblock %}
+
+{% block after_related_objects %}
+{% if dashboard_titles %}
+  <fieldset class="module aligned">
+    <div class="form-row">
+      <label>Linked dashboards:</label>
+      <ul class="columns">
+      {% for title in dashboard_titles %}
+        <li>{{ title }}</li>
+      {% endfor %}
+      </ul>
+      <p class="help">These dashboards need to be unpublished before the data set can be deleted</p>
+    </div>
+  </fieldset>
+{% endif %}
+{% endblock %}

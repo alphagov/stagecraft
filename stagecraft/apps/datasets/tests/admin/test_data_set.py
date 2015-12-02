@@ -1,7 +1,6 @@
 from django.http import HttpRequest, HttpResponseRedirect
 from hamcrest import (
-    assert_that, is_, instance_of, contains_string
-)
+    assert_that, is_, instance_of, contains_string)
 from httmock import urlmatch, HTTMock
 from unittest import TestCase
 

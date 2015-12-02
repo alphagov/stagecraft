@@ -54,6 +54,12 @@ class NodeType(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
+    def serialize(self):
+        return {
+            'id': str(self.id),
+            'name': self.name
+        }
+
 
 class Node(models.Model):
 
@@ -83,6 +89,24 @@ class Node(models.Model):
 
     def __str__(self):
         return self.name.encode('utf-8')
+
+    def serialize(self):
+        node = {
+            'id': str(self.id),
+            'type': {
+                'id': str(self.typeOf.id),
+                'name': self.typeOf.name
+            },
+            'name': self.name,
+            'slug': self.slug,
+        }
+
+        if self.abbreviation is not None:
+            node['abbreviation'] = self.abbreviation
+        else:
+            node['abbreviation'] = self.name
+
+        return node
 
     def get_ancestors(self, include_self=True):
         return Node.objects.ancestors_of(self, include_self)

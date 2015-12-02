@@ -10,8 +10,6 @@ from django.db import models
 from dbarray import TextArrayField
 from jsonfield import JSONField
 
-from stagecraft.apps.datasets.models import DataSet
-
 from .dashboard import Dashboard
 
 
@@ -68,7 +66,7 @@ class Module(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     type = models.ForeignKey(ModuleType)
     dashboard = models.ForeignKey(Dashboard)
-    data_set = models.ForeignKey(DataSet, null=True, blank=True)
+    data_set = models.ForeignKey('datasets.DataSet', null=True, blank=True)
     parent = models.ForeignKey("self", null=True, blank=True)
 
     slug_validator = RegexValidator(

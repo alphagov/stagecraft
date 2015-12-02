@@ -1,3 +1,10 @@
 #id_bearer_token {
   margin-right: 1em;
 }
+
+form ul.columns {
+  column-count: 2;
+  -webkit-column-count: 2;
+  -moz-column-count: 2;
+}
+

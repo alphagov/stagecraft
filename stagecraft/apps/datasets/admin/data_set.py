@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 import logging
+from sets import Set
+
 logger = logging.getLogger(__name__)
 
 from django.contrib import admin
@@ -34,6 +36,8 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     actions = None
 
+    DO_NOT_DELETE = ('transactional_services_summaries', )
+
     class Media:
         css = {
             "all": ("admin/css/datasets.css",),
@@ -46,6 +50,17 @@ class DataSetAdmin(reversion.VersionAdmin):
             return self.readonly_after_created
         else:
             return self.readonly_fields
+
+    def has_delete_permission(self, request, obj=None):
+        if obj:
+            if obj in self.DO_NOT_DELETE:
+                return False
+            data_set = DataSet.objects.get(name=obj)
+            for m in data_set.modules:
+                if m.dashboard.published:
+                    return False
+            return True
+        return super(DataSetAdmin, self).has_delete_permission(request, obj)
 
     def response_change(self, request, model):
         if '_empty_dataset' in request.POST:
@@ -62,6 +77,26 @@ class DataSetAdmin(reversion.VersionAdmin):
                 ), args=[model.pk]))
         else:
             return super(DataSetAdmin, self).response_change(request, model)
+
+    def render_change_form(self, request, context, *args, **kwargs):
+        dashboard_titles = []
+
+        data_set = DataSet.objects.get(name=kwargs['obj'])
+        if data_set.name in self.DO_NOT_DELETE:
+            dashboard_titles.append(
+                'This dashboard should never be deleted.')
+        else:
+            for m in data_set.modules:
+                if m.dashboard.published:
+                    dashboard_titles.append(m.dashboard.title)
+
+        extra = {
+            'dashboard_titles': sorted(Set(dashboard_titles))
+        }
+
+        context.update(extra)
+        return super(DataSetAdmin, self).render_change_form(
+            request, context, *args, **kwargs)
 
     change_form_template = 'data_set/change_form.html'
 

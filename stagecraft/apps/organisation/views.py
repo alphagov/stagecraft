@@ -30,10 +30,7 @@ class NodeTypeView(ResourceView):
 
     @staticmethod
     def serialize(model):
-        return {
-            'id': str(model.id),
-            'name': model.name
-        }
+        return model.serialize()
 
 
 class NodeView(ResourceView):
@@ -103,19 +100,7 @@ class NodeView(ResourceView):
 
     @staticmethod
     def serialize(model):
-        node = {
-            'id': str(model.id),
-            'type': NodeTypeView.serialize(model.typeOf),
-            'name': model.name,
-            'slug': model.slug,
-        }
-
-        if model.abbreviation is not None:
-            node['abbreviation'] = model.abbreviation
-        else:
-            node['abbreviation'] = model.name
-
-        return node
+        return model.serialize()
 
 
 NodeView.sub_resources = {
