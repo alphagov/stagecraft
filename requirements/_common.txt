@@ -17,7 +17,7 @@ cryptography==0.9.3
 psycopg2==2.5.4
 
 # For performing data operations that require speaking to backdrop
-performanceplatform-client==0.11.1
+performanceplatform-client==0.11.3
 
 # For writing stats out about our code
 statsd==3.0.1
@@ -26,7 +26,7 @@ django-statsd-mozilla==0.3.12
 #for pulling transactions explorer spreadsheets.
 gspread==0.2.5
 dogslow==0.9.7
-oauth2client==1.4.11
+oauth2client==1.5.2
 
 # To query for data from google analytics, webtrends, pingdom etc
-performanceplatform-collector==0.2.8
+performanceplatform-collector==0.2.9
