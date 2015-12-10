@@ -58,7 +58,7 @@ GOOGLE_APPLICATION_CREDENTIALS - location of the JSON credentials file generated
 export GOOGLE_APPLICATION_CREDENTIALS='path/to/file'
 ```
 
-### Run the import
+### Run the import in development
 
 ```bash
 export DJANGO_SETTINGS_MODULE=stagecraft.settings.development
@@ -69,3 +69,9 @@ python -m stagecraft.tools.import_dashboards
 ```
 
 The script accepts the flags: --update, --commit and --publish.
+
+### Run the import in other environments
+
+```bash
+sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values' venv/bin/python -m stagecraft.tools.import_dashboards
+```
