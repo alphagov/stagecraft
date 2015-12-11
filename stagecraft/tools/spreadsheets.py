@@ -24,9 +24,7 @@ class SpreadsheetMunger:
         # "Name of service",
         self.tx_name = positions.get('tx_name', 4)
         # "Description 1",
-        self.tx_desc1 = positions.get('tx_desc1', 69)
-        # "Description 2",
-        self.tx_desc2 = positions.get('tx_desc2', 70)
+        self.tx_desc1 = positions.get('tx_desc1', 71)
         # "Agency abbr",
         self.tx_agency_abbr = positions.get('tx_agency_abbr', 3)
         # "Agency/body",
@@ -42,7 +40,7 @@ class SpreadsheetMunger:
         # "Other notes",
         self.tx_other_notes = positions.get('tx_other_notes', 73)
         # "Slug",
-        self.tx_tx_id_column = positions.get('tx_tx_id_column', 6)
+        self.tx_tx_id_column = positions.get('tx_tx_id_column', 5)
         # "Customer type",
         self.tx_customer_type = positions.get('tx_customer_type', 74)
         # "Business model",
@@ -76,8 +74,6 @@ class SpreadsheetMunger:
             record['name'] = row[self.tx_name]
         if row[self.tx_desc1]:
             record['description'] = row[self.tx_desc1]
-        if row[self.tx_desc2]:
-            record['description_extra'] = row[self.tx_desc2]
         if row[self.tx_costs]:
             record['costs'] = row[self.tx_costs]
         if row[self.tx_other_notes]:

@@ -1,11 +1,10 @@
-[  
+[
   [
     "Abbr",
     "Department",
     "Agency/body",
     "Agency abbr",
     "Name of service",
-    "Short service name",
     "Slug",
     "2012-Q4 Vol.",
     "2012-Q4 CPT (\u00a3)",
@@ -70,7 +69,6 @@
     "Service link text",
     "Description of service",
     "Description 1",
-    "Description 2",
     "Single description (for template)",
     "Notes on costs",
     "Other notes",
@@ -134,10 +132,8 @@
     "Treasury Solicitor's Department",
     "",
     "Bona vacantia: referrals of estates and company assets",
-    "Bona vacantia",
     "ago-bona-vacantia-referrals-of-estates-company-assets",
     "40000",
-    "",
     "",
     "",
     "",
