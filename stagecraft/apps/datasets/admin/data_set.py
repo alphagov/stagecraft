@@ -79,22 +79,23 @@ class DataSetAdmin(reversion.VersionAdmin):
             return super(DataSetAdmin, self).response_change(request, model)
 
     def render_change_form(self, request, context, *args, **kwargs):
-        dashboard_titles = []
+        if 'obj' in kwargs:
+            dashboard_titles = []
 
-        data_set = DataSet.objects.get(name=kwargs['obj'])
-        if data_set.name in self.DO_NOT_DELETE:
-            dashboard_titles.append(
-                'This dashboard should never be deleted.')
-        else:
-            for m in data_set.modules:
-                if m.dashboard.published:
-                    dashboard_titles.append(m.dashboard.title)
+            data_set = DataSet.objects.get(name=kwargs['obj'])
+            if data_set.name in self.DO_NOT_DELETE:
+                dashboard_titles.append(
+                    'This dashboard should never be deleted.')
+            else:
+                for m in data_set.modules:
+                    if m.dashboard.published:
+                        dashboard_titles.append(m.dashboard.title)
 
-        extra = {
-            'dashboard_titles': sorted(Set(dashboard_titles))
-        }
+            extra = {
+                'dashboard_titles': sorted(Set(dashboard_titles))
+            }
 
-        context.update(extra)
+            context.update(extra)
         return super(DataSetAdmin, self).render_change_form(
             request, context, *args, **kwargs)
 
