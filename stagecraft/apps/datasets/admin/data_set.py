@@ -79,7 +79,7 @@ class DataSetAdmin(reversion.VersionAdmin):
             return super(DataSetAdmin, self).response_change(request, model)
 
     def render_change_form(self, request, context, *args, **kwargs):
-        if 'obj' in kwargs:
+        if kwargs['obj']:
             dashboard_titles = []
 
             data_set = DataSet.objects.get(name=kwargs['obj'])
