@@ -75,3 +75,24 @@ The script accepts the flags: --update, --commit and --publish.
 ```bash
 sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values' venv/bin/python -m stagecraft.tools.import_dashboards
 ```
+
+## (import_organisations.py) Link imported dashboards to an organisation
+
+After `import_dashboards.py` has run, `import_organisations.py` needs to be run to associate a dashboard with an organisation.  These organisations are used in spotlight as service groups to filter services.
+
+`import_organisations.py` uses the same environment variables that were set up for `import_dashboards.py`
+
+`import_organisations.py` reuses the two pickle files (names_values.pickle, tx_values.pickle) created by the `import_dashboards.py` script.
+
+
+### Run the import in development
+
+```
+python -m stagecraft.tools.import_organisations
+```
+
+### Run the import in other environments
+
+```bash
+sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' venv/bin/python -m stagecraft.tools.import_organisations
+```
