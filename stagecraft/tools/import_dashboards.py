@@ -141,6 +141,9 @@ def determine_modules_for_dashboard(summaries, tx_id):
         'transactions_per_year': True,
         'transactions_per_quarter': True
     }
+    for data in summaries:
+        if 'service_id' not in data:
+            data['service_id'] = data['dashboard_slug']
     service_data = [data for data in summaries if data['service_id'] == tx_id]
     quarterly_data = [datum for datum in service_data
                       if datum['type'] == 'quarterly']
