@@ -288,15 +288,19 @@ def create_nodes(nodes, edges, type_to_NodeType):
     nodes_to_db = {}
     for node in nodes:
         slug = node[2]
+        abbr = node[3]
         if len(slug) > 150:
             print('slug too long "{}"'.format(slug))
             slug = slug[:150]
+        if abbr and len(abbr) > 50:
+            print('abbreviation too long "{}"'.format(abbr))
+            abbr = abbr[:50]
         db_node = Node(
             name=node[1].decode(
                 'utf-8').encode('latin1', 'ignore').decode('latin1'),
             slug=slug.decode(
                 'utf-8').encode('latin1', 'ignore').decode('latin1'),
-            abbreviation=node[3],
+            abbreviation=abbr,
             typeOf=type_to_NodeType[node[4]],
         )
         db_node.save()
