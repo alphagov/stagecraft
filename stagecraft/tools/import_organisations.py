@@ -326,9 +326,6 @@ def link_transactions(nodes_to_transactions, nodes_to_db):
     for node, transactions in nodes_to_transactions.items():
         db_node = nodes_to_db[node]
         for transaction in transactions:
-            # duplicate the trimming that is done during import
-            if len(transaction) > 90:
-                transaction = transaction[:90]
             try:
                 dashboard = Dashboard.objects.get(slug=transaction)
                 dashboard.organisation = db_node
