@@ -140,7 +140,7 @@ mapping = {
         'data_type': "weekly-claims"
     },
     #a new data set with the data group and type here will be created
-    #all config will be copied from the old data set 
+    #all config will be copied from the old data set
     #except for anything specified here which will override this config
     #(in this case this is the auto_ids field)
     'new_data_set': {
@@ -161,7 +161,7 @@ mapping = {
         }
     }
 }
-``` 
+```
 
 Run it with:
 
@@ -180,13 +180,13 @@ Tests which further specify the behaviour of this can be found in `test_copy_dat
 
 To run on the [gov.uk dev vm](https://github.gds/gds/puppet/tree/master/development),
 
-You will need to add a hosts entry in your /etc/hosts file for 
+You will need to add a hosts entry in your /etc/hosts file for
 
 `192.168.185.152 stagecraft.dev.gov.uk`
 
 You will also need to sync data to the vm -
 
-`bash tools/replicate-db.sh api-postgresql-primary-1.api.preview govuk_dev`
+`bash tools/replicate-db.sh api-postgresql-primary-1.api.integration govuk_dev`
 
 This will create the necessary database
 
