@@ -73,7 +73,7 @@ The script accepts the flags: --update, --commit and --publish.
 ### Run the import in other environments
 
 ```bash
-sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values' venv/bin/python -m stagecraft.tools.import_dashboards
+sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values' venv/bin/python -m stagecraft.tools.import_dashboards --update --commit --publish
 ```
 
 ## (import_organisations.py) Link imported dashboards to an organisation
