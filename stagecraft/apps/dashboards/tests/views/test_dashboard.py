@@ -133,7 +133,7 @@ class DashboardViewsListTestCase(TestCase):
             '/public/dashboards', {'slug': 'my_first_slug'})
         assert_that(json.loads(resp.content), equal_to(
             {
-                u'status': u'error',
+                u'status': 404,
                 u'message': u"No dashboard with slug 'my_first_slug' exists",
                 u'errors': [{
                     u'status': u'404',
@@ -265,7 +265,7 @@ class DashboardViewsListTestCase(TestCase):
         resp = self.client.get(
             '/public/dashboards', {'slug': 'my-first-slug/nonexisting-module'})
         data = json.loads(resp.content)
-        assert_that(data, has_entry('status', 'error'))
+        assert_that(data, has_entry('status', 404))
 
     def test_dashboard_with_tab_slug_only_returns_tab(self):
         dashboard = DashboardFactory(slug='my-first-slug')
@@ -371,7 +371,7 @@ class DashboardViewsListTestCase(TestCase):
             {'slug': 'my-first-slug/module/module-non-existent-tab'}
         )
         data = json.loads(resp.content)
-        assert_that(data, has_entry('status', 'error'))
+        assert_that(data, has_entry('status', 404))
 
 
 class DashboardViewsGetTestCase(TestCase):

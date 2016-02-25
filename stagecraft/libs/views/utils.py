@@ -60,7 +60,7 @@ def create_error(request, status, code='', title='', detail=''):
 def create_http_error(status, message, request, code='', title='',
                       logger=None):
     error = {
-        'status': 'error',
+        'status': status,
         'message': message,
         'errors': [create_error(request,
                                 status,
