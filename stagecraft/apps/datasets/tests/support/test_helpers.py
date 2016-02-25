@@ -55,7 +55,7 @@ class IsErrorResponse(BaseMatcher):
     def _matches(self, response):
         try:
             data = json.loads(response.content.decode("utf-8"))
-            if data.get('status') != 'error':
+            if data.get('status') is None:
                 return False
             # it should not fail without a message
             if not data.get('message'):
