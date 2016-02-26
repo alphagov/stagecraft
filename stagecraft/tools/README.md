@@ -46,10 +46,10 @@ email address that can be found in JSON credentials file.
 
 Two environment variables should be set before running the script:
 
-SUMMARIES_URL - location of service aggregate data in Backdrop
+SUMMARIES_URL - location of imported Transactions Explorer data in Backdrop
 
 ```bash
-export SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values'
+export SUMMARIES_URL='http://www.performance.service.gov.uk/data/transactional-services/summaries'
 ```
 
 GOOGLE_APPLICATION_CREDENTIALS - location of the JSON credentials file generated in previous step
@@ -73,7 +73,7 @@ The script accepts the flags: --update, --commit and --publish.
 ### Run the import in other environments
 
 ```bash
-sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/service-aggregates/latest-dataset-values' venv/bin/python -m stagecraft.tools.import_dashboards --update --commit --publish
+sudo -u deploy DJANGO_SETTINGS_MODULE=stagecraft.settings.production GOOGLE_APPLICATION_CREDENTIALS='path/to/file' SUMMARIES_URL='http://www.performance.service.gov.uk/data/transactional-services/summaries' venv/bin/python -m stagecraft.tools.import_dashboards --update --commit --publish
 ```
 
 ## (import_organisations.py) Link imported dashboards to an organisation
