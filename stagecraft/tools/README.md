@@ -70,6 +70,12 @@ python -m stagecraft.tools.import_dashboards
 
 The script accepts the flags: --update, --commit and --publish.
 
+--update: Update the dashboard config of all existing dashboards from the spreadsheet as well as creating new dashboards.
+
+--commit: Save the changes to the database. Sets the dry_run flag to false.
+
+--publish: Publish all dashboards, even those that have not been signed off yet.
+
 ### Run the import in other environments
 
 ```bash
