@@ -6,7 +6,12 @@ from stagecraft.apps.dashboards.models import Dashboard, Link
 class DashboardAdmin(admin.ModelAdmin):
     list_display = ('title',)
     ordering = ('title',)
-    fields = ('title', 'owners')
+    fields = ('title',
+              'owners',
+              'department_cache',
+              'agency_cache',
+              'service_cache',
+              'transaction_cache')
     readonly_fields = ('title',)
     filter_horizontal = ('owners',)
     search_fields = ['title']
