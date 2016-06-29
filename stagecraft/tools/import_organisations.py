@@ -36,7 +36,8 @@ govuk_to_pp_type = {
     "Other": 'agency',
     "Executive non-departmental public body": 'agency',
     "Independent monitoring body": 'agency',
-    "Public corporation": 'agency'
+    "Public corporation": 'agency',
+    "Ad-hoc advisory group": 'agency'
 }
 
 
