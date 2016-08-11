@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
 APP_HOSTNAME = 'stagecraft{0}'.format(ENV_HOSTNAME)
 
 APP_ROOT = 'https://{0}'.format(APP_HOSTNAME)
-GOVUK_ROOT = os.getenv('GOVUK_WEBSITE_ROOT')
+GOVUK_WEBSITE_ROOT = os.getenv('GOVUK_WEBSITE_ROOT')
 
 BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 STATIC_URL = '{0}/stagecraft/'.format(os.getenv('GOVUK_ASSET_HOST'))
