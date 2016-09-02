@@ -231,7 +231,7 @@ class DashboardView(ResourceView):
             'url': '{0}/dashboard/{1}'.format(
                 settings.APP_ROOT, model.slug),
             'public-url': '{0}/performance/{1}'.format(
-                settings.GOVUK_ROOT, model.slug),
+                settings.GOVUK_WEBSITE_ROOT, model.slug),
             'status': model.status,
             'published': model.published
         }

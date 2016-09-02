@@ -27,7 +27,7 @@ APP_HOSTNAME = 'stagecraft.dev.gov.uk'
 ENV_HOSTNAME = '.dev.gov.uk'
 
 APP_ROOT = 'http://{0}'.format(APP_HOSTNAME)
-GOVUK_ROOT = 'http://spotlight.dev.gov.uk'
+GOVUK_WEBSITE_ROOT = 'http://spotlight.dev.gov.uk'
 
 SIGNON_URL = 'http://signon.dev.gov.uk'
 SIGNON_CLIENT_ID = 'clientid'
