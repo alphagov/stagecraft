@@ -11,7 +11,7 @@ requests==2.6.0
 logstash_formatter==0.5.7
 
 jsonschema==2.3.0
-cryptography==0.9.3
+cryptography==1.5
 
 # psycopg2 requires the libpq-dev package
 psycopg2==2.5.4

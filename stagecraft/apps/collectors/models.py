@@ -4,7 +4,7 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django_field_cryptography import fields as encrypted_fields
+from django_field_cryptography.fields import EncryptedTextField
 from jsonfield import JSONField
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.apps.users.models import User
@@ -57,7 +57,7 @@ class DataSource(models.Model):
 
     owners = models.ManyToManyField(User, blank=True)
 
-    credentials = encrypted_fields.EncryptedTextField(default='{}')
+    credentials = EncryptedTextField(default='{}')
 
     def validate(self):
         try:
