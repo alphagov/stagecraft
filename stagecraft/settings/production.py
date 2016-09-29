@@ -6,7 +6,6 @@
 #
 
 import os
-import random
 
 from os.path import abspath, dirname, join as pjoin
 
@@ -43,27 +42,6 @@ BACKDROP_WRITE_URL = 'https://backdrop-write.{0}'.format(
     os.getenv('GOVUK_APP_DOMAIN'))
 
 SIGNON_URL = 'https://signon.{0}'.format(os.getenv('GOVUK_APP_DOMAIN'))
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'stagecraft',
-        'USER': 'stagecraft',
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST': 'api-postgresql-primary-1',
-        'PORT': '5432',
-    }
-}
-
-BROKER_URL = [
-    'amqp://stagecraft:{0}@rabbitmq-1.backend:5672//stagecraft'.format(
-        os.getenv('MESSAGE_QUEUE_PASSWORD')),
-    'amqp://stagecraft:{0}@rabbitmq-2.backend:5672//stagecraft'.format(
-        os.getenv('MESSAGE_QUEUE_PASSWORD')),
-    'amqp://stagecraft:{0}@rabbitmq-3.backend:5672//stagecraft'.format(
-        os.getenv('MESSAGE_QUEUE_PASSWORD'))
-]
-random.shuffle(BROKER_URL)
 
 VARNISH_CACHES = [
     ('http://frontend-app-1', 7999),
