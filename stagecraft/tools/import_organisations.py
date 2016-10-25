@@ -158,7 +158,7 @@ def govuk_node_for_record(record, by_title, by_abbr):
         elif abbr == 'tsol':
             node = by_title['government legal department']
         elif abbr == 'research councils':
-            node = by_abbr['bis']
+            node = by_abbr['beis']
         elif abbr == 'visit england':
             node = by_title['visitengland']
         elif abbr == 'arts council':
