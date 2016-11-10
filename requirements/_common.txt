@@ -2,6 +2,7 @@
 
 django==1.8.2
 django-celery==3.1.16
+celery==3.1.19
 django-dbarray==0.2
 -e git+https://github.com/incuna/django-field-cryptography.git@v1.0.1#egg=django-field-cryptography
 django-mptt==0.6.1
