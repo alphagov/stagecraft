@@ -24,7 +24,7 @@ class SpreadsheetMunger:
         # "Name of service",
         self.tx_name = positions.get('tx_name', 4)
         # "Description 1",
-        self.tx_desc1 = positions.get('tx_desc1', 83)
+        self.tx_desc1 = positions.get('tx_desc1', 87)
         # "Agency abbr",
         self.tx_agency_abbr = positions.get('tx_agency_abbr', 3)
         # "Agency/body",
@@ -36,15 +36,15 @@ class SpreadsheetMunger:
         # "High-volume?",
         self.tx_high_volume = positions.get('tx_high_volume', 81)
         # "Notes on costs",
-        self.tx_costs = positions.get('tx_costs', 84)
+        self.tx_costs = positions.get('tx_costs', 88)
         # "Other notes",
-        self.tx_other_notes = positions.get('tx_other_notes', 85)
+        self.tx_other_notes = positions.get('tx_other_notes', 89)
         # "Slug",
         self.tx_tx_id_column = positions.get('tx_tx_id_column', 5)
         # "Customer type",
-        self.tx_customer_type = positions.get('tx_customer_type', 86)
+        self.tx_customer_type = positions.get('tx_customer_type', 90)
         # "Business model",
-        self.tx_business_model = positions.get('tx_business_model', 87)
+        self.tx_business_model = positions.get('tx_business_model', 91)
 
         # "Proposed new summary",
         self.names_description = positions['names_description']
