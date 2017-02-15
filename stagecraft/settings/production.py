@@ -73,7 +73,7 @@ LOGGING = {
             'class': 'django.utils.log.NullHandler',
         },
         'logfile': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + "/log/stagecraft.log",
             'maxBytes': 4 * 1024 * 1024,
@@ -82,7 +82,7 @@ LOGGING = {
             'filters': ['additional_fields'],
         },
         'json_log': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR + "/log/production.json.log",
             'formatter': 'logstash_json',
