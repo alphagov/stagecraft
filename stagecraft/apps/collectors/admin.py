@@ -6,6 +6,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
 from django.core.checks import messages
+from django.db import IntegrityError, transaction
 from django.forms import Select, ModelChoiceField, ModelForm
 from django.forms.models import ModelChoiceIterator
 from django.forms.fields import ChoiceField
@@ -127,17 +128,26 @@ run_now.short_description = "Run collector"
 
 def clone_collector(modeladmin, request, queryset):
 
-    for collector in queryset:
+    try:
 
-        try:
-            clone = copy.copy(collector)
-            clone.id = uuid.uuid4()
-            clone.slug = '{}-copy'.format(clone.slug)
-            clone.save()
+        with transaction.atomic():
 
-        except copy.error:
-            message = 'Failed cloning collector.'
-            modeladmin.message_user(request, message, messages.ERROR)
+            for collector in queryset:
+                clone = copy.copy(collector)
+                clone.id = uuid.uuid4()
+                clone.slug = '{}-clone'.format(clone.slug)
+                clone.save()
+
+    except copy.error:
+        message = 'Failed cloning collector'
+        modeladmin.message_user(request, message, messages.ERROR)
+
+    except IntegrityError:
+        message = (
+            'One or more collector clones already exist. Please change their '
+            'slugs and try again.')
+        modeladmin.message_user(request, message, messages.ERROR)
+        return
 
     message_bit = '{} collectors were'.format(queryset.count())
 
