@@ -1,12 +1,15 @@
+import copy
+import uuid
+
 from operator import xor
 from django import forms
 from django.contrib import admin
-from django.contrib.admin import widgets
 from django.contrib.admin.helpers import ActionForm
 from django.core.checks import messages
 from django.forms import Select, ModelChoiceField, ModelForm
 from django.forms.models import ModelChoiceIterator
 from django.forms.fields import ChoiceField
+from django.http import HttpResponseRedirect
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -122,6 +125,34 @@ def run_now(modeladmin, request, queryset):
 run_now.short_description = "Run collector"
 
 
+def clone_collector(modeladmin, request, queryset):
+
+    for collector in queryset:
+
+        try:
+            clone = copy.copy(collector)
+            clone.id = uuid.uuid4()
+            clone.slug = '{}-copy'.format(clone.slug)
+            clone.save()
+
+        except copy.error:
+            message = 'Failed cloning collector.'
+            modeladmin.message_user(request, message, messages.ERROR)
+
+    message_bit = '{} collectors were'.format(queryset.count())
+
+    if queryset.count() == 1:
+        message_bit = '1 collector was'
+
+    modeladmin.message_user(
+        request,
+        '{} successfully cloned.'.format(message_bit))
+
+    if queryset.count() == 1:
+        return HttpResponseRedirect('/admin/collectors/collector/{}'.format(
+            clone.id))
+
+
 @admin.register(models.Collector)
 class CollectorAdmin(admin.ModelAdmin):
 
@@ -134,7 +165,7 @@ class CollectorAdmin(admin.ModelAdmin):
     ordering = ('slug', )
     search_fields = ['slug']
     filter_horizontal = ('owners',)
-    actions = [run_now]
+    actions = [run_now, clone_collector]
 
 
 @admin.register(models.DataSource)
