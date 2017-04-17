@@ -89,6 +89,18 @@ class CollectorType(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
 
+    slug_validator = RegexValidator(
+        '^[-a-z0-9]+$',
+        message='Slug can only contain lower case letters, numbers or hyphens'
+    )
+    slug = models.CharField(
+        max_length=256,
+        unique=True,
+        validators=[
+            slug_validator
+        ]
+    )
+
     provider = models.ForeignKey(Provider)
 
     function_validator = RegexValidator(
