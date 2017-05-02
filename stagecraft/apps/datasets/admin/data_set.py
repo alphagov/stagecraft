@@ -1,13 +1,13 @@
 from __future__ import unicode_literals
 
 import logging
-from sets import Set
+
+from reversion.admin import VersionAdmin
 
 logger = logging.getLogger(__name__)
 
 from django.contrib import admin
 
-import reversion
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -17,7 +17,7 @@ from performanceplatform.client.data_set import DataSet as DataSetClient
 from stagecraft.apps.datasets.models.data_set import DataSet
 
 
-class DataSetAdmin(reversion.VersionAdmin):
+class DataSetAdmin(VersionAdmin):
 
     """
     All methods in this class are overriding VersionAdmin methods
@@ -92,7 +92,7 @@ class DataSetAdmin(reversion.VersionAdmin):
                         dashboard_titles.append(m.dashboard.title)
 
             extra = {
-                'dashboard_titles': sorted(Set(dashboard_titles))
+                'dashboard_titles': sorted(set(dashboard_titles))
             }
 
             context.update(extra)
@@ -101,8 +101,7 @@ class DataSetAdmin(reversion.VersionAdmin):
 
     change_form_template = 'data_set/change_form.html'
 
-    readonly_after_created = set(
-        ['name', 'data_group', 'data_type'])
+    readonly_after_created = set(['name', 'data_group', 'data_type'])
     readonly_fields = ('name', )
     search_fields = ['name']
     list_display = ('name', 'data_group', 'data_type', 'data_location',

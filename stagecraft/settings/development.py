@@ -8,9 +8,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
-from .common import *
-
 import os
+
+from .common import *
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -18,10 +18,12 @@ import os
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '^10-$qwyu##ivl7f48^mit5e8a-8q#6ceb5i5&zk86)$^(^rmn'
 
-FERNET_KEY = b'gv95z8H_O1ChE7oADZSxH6LE25ntDavlqoZJ11YZe4Q='
+FERNET_USE_HKDF = False
+FERNET_KEYS = [
+    b'gv95z8H_O1ChE7oADZSxH6LE25ntDavlqoZJ11YZe4Q=',
+]
 
 DEBUG = True
-TEMPLATE_DEBUG = True
 
 APP_HOSTNAME = 'stagecraft.dev.gov.uk'
 ENV_HOSTNAME = '.dev.gov.uk'
@@ -34,21 +36,21 @@ SIGNON_CLIENT_ID = 'clientid'
 USE_DEVELOPMENT_USERS = True
 DEVELOPMENT_USERS = {
     'development-oauth-access-token':
-    {
-        "email": "some.user@digital.cabinet-office.gov.uk",
-        "name": "Some User",
-        "organisation_slug": "cabinet-office",
-        "permissions": [
-            "anon",
-            "signin",
-            "user",
-            "admin",
-            "organisation",
-            "dashboard",
-            "transforms",
-        ],
-        "uid": "00000000-0000-0000-0000-000000000000"
-    }
+        {
+            "email": "some.user@digital.cabinet-office.gov.uk",
+            "name": "Some User",
+            "organisation_slug": "cabinet-office",
+            "permissions": [
+                "anon",
+                "signin",
+                "user",
+                "admin",
+                "organisation",
+                "dashboard",
+                "transforms",
+            ],
+            "uid": "00000000-0000-0000-0000-000000000000"
+        }
 }
 
 MIGRATION_SIGNON_TOKEN = 'development-oauth-access-token'
@@ -59,6 +61,7 @@ VARNISH_CACHES = [
 
 ALLOWED_HOSTS = [  # required if DEBUG is False
     'localhost',
+    '127.0.0.1',
     APP_HOSTNAME,
 ]
 
@@ -68,8 +71,7 @@ INSTALLED_APPS += (
     'django_nose',
 )
 
-MIDDLEWARE_CLASSES += (
-)
+MIDDLEWARE_CLASSES += ()
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -98,7 +100,6 @@ else:
         }
     }
 
-
 BACKDROP_PUBLIC_URL = 'http://backdrop-read.dev.gov.uk'
 BACKDROP_READ_URL = 'http://backdrop-read.dev.gov.uk'
 BACKDROP_WRITE_URL = 'http://backdrop-write.dev.gov.uk'
@@ -126,7 +127,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'logfile': {
             'level': 'DEBUG',

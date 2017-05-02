@@ -1,25 +1,25 @@
 from __future__ import unicode_literals
 
 import json
-from nose.tools import assert_equal
-from hamcrest import assert_that
-from httmock import HTTMock
 
 from django.conf import settings
 from django.test import TestCase
+from hamcrest import assert_that
+from httmock import HTTMock
+from nose.tools import assert_equal
 
-from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 from stagecraft.apps.datasets.tests.support.test_helpers import (
-    is_unauthorized, is_forbidden, is_error_response, has_header)
+    is_unauthorized, is_forbidden, is_error_response, has_header
+)
+from stagecraft.libs.authorization.tests.test_http import govuk_signon_mock
 
 
 class LongCacheTestCase(TestCase):
-
     def test_detail_sets_cache_headers(self):
         resp = self.client.get(
             '/data-sets/set1',
             HTTP_AUTHORIZATION='Bearer development-oauth-access-token')
-        assert_that(resp, has_header('Cache-Control', 'max-age=0'))
+        assert_that(resp, has_header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0'))
         assert_that(resp, has_header('Vary', 'Authorization'))
 
 

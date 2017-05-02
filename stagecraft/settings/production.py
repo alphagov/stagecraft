@@ -14,8 +14,6 @@ from .environment_specific_settings import *
 
 DEBUG = False
 
-TEMPLATE_DEBUG = False
-
 CSRF_COOKIE_SECURE = True  # avoid transmitting the CSRF cookie over HTTP
 
 SESSION_COOKIE_SECURE = True  # avoid transmitting the session cookie over HTTP

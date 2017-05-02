@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
-from django.contrib import admin
+
 from django import forms
-import reversion
-from stagecraft.apps.users.models import User
+from django.contrib import admin
+from reversion.admin import VersionAdmin
+
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.apps.users.models import User
 
 
 class DataSetInline(admin.StackedInline):
@@ -33,11 +35,12 @@ class UserAdminForm(forms.ModelForm):
         return instance
 
 
-class UserAdmin(reversion.VersionAdmin):
+class UserAdmin(VersionAdmin):
     search_fields = ['email']
     list_display = ('email',)
     list_per_page = 30
 
     form = UserAdminForm
+
 
 admin.site.register(User, UserAdmin)

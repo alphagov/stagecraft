@@ -1,17 +1,15 @@
 from django.test import TestCase
 from hamcrest import assert_that, contains_string, not_none, none, equal_to
 
+from stagecraft.apps.collectors.models import DataSource
 from stagecraft.apps.collectors.tests.factories import CollectorTypeFactory, \
     CollectorFactory, ProviderFactory, DataSourceFactory
 from stagecraft.apps.datasets.tests.factories import DataTypeFactory, \
     DataGroupFactory, DataSetFactory
 from stagecraft.apps.users.tests.factories import UserFactory
 
-from stagecraft.apps.collectors.models import DataSource
-
 
 class CollectorTestCase(TestCase):
-
     def test_create_produces_a_name(self):
         data_type = DataTypeFactory(name="a_type")
         data_group = DataGroupFactory(name="a_group")
@@ -110,7 +108,6 @@ class CollectorTestCase(TestCase):
 
 
 class CollectorTypeTestCase(TestCase):
-
     def test_query_schema_validation(self):
         collector_type = CollectorTypeFactory()
         collector_type.query_schema = {
@@ -142,7 +139,6 @@ class CollectorTypeTestCase(TestCase):
 
 
 class DataSourceTestCase(TestCase):
-
     def test_credentials_are_validated_against_provider(self):
         provider = ProviderFactory(
             credentials_schema={
@@ -154,23 +150,18 @@ class DataSourceTestCase(TestCase):
                 "required": ["password"],
                 "additionalProperties": False,
             })
-        data_source = DataSourceFactory(provider=provider,
-                                        credentials='{"name": "something"}')
-
+        credentials = '{"name": "something"}'
+        data_source = DataSourceFactory(provider=provider, credentials=credentials)
+        assert_that(data_source.credentials, credentials)
         assert_that(data_source.validate(), not_none())
-
         data_source.credentials = '{"password": "somepassword"}'
-
         assert_that(data_source.validate(), none())
 
     def test_credentials_have_to_be_JSON(self):
         data_source = DataSourceFactory()
         data_source.credentials = 'not-json'
-
         assert_that(data_source.validate(), not_none())
-
         data_source.credentials = '{"foo": "bar"}'
-
         assert_that(data_source.validate(), none())
 
     def test_credentials_save_to_database(self):
@@ -178,12 +169,10 @@ class DataSourceTestCase(TestCase):
         data_source.credentials = '{}'
         data_source.save()
         retrieved_data_source = DataSource.objects.get(id=data_source.id)
-
         assert_that(retrieved_data_source.credentials, equal_to('{}'))
 
 
 class ProviderTestCase(TestCase):
-
     def test_schema_validation(self):
         provider = ProviderFactory()
         provider.credentials_schema = {

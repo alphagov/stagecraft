@@ -21,7 +21,7 @@ class DashboardManager(models.Manager):
             FROM dashboards_module
               INNER JOIN dashboards_dashboard ON
                 dashboards_dashboard.id = dashboards_module.dashboard_id,
-              json_array_elements(query_parameters->'filter_by') AS filters
+              json_array_elements(query_parameters::json->'filter_by') AS filters
             WHERE filters::text = %s
               AND data_set_id=(SELECT id FROM datasets_dataset
                                WHERE name='transactional_services_summaries')

@@ -12,17 +12,17 @@ from stagecraft.apps.datasets.models import DataSet, DataGroup, DataType
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option(
+    help = ("Imports a backdrop JSON dump of the ``buckets`` collection. See "
+            "the related ``dump_bucket_metadata.py`` tool in Backdrop.")
+
+    def add_arguments(self, parser):
+        parser.add_argument("args", nargs='+')
+        parser.add_argument(
             '--without-backdrop',
             action='store_true',
             dest='without_backdrop',
             default=False,
-            help="Don't attempt to create collections in Backdrop"),)
-
-    args = '<backdrop_data_sets.json>'
-    help = ("Imports a backdrop JSON dump of the ``buckets`` collection. See "
-            "the related ``dump_bucket_metadata.py`` tool in Backdrop.")
+            help="Don't attempt to create collections in Backdrop")
 
     def handle(self, *args, **options):
         if not len(args):

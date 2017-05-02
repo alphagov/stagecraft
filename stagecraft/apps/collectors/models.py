@@ -1,14 +1,16 @@
 import json
-import jsonschema
 import uuid
+
+import jsonschema
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django_field_cryptography.fields import EncryptedTextField
+from django.db.models.query import QuerySet
+from fernet_fields import EncryptedTextField
 from jsonfield import JSONField
+
 from stagecraft.apps.datasets.models import DataSet
 from stagecraft.apps.users.models import User
-from django.db.models.query import QuerySet
 
 
 class Provider(models.Model):
@@ -16,7 +18,7 @@ class Provider(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
 
-    credentials_schema = JSONField(default={}, blank=True)
+    credentials_schema = JSONField(default=dict, blank=True)
 
     def validate(self):
         try:
@@ -38,7 +40,6 @@ class Provider(models.Model):
 
 
 class DataSourceManager(models.Manager):
-
     def get_query_set(self):
         return QuerySet(self.model, using=self._db)
 
@@ -52,11 +53,8 @@ class DataSource(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=256, unique=True)
-
     provider = models.ForeignKey(Provider)
-
     owners = models.ManyToManyField(User, blank=True)
-
     credentials = EncryptedTextField(default='{}')
 
     def validate(self):
@@ -103,8 +101,8 @@ class CollectorType(models.Model):
             function_validator
         ]
     )
-    query_schema = JSONField(default={}, blank=True)
-    options_schema = JSONField(default={}, blank=True)
+    query_schema = JSONField(default=dict, blank=True)
+    options_schema = JSONField(default=dict, blank=True)
 
     def validate(self):
         try:
@@ -131,7 +129,6 @@ class CollectorType(models.Model):
 
 
 class CollectorManager(models.Manager):
-
     def get_query_set(self):
         return QuerySet(self.model, using=self._db)
 
@@ -151,8 +148,8 @@ class Collector(models.Model):
 
     owners = models.ManyToManyField(User, blank=True)
 
-    query = JSONField(default={}, blank=True)
-    options = JSONField(default={}, blank=True)
+    query = JSONField(default=dict, blank=True)
+    options = JSONField(default=dict, blank=True)
 
     @property
     def name(self):

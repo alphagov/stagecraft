@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, migrations
-import dbarray.fields
 import django.db.models.deletion
 import django.core.validators
 
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
                 ('access_token', models.CharField(unique=True, max_length=255)),
                 ('uid', models.CharField(max_length=255, db_index=True)),
                 ('email', models.EmailField(max_length=75)),
-                ('permissions', dbarray.fields.CharArrayField(max_length=255)),
+                ('permissions', ArrayField(base_field=models.CharField(max_length=255))),
                 ('expires_at', models.DateTimeField()),
             ],
             options={
