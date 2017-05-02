@@ -68,7 +68,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'INFO',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'logfile': {
             'level': 'WARNING',
