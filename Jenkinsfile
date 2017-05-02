@@ -24,9 +24,12 @@ node {
 
 		stage('Test') {
 			govuk.setEnvar("DJANGO_SETTINGS_MODULE", "stagecraft.settings.ci")
-			govuk.setEnvar("DATABASE_URL", "postgres://jenkins:jenkins@localhost:5432/postgres")
+			govuk.setEnvar("DATABASE_URL", "postgres://jenkins:jenkins@localhost:5432/stagecraft")
 			govuk.setEnvar("SECRET_KEY", "xyz")
 			govuk.setEnvar("NO_AUTOPEP8", "1")
+			govuk.setEnvar("PGPASSWORD", "jenkins")
+			sh("psql -h localhost -U jenkins -d postgres -c 'DROP DATABASE IF EXISTS stagecraft; ' ")
+			sh("psql -h localhost -U jenkins -d postgres -c 'CREATE DATABASE stagecraft;' ")
 			sh("./venv/bin/python manage.py test -v 2 --with-coverage --with-doctest stagecraft/")
 		}
 
