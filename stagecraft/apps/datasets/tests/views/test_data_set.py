@@ -25,7 +25,6 @@ class DataSetsViewsTestCase(TestCase):
     assert_equal.__self__.maxDiff = None
     fixtures = [
         'datasets_testdata.json',
-        'backdrop_users_import_testdata.json'
     ]
 
     base_schema = {

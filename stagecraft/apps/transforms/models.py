@@ -1,17 +1,17 @@
 import logging
-import jsonschema
 import uuid
-from jsonschema import Draft3Validator, SchemaError, ValidationError
 
+import jsonschema
+from jsonfield import JSONField
 from django.core.validators import RegexValidator
 from django.db import models
 
-from jsonfield import JSONField
-
-from stagecraft.apps.users.models import User
-from stagecraft.apps.datasets.models import DataGroup, DataType
 from django.db.models.query import QuerySet
+from jsonschema import Draft3Validator, SchemaError, ValidationError
+
 from stagecraft.apps.dashboards.models.module import query_param_schema
+from stagecraft.apps.datasets.models import DataGroup, DataType
+from stagecraft.apps.users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class TransformType(models.Model):
         max_length=25,
         unique=True,
     )
-    schema = JSONField(default={}, blank=True)
+    schema = JSONField(default=dict, blank=True)
 
     function_validator = RegexValidator(
         '^[a-z_\.]+$',
@@ -71,8 +71,8 @@ class Transform(models.Model):
     )
     input_type = models.ForeignKey(DataType, related_name='+')
 
-    query_parameters = JSONField(default={}, blank=True)
-    options = JSONField(default={}, blank=True)
+    query_parameters = JSONField(default=dict, blank=True)
+    options = JSONField(default=dict, blank=True)
 
     output_group = models.ForeignKey(
         DataGroup, null=True,

@@ -3,13 +3,12 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 import logging
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, IntegrityError, InternalError
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from datetime import timedelta
 from django_statsd.clients import statsd
-
-import dbarray
 
 
 log = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ class OAuthUser(models.Model):
     access_token = models.CharField(max_length=255, unique=True)
     uid = models.CharField(max_length=255, db_index=True)
     email = models.EmailField()
-    permissions = dbarray.CharArrayField(max_length=255)
+    permissions = ArrayField(base_field=models.CharField(max_length=255))
     expires_at = models.DateTimeField()
 
     objects = OAuthUserManager()

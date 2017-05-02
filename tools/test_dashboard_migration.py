@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-from dictdiffer import diff
 from fnmatch import filter as fnfilter
 import pprint
 import sys
@@ -55,7 +54,7 @@ for filename, old_json in spotlight_json(path):
         module.setdefault('info', [])
         oldmodules[module['slug']] = module
 
-    diffs = list(diff(old_json, new_json))
-    if len(diffs) != 0:
+    if old_json != new_json:
         print '{} differs'.format(filename)
-        pprint.pprint(diffs)
+        pprint.pprint(old_json)
+        pprint.pprint(new_json)

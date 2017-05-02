@@ -2,4 +2,4 @@
 
 -r _common.txt
 
-gunicorn==18.0
+gunicorn==19.7.1

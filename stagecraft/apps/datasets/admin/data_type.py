@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
+
 from django.contrib import admin
-from django.db import models
-import reversion
-from stagecraft.apps.datasets.models.data_type import DataType
+from reversion.admin import VersionAdmin
+
 from stagecraft.apps.datasets.models.data_set import DataSet
+from stagecraft.apps.datasets.models.data_type import DataType
 
 
 class DataSetInline(admin.StackedInline):
@@ -16,7 +17,7 @@ class DataSetInline(admin.StackedInline):
         return False
 
 
-class DataTypeAdmin(reversion.VersionAdmin):
+class DataTypeAdmin(VersionAdmin):
     search_fields = ['name']
     list_display = ('name',)
     inlines = [

@@ -1,14 +1,14 @@
 from __future__ import unicode_literals
-import copy
-import jsonschema
-import uuid
-from jsonschema import Draft3Validator, SchemaError
 
+import copy
+import uuid
+
+import jsonschema
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import RegexValidator
 from django.db import models
-
-from dbarray import TextArrayField
 from jsonfield import JSONField
+from jsonschema import Draft3Validator, SchemaError
 
 from .dashboard import Dashboard
 
@@ -40,7 +40,7 @@ class ModuleType(models.Model):
         ]
     )
 
-    schema = JSONField(default={})
+    schema = JSONField(default=dict)
 
     class Meta:
         app_label = 'dashboards'
@@ -82,9 +82,9 @@ class Module(models.Model):
 
     title = models.CharField(max_length=60)
     description = models.CharField(max_length=200, blank=True)
-    info = TextArrayField(blank=True)
+    info = ArrayField(base_field=models.TextField(blank=True), null=True, blank=True)
 
-    options = JSONField(blank=True, default={})
+    options = JSONField(blank=True, default=dict)
     query_parameters = JSONField(null=True, blank=True)
 
     order = models.IntegerField()

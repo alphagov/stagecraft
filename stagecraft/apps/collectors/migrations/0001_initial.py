@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
-import jsonfield.fields
-import django_field_cryptography.fields
-import django.core.validators
 import uuid
+
+import django.core.validators
+from django.db import models, migrations
+from fernet_fields import EncryptedTextField
+import jsonfield
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0002_remove_user_data_sets'),
         ('datasets', '0005_auto_20150707_1439'),
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=256)),
-                ('credentials', django_field_cryptography.fields.EncryptedTextField(default=b'{}')),
+                ('credentials', EncryptedTextField(default=b'{}')),
                 ('owners', models.ManyToManyField(to='users.User', blank=True)),
             ],
         ),

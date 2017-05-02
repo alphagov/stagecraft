@@ -1,33 +1,32 @@
 # requirements/common.txt: Used on *all* environments.
 
-django==1.8.2
-django-celery==3.1.16
-celery==3.1.19
-django-dbarray==0.2
--e git+https://github.com/incuna/django-field-cryptography.git@v1.0.1#egg=django-field-cryptography
-django-mptt==0.6.1
-django-reversion==1.8.7
-jsonfield==0.9.22
-requests==2.6.0
-logstash_formatter==0.5.7
 pyOpenSSL==17.0.0
-jsonschema==2.3.0
-cryptography==1.5
+django==1.11.0
+django-celery==3.2.1
+celery==3.1.25
+django-fernet-fields==0.5
+django-mptt==0.8.7
+django-reversion==2.0.8
+django-dbarray==0.2
+jsonfield==2.0.1
+requests==2.13.0
+logstash_formatter==0.5.16
+jsonschema==2.6.0
+cryptography==1.8.1
 
 # psycopg2 requires the libpq-dev package
-psycopg2==2.5.4
+psycopg2==2.7.1
+
+# For writing stats out about our code
+django-statsd-mozilla==0.3.16
+
+#for pulling transactions explorer spreadsheets.
+gspread==0.6.2
+dogslow==0.9.7
+oauth2client==1.5.2
 
 # For performing data operations that require speaking to backdrop
 performanceplatform-client==0.11.3
-
-# For writing stats out about our code
-statsd==3.0.1
-django-statsd-mozilla==0.3.12
-
-#for pulling transactions explorer spreadsheets.
-gspread==0.2.5
-dogslow==0.9.7
-oauth2client==1.5.2
 
 # To query for data from google analytics, webtrends, pingdom etc
 performanceplatform-collector==0.3.1

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.postgres.fields import ArrayField
+from jsonfield import JSONField
 from django.db import models, migrations
-import dbarray.fields
-import jsonfield.fields
 import django.core.validators
 import uuid
 
@@ -58,9 +58,9 @@ class Migration(migrations.Migration):
                 ('slug', models.CharField(max_length=60, validators=[django.core.validators.RegexValidator('^[-a-z0-9]+$', message='Slug can only contain lower case letters, numbers or hyphens')])),
                 ('title', models.CharField(max_length=60)),
                 ('description', models.CharField(max_length=200, blank=True)),
-                ('info', dbarray.fields.TextArrayField(blank=True)),
-                ('options', jsonfield.fields.JSONField(blank=True)),
-                ('query_parameters', jsonfield.fields.JSONField(null=True, blank=True)),
+                ('info', ArrayField(base_field=models.TextField(blank=True), size=None)),
+                ('options', JSONField(blank=True)),
+                ('query_parameters', JSONField(null=True, blank=True)),
                 ('order', models.IntegerField()),
                 ('dashboard', models.ForeignKey(to='dashboards.Dashboard')),
                 ('data_set', models.ForeignKey(blank=True, to='datasets.DataSet', null=True)),
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, serialize=False, editable=False, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=25, validators=[django.core.validators.RegexValidator('^[a-z_]+$', message='Module type name can only contain lowercase letters, numbers or underscores')])),
-                ('schema', jsonfield.fields.JSONField()),
+                ('schema', JSONField()),
             ],
         ),
         migrations.AddField(
