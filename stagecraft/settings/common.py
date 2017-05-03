@@ -120,7 +120,7 @@ NOSE_ARGS = ['-s', '--exclude-dir=stagecraft/settings']
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = abspath(pjoin(BASE_DIR, 'assets'))
+STATIC_ROOT = abspath(pjoin(BASE_DIR, 'public', 'stagecraft'))
 
 DOGSLOW_LOG_TO_FILE = False
 DOGSLOW_TIMER = 1
