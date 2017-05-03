@@ -20,6 +20,11 @@ SESSION_COOKIE_SECURE = True  # avoid transmitting the session cookie over HTTP
 
 USE_DEVELOPMENT_USERS = False
 
+FERNET_USE_HKDF = bool(int(os.getenv("FERNET_USE_HKDF") or 0))  # set as 0 or 1
+FERNET_KEYS = [
+    os.getenv("FERNET_KEY")
+]
+
 ALLOWED_HOSTS = [
     '*',
 ]
