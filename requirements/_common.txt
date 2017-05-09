@@ -1,7 +1,7 @@
 # requirements/common.txt: Used on *all* environments.
 
 pyOpenSSL==17.0.0
-django==1.11.0
+django==1.11.1
 django-celery==3.2.1
 celery==3.1.25
 django-fernet-fields==0.5
