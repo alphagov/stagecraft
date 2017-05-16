@@ -47,11 +47,5 @@ class CollectorModelChoiceIteratorTestCase(TestCase):
         choice_instance = admin.CollectorModelChoiceField(queryset)
         choices = choice_instance._get_choices()
         iteration = list(choices.__iter__())
-        iter_choice = iteration[1]
-        first_value = iter_choice[0][1]
-        second_value = iter_choice[0][0]
-        third_value = iter_choice[1]
-
-        assert_that(first_value, not_none)
-        assert_that(second_value, not_none)
-        assert_that(third_value, not_none)
+        assert_that(iteration[0], not_none)
+        assert_that(iteration[1], not_none)
