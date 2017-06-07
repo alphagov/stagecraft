@@ -1,3 +1,6 @@
+import copy
+import uuid
+
 from datetime import datetime
 from operator import xor
 
@@ -5,8 +8,10 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
 from django.core.checks import messages
+from django.db import IntegrityError, transaction
 from django.forms import Select, ModelChoiceField, ModelForm
 from django.forms.fields import ChoiceField
+from django.http import HttpResponseRedirect
 from django.forms.models import ModelChoiceIterator
 from django.utils.encoding import force_text
 from django.utils.html import format_html
@@ -124,6 +129,43 @@ def run_now(modeladmin, request, queryset):
 run_now.short_description = "Run collector"
 
 
+def clone_collector(modeladmin, request, queryset):
+
+    try:
+
+        with transaction.atomic():
+
+            for collector in queryset:
+                clone = copy.copy(collector)
+                clone.id = uuid.uuid4()
+                clone.slug = '{}-clone'.format(clone.slug)
+                clone.save()
+
+    except copy.error:
+        message = 'Failed cloning collector'
+        modeladmin.message_user(request, message, messages.ERROR)
+
+    except IntegrityError:
+        message = (
+            'One or more collector clones already exist. Please change their '
+            'slugs and try again.')
+        modeladmin.message_user(request, message, messages.ERROR)
+        return
+
+    message_bit = '{} collectors were'.format(queryset.count())
+
+    if queryset.count() == 1:
+        message_bit = '1 collector was'
+
+    modeladmin.message_user(
+        request,
+        '{} successfully cloned.'.format(message_bit))
+
+    if queryset.count() == 1:
+        return HttpResponseRedirect('/admin/collectors/collector/{}'.format(
+            clone.id))
+
+
 @admin.register(models.Collector)
 class CollectorAdmin(admin.ModelAdmin):
 
@@ -136,7 +178,7 @@ class CollectorAdmin(admin.ModelAdmin):
     ordering = ('slug', )
     search_fields = ['slug']
     filter_horizontal = ('owners',)
-    actions = [run_now]
+    actions = [run_now, clone_collector]
 
 
 @admin.register(models.DataSource)
