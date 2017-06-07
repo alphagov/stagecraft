@@ -10,14 +10,14 @@ from stagecraft.apps.datasets.models import DataSet
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list
-    args = '<backdrop_users.json>'
-    help = ("Imports a backdrop JSON dump of the ``users`` collection.")
+    help = "Imports a backdrop JSON dump of the ``users`` collection."
+
+    def add_arguments(self, parser):
+        parser.add_argument("args", nargs='+')
 
     def handle(self, *args, **options):
         if not len(args):
-            raise CommandError(
-                "No backdrop_users.json file specified, see --help")
+            raise CommandError("No backdrop_users.json file specified, see --help")
 
         for filename in args:
             self.stdout.write("Opening {}".format(filename))

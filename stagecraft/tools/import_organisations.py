@@ -51,8 +51,7 @@ def get_govuk_organisations():
             results = pickle.load(pickled)
     except IOError:
         def get_page(page):
-            response = requests.get(
-                'https://www.gov.uk/api/organisations?page={}'.format(page))
+            response = requests.get('https://www.gov.uk/api/organisations?page={}'.format(page))
             return response.json()
 
         first_page = get_page(1)
@@ -63,8 +62,7 @@ def get_govuk_organisations():
             results = results + page['results']
 
         # Remove any organisations that have closed.
-        results = \
-            [org for org in results if org['details']['closed_at'] is None]
+        results = [org for org in results if org['details']['closed_at'] is None]
 
         with open('govuk_orgs.pickle', 'wb') as pickled:
             pickle.dump(results, pickled, pickle.HIGHEST_PROTOCOL)
@@ -144,8 +142,7 @@ def index_nodes(nodes, field_index):
 
 
 def govuk_node_for_record(record, by_title, by_abbr):
-    parent_org = record[
-        'agency'] if 'agency' in record else record['department']
+    parent_org = record['agency'] if 'agency' in record else record['department']
     abbr = parent_org['abbr'].lower()
     title = parent_org['name'].lower()
 
@@ -169,6 +166,8 @@ def govuk_node_for_record(record, by_title, by_abbr):
             node = by_title['highways england']
         elif abbr == 'english heritage':
             node = by_title['historic england']
+        elif abbr == 'hmlr':
+            node = by_title['hm land registry']
 
     return node
 
@@ -182,8 +181,7 @@ def transactions_graph(records, by_title, by_abbr):
         parent_node = govuk_node_for_record(record, by_title, by_abbr)
 
         if 'service' not in record:
-            print("'{}' doesn't have a service attached".format(
-                record['name']))
+            print("'{}' doesn't have a service attached".format(record['name']))
         else:
             service = record['service']
             service_slug = service['slug']
@@ -200,8 +198,7 @@ def transactions_graph(records, by_title, by_abbr):
 
             if 'transaction' in record:
                 transaction = record['transaction']
-                transaction_id = 'transaction-{}-{}'.format(
-                    service_slug, transaction['slug']).lower()
+                transaction_id = 'transaction-{}-{}'.format(service_slug, transaction['slug']).lower()
 
                 nodes.add(make_node(
                     transaction_id,
@@ -225,8 +222,7 @@ def load_organisations(client_email, private_key):
     by_title = index_nodes(govuk_nodes, 1)
     by_abbr = index_nodes(govuk_nodes, 3)
 
-    tx_nodes, tx_edges, node_to_transactions = transactions_graph(
-        records, by_title, by_abbr)
+    tx_nodes, tx_edges, node_to_transactions = transactions_graph(records, by_title, by_abbr)
 
     nodes = govuk_nodes | tx_nodes
     edges = govuk_edges | tx_edges
@@ -362,8 +358,7 @@ def link_remaining(past_relations, dashboards_linked, nodes_to_db, by_abbr):
                     dashboard.organisation = db_node
                     dashboard.save()
                 else:
-                    print('could not find an org for {}'.format(
-                        dashboard.slug))
+                    print('could not find an org for {}'.format(dashboard.slug))
                     print(node)
 
 
@@ -371,14 +366,16 @@ if __name__ == '__main__':
     client_email, private_key = get_credentials_or_die()
 
     print('Loading organisations')
-    nodes, edges, nodes_to_transactions = load_organisations(
-        client_email, private_key)
+    nodes, edges, nodes_to_transactions = load_organisations(client_email, private_key)
+
     print('Clearing organisations')
     past_relations = clear_organisation_relations()
+
     print('Creating nodes')
     nodes_to_db = create_nodes(nodes, edges, node_types())
+
     print('Linking transactions')
     dashboards_linked = link_transactions(nodes_to_transactions, nodes_to_db)
+
     print('Linking outstanding dashboards')
-    link_remaining(
-        past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))
+    link_remaining(past_relations, dashboards_linked, nodes_to_db, index_nodes(nodes, 3))

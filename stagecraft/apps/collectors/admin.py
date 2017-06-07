@@ -1,20 +1,21 @@
 import copy
 import uuid
 
+from datetime import datetime
 from operator import xor
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
 from django.core.checks import messages
 from django.db import IntegrityError, transaction
 from django.forms import Select, ModelChoiceField, ModelForm
-from django.forms.models import ModelChoiceIterator
 from django.forms.fields import ChoiceField
 from django.http import HttpResponseRedirect
+from django.forms.models import ModelChoiceIterator
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from datetime import datetime
 
 from stagecraft.apps.collectors import models
 from stagecraft.apps.collectors.tasks import run_collector
@@ -58,8 +59,10 @@ class CollectorModelChoiceIterator(ModelChoiceIterator):
             yield self.choice(obj)
 
     def choice(self, obj):
-        return ((self.field.prepare_value(obj), obj.provider.id),
-                self.field.label_from_instance(obj))
+        return (
+            self.field.prepare_value(obj),
+            self.field.label_from_instance(obj),
+        )
 
 
 class CollectorModelChoiceField(ModelChoiceField):

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
@@ -22,8 +22,7 @@ admin.autodiscover()
 
 uuid_regexp = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     # Redirect / to /admin/ using a view reference
     # http://bit.ly/1qkuGZ0
     url(r'^$', RedirectView.as_view(pattern_name='admin:index')),
@@ -83,4 +82,4 @@ urlpatterns = patterns(
     resource_url('data-source', collectors_views.DataSourceView),
     resource_url('collector-type', collectors_views.CollectorTypeView),
     resource_url('collector', collectors_views.CollectorView)
-)
+]

@@ -3,6 +3,8 @@
 
 {% block submit_buttons_bottom %}
   <div class="submit-row">
+    <label class="vCheckboxLabel" for="id__confirmed">{% trans 'Confirm' %}</label>
+    <input type="checkbox" name="_confirmed" id="id__confirmed"/>
     <input type="submit" value="{% trans 'Empty dataset' %}" name="_empty_dataset" />
   </div>
   {% submit_row %}
