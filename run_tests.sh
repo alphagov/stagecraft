@@ -40,16 +40,17 @@ find $basedir/stagecraft -iname '*.pyc' -exec rm {} \+
 find $basedir/stagecraft -iname '__pycache__' -exec rmdir {} \+
 
 # probably going to need to install dependencies
+pip install -U pip wheel
 pip install -r requirements/ci.txt
 
-if [ -z "$NO_AUTOPEP8" ]; then
-  autopep8 -i -r stagecraft --exclude '00*.py'
-fi
+#if [ -z "$NO_AUTOPEP8" ]; then
+#  autopep8 -i -r stagecraft --exclude '00*.py'
+#fi
 
-# run style check
-$basedir/pep-it.sh | tee "$outdir/pep8.out"
-display_result $? 3 "Code style check"
+## run style check
+#$basedir/pep-it.sh | tee "$outdir/pep8.out"
+#display_result $? 3 "Code style check"
 
 # run unit tests
-python manage.py test --with-coverage --cover-package=datasets --with-doctest
+python manage.py test stagecraft
 display_result $? 1 "Unit tests"

@@ -5,14 +5,15 @@
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 #
 
-import os
-
-from os.path import abspath, dirname, join as pjoin
-
 from .common import *
-from .environment_specific_settings import *
 
-DEBUG = False
+PAAS = load_paas_settings()
+
+DEBUG = bool(os.getenv('DEBUG'))  # use as integer 1|0
+SECRET_KEY = os.getenv('SECRET_KEY')
+ENV_HOSTNAME = os.getenv('ENV_HOSTNAME')
+PUBLIC_HOSTNAME = os.getenv('PUBLIC_HOSTNAME')
+BROKER_URL = os.getenv('REDIS_URL') or PAAS.get('REDIS_URL')
 
 CSRF_COOKIE_SECURE = True  # avoid transmitting the CSRF cookie over HTTP
 
@@ -20,23 +21,23 @@ SESSION_COOKIE_SECURE = True  # avoid transmitting the session cookie over HTTP
 
 USE_DEVELOPMENT_USERS = False
 
-FERNET_USE_HKDF = bool(int(os.getenv("FERNET_USE_HKDF") or 0))  # set as 0 or 1
+FERNET_USE_HKDF = bool(int(os.getenv('FERNET_USE_HKDF') or 0))  # set as 0 or 1
 FERNET_KEYS = [
-    os.getenv("FERNET_KEY")
+    os.getenv('FERNET_KEY')
 ]
 
 ALLOWED_HOSTS = [
     '*',
 ]
 
-APP_HOSTNAME = 'stagecraft{0}'.format(ENV_HOSTNAME)
+APP_HOSTNAME = 'stagecraft-{0}'.format(ENV_HOSTNAME)
 
 APP_ROOT = 'https://{0}'.format(APP_HOSTNAME)
 GOVUK_WEBSITE_ROOT = os.getenv('GOVUK_WEBSITE_ROOT')
 
 BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
-STATIC_URL = '{0}/stagecraft/'.format(os.getenv('GOVUK_ASSET_HOST'))
-STATIC_ROOT = abspath(pjoin(BASE_DIR, 'public', 'stagecraft'))
+STATIC_URL = os.getenv('STATIC_URL')
+STATIC_ROOT = abspath(pjoin(BASE_DIR, 'assets/'))
 
 BACKDROP_PUBLIC_URL = 'https://www{0}'.format(PUBLIC_HOSTNAME)
 BACKDROP_READ_URL = 'https://backdrop-read.{0}'.format(
@@ -50,6 +51,18 @@ VARNISH_CACHES = [
     ('http://frontend-app-1', 7999),
     ('http://frontend-app-2', 7999),
 ]
+
+DATABASE_URL = urlparse(os.environ.get('DATABASE_URL') or PAAS.get('DATABASE_URL') or '')
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': DATABASE_URL.path[1:],
+        'USER': DATABASE_URL.username,
+        'PASSWORD': DATABASE_URL.password,
+        'HOST': DATABASE_URL.hostname,
+        'PORT': DATABASE_URL.port,
+    }
+}
 
 LOGGING = {
     'version': 1,

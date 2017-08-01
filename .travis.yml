@@ -1,33 +1,50 @@
 language: python
+dist: trusty
 python:
   - "2.7"
-  - "3.4"
-matrix:
-  allow_failures:
-    - python: "3.4"
+cache: pip
+sudo: true
+notifications:
+  email: false
+
 addons:
   postgresql: "9.3"
 env:
   matrix:
     - DJANGO_SETTINGS_MODULE=stagecraft.settings.ci SECRET_KEY=xyz DATABASE_URL=postgres://postgres:@localhost:5432/stagecraft NO_AUTOPEP8=1
   global:
+    - PAAS_USER=pp-deploy@digital.cabinet-office.gov.uk
     # NOTE: contains GH_TOKEN=xxx from github user gds-pp-ci
-    secure: AnhgvS32/AMPi8rl9L9xh/2Xmt1459jXs13eiJI4kHtSGP/n2gkZtfKTiU9wezNqI5tVk4fYYltJNjvk5ZGkiEm/z5vpp8urRHUcGejZaa6ziyzFALpftuI5/5TF/dnlowQdFjh4Tcx4crZ1u5l4z5eJoxUSd4x9hk4d8/Tnjj8=
+    - secure: AnhgvS32/AMPi8rl9L9xh/2Xmt1459jXs13eiJI4kHtSGP/n2gkZtfKTiU9wezNqI5tVk4fYYltJNjvk5ZGkiEm/z5vpp8urRHUcGejZaa6ziyzFALpftuI5/5TF/dnlowQdFjh4Tcx4crZ1u5l4z5eJoxUSd4x9hk4d8/Tnjj8=
+    # PAAS_PASSWORD
+    - secure: P4mKNBcMCS/FlLnZPfM+6LS7cBy9c4IiU2giZM/hldxtZBoGqE+SLbd1YH/xt7k2FFIGceDrvwK2fadGK8PrB7PZ+Y0iVxtn153S/kdWpfGXq3Dh/s3/xSZffTJ5flQ6t2BL8pYUEVrO1SwB7CNuRtQqRHocuzDMeSyVwycHSUc=
+    # APP_SECRET_KEY_STAGING
+    - secure: czzi0D/uZiW6ZRDAkQ6tEkg0l/pQfnNgkPP58w87mMe82Caot8nR4Nq5J/9dTCHftgKO1qODUDyt5avVpo+GJVNfrrCZVAOCijCCexR8Xb73EOJohwb7+Js8JIxhzSjazpzOhrXobvCATUnppG3iBlJLKKoMKKWpWEuCBesrJj0=
+    # APP_SECRET_KEY_PRODUCTION
+    - secure: KEvudQuvT4HdTKGEMRtKkAyfDpTCWIDv+pb2SVZWNIPvBsVAyitKtU6W5LNDwi1e6I9j7wjShoJU2Mf+U1A6upmyy4Azyi9AW96RlagIzaYt6zviGvdnbrjFPTFq+2g+iwAy/huUYlxlzRpOW6qiste71zfmiQYrFLy25bFQ1kk=
+    # APP_FERNET_KEY_STAGING
+    - secure: Dwt2dqC0YZq9ZHuT4a/3vfnfYCQNZdYcLgWXV0xIyNY2/+wLLNFJG6sIk8c1NmjogY5Tc+zafrmRN5a0Xs5WS4YY9ig+Qr6geKpX9q77QI54PFVKM1g80dVHyxS7dBJIzqOnldh7Mz5Wn3+tauuLIAOlHx/hEN1/XW07UPLNAJM=
+    # APP_FERNET_KEY_PRODUCTION
+    - secure: DnEtCHjiTft+XZ0a7CIIko+h0u0+GbGP2DcK3rq7HbD6GwiBUQfw+BvdDZo2PcA3/5DSikhLSY41gYd+J16b/ZPuP+DJJYw3/587I1S0Ooe4BtY2wCWqyHcupGjwzWRHHKjcBy6OKA38GoU/Zm7IyfPbtSceYjHvbO1pPIP07ic=
+
 before_script:
-  - pip install -U pip wheel
   - psql -c 'create database stagecraft;' -U postgres
+
 script:
   - ./run_tests.sh
-after_script:
-  - coveralls
-after_success:
-  - ./.travis_scripts/push_release_tag.sh
-branches:
-  except:
-    - release
-    - /^release_\d+$/
-    - /^deployed-to-(preview|staging|production)$/
-notifications:
-  email: false
-cache: pip
-sudo: false
+
+before_deploy:
+  - chmod +x etc/deploy.sh
+
+deploy:
+  - provider: script
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING etc/deploy.sh staging
+    skip_cleanup: true
+    on:
+      branch: staging
+
+  - provider: script
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION etc/deploy.sh production
+    skip_cleanup: true
+    on:
+      branch: production
