@@ -26,15 +26,19 @@ cf bind-service performance-platform-stagecraft-celery-cam redis-poc
 cf set-env performance-platform-stagecraft-web SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-web FERNET_KEY $APP_FERNET_KEY
 cf set-env performance-platform-stagecraft-web ENV_HOSTNAME $PAAS_SPACE.cloudapps.digital
+cf set-env performance-platform-stagecraft-web REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 
 cf set-env performance-platform-stagecraft-celery-worker SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-celery-worker FERNET_KEY $APP_FERNET_KEY
+cf set-env performance-platform-stagecraft-celery-worker REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 
 cf set-env performance-platform-stagecraft-celery-beat SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-celery-beat FERNET_KEY $APP_FERNET_KEY
+cf set-env performance-platform-stagecraft-celery-beat REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 
 cf set-env performance-platform-stagecraft-celery-cam SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-celery-cam FERNET_KEY $APP_FERNET_KEY
+cf set-env performance-platform-stagecraft-celery-cam REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 
 # deploy apps
 cf push -f manifest.yml

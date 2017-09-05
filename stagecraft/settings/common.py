@@ -52,7 +52,10 @@ def load_paas_settings():
                 paas['DATABASE_URL'] = service['credentials']['uri']
         for service in vcap['user-provided']:
             if service['name'] == 'redis-poc':
-                paas['REDIS_URL'] = service['credentials']['url']
+                database_number = os.environ['REDIS_DATABASE_NUMBER']
+                url = service['credentials']['url']
+                url += '/' + database_number
+                paas['REDIS_URL'] = url
     return paas
 
 

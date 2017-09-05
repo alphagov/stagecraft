@@ -38,13 +38,13 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING etc/deploy.sh staging
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
     skip_cleanup: true
     on:
       branch: staging
 
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION etc/deploy.sh production
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
     skip_cleanup: true
     on:
       branch: production
