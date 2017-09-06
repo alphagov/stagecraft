@@ -115,23 +115,23 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': 'WARN',
+            'level': 'DEBUG',
             'handlers': ['logfile', 'json_log'],
         },
         'django.request': {
             'handlers': ['logfile', 'json_log'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,  # also handle in parent handler
         },
 
         'stagecraft.apps': {
             'handlers': ['logfile', 'json_log'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,
         },
         'stagecraft.libs': {
             'handlers': ['logfile', 'json_log'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,
         },
         'stagecraft.audit': {
