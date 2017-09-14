@@ -38,13 +38,13 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=staging.performance.service.gov.uk REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
     skip_cleanup: true
     on:
       branch: staging
 
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk BACKDROP_PUBLIC_DOMAIN=performance.service.gov.uk REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
     skip_cleanup: true
     on:
       branch: production

@@ -39,11 +39,10 @@ BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 STATIC_URL = os.getenv('STATIC_URL')
 STATIC_ROOT = abspath(pjoin(BASE_DIR, 'assets/'))
 
-BACKDROP_PUBLIC_URL = 'https://www{0}'.format(PUBLIC_HOSTNAME)
-BACKDROP_READ_URL = 'https://backdrop-read.{0}'.format(
-    os.getenv('GOVUK_APP_DOMAIN'))
-BACKDROP_WRITE_URL = 'https://backdrop-write.{0}'.format(
-    os.getenv('GOVUK_APP_DOMAIN'))
+BACKDROP_PUBLIC_URL = 'https://www.{0}'.format(
+    os.getenv('BACKDROP_PUBLIC_DOMAIN'))
+BACKDROP_READ_URL = BACKDROP_PUBLIC_URL
+BACKDROP_WRITE_URL = BACKDROP_PUBLIC_URL
 
 SIGNON_URL = 'https://signon.{0}'.format(os.getenv('GOVUK_APP_DOMAIN'))
 
