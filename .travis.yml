@@ -26,6 +26,10 @@ env:
     - secure: Dwt2dqC0YZq9ZHuT4a/3vfnfYCQNZdYcLgWXV0xIyNY2/+wLLNFJG6sIk8c1NmjogY5Tc+zafrmRN5a0Xs5WS4YY9ig+Qr6geKpX9q77QI54PFVKM1g80dVHyxS7dBJIzqOnldh7Mz5Wn3+tauuLIAOlHx/hEN1/XW07UPLNAJM=
     # APP_FERNET_KEY_PRODUCTION
     - secure: DnEtCHjiTft+XZ0a7CIIko+h0u0+GbGP2DcK3rq7HbD6GwiBUQfw+BvdDZo2PcA3/5DSikhLSY41gYd+J16b/ZPuP+DJJYw3/587I1S0Ooe4BtY2wCWqyHcupGjwzWRHHKjcBy6OKA38GoU/Zm7IyfPbtSceYjHvbO1pPIP07ic=
+    # SIGNON_CLIENT_ID_STAGING
+    - secure: h/MQ6/h/j2/GaAuQkAunmlpPe5ZfoKrxTc5vm830XStTxZ3fUU9B6ZKXR93gK2s8ClUccxK/5OEAA8TuNS9qtmzSB37Us6shdtERUc18mydFJUvM22XVNa809QHKrq0D8FbbfC3M85Eu+WAN8H9KYPeI6ExOy//ifJSZz4SYY28=
+    # SIGNON_CLIENT_ID_PRODUCTION
+    - secure: Qee3LcuMrBCFmjxlG4IVL19XPLa3aehsarodsR7xhK1ZS0LdTfVc8Ynp/ArwexTIDMSLIwq5LlUi6cw6qa/4QNja4eKfw+M36jgSThkTzqAGiwmTKRey/JBl9y2fECE3KHkkRVlIgj2PnuPPpgYepQg5yrzekUODvwGilx+KZTA=
 
 before_script:
   - psql -c 'create database stagecraft;' -U postgres
@@ -38,13 +42,13 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=staging.performance.service.gov.uk REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=staging.performance.service.gov.uk REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
     skip_cleanup: true
     on:
       branch: staging
 
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk BACKDROP_PUBLIC_DOMAIN=performance.service.gov.uk REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk BACKDROP_PUBLIC_DOMAIN=performance.service.gov.uk REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
     skip_cleanup: true
     on:
       branch: production

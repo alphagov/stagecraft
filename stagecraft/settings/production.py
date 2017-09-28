@@ -45,6 +45,7 @@ BACKDROP_READ_URL = BACKDROP_PUBLIC_URL
 BACKDROP_WRITE_URL = BACKDROP_PUBLIC_URL
 
 SIGNON_URL = 'https://signon.{0}'.format(os.getenv('GOVUK_APP_DOMAIN'))
+SIGNON_CLIENT_ID = os.getenv('SIGNON_CLIENT_ID')
 
 VARNISH_CACHES = [
     ('http://frontend-app-1', 7999),
