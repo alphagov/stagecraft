@@ -60,4 +60,4 @@ cf set-env performance-platform-stagecraft-celery-cam REDIS_DATABASE_NUMBER $RED
 cf push -f manifest.yml
 
 # create and map routes
-cf map-route performance-platform-stagecraft-web cloudapps.digital --hostname stagecraft-$PAAS_SPACE
+cf map-route performance-platform-stagecraft-web cloudapps.digital --hostname performance-platform-stagecraft-$PAAS_SPACE
