@@ -8,6 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
+import json
 import os
 import sys
 from os.path import abspath, dirname, join as pjoin
@@ -40,6 +41,22 @@ STATSD_PORT = 8125
 STATSD_PREFIX = 'pp.apps.stagecraft'
 STATSD_MAXUDPSIZE = 512
 STATSD_CLIENT = 'django_statsd.clients.normal'
+
+
+def load_paas_settings():
+    paas = {}
+    if 'VCAP_SERVICES' in os.environ:
+        vcap = json.loads(os.environ['VCAP_SERVICES'])
+        for service in vcap['postgres']:
+            if service['name'] == 'gds-performance-platform-pg-service':
+                paas['DATABASE_URL'] = service['credentials']['uri']
+        for service in vcap['user-provided']:
+            if service['name'] == 'redis-poc':
+                database_number = os.environ['REDIS_DATABASE_NUMBER']
+                url = service['credentials']['url']
+                url += '/' + database_number
+                paas['REDIS_URL'] = url
+    return paas
 
 
 def load_databases_from_environment():
