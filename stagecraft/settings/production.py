@@ -13,7 +13,7 @@ DEBUG = bool(os.getenv('DEBUG'))  # use as integer 1|0
 SECRET_KEY = os.getenv('SECRET_KEY')
 ENV_HOSTNAME = os.getenv('ENV_HOSTNAME')
 PUBLIC_HOSTNAME = os.getenv('PUBLIC_HOSTNAME')
-BROKER_URL = os.getenv('REDIS_URL') or PAAS.get('REDIS_URL')
+BROKER_URL = PAAS.get('REDIS_URL') or os.getenv('REDIS_URL')
 
 CSRF_COOKIE_SECURE = True  # avoid transmitting the CSRF cookie over HTTP
 
