@@ -22,7 +22,7 @@ applications:
   - name: performance-platform-stagecraft-celery-worker
     command: python manage.py celeryd --settings=stagecraft.settings.production -E -l debug
     instances: 1
-    memory: 256M
+    memory: 512M
     no-route: true
     health-check-type: none
 
