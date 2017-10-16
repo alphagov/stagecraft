@@ -6,7 +6,7 @@ services:
   - redis-poc
 env:
   DJANGO_SETTINGS_MODULE: stagecraft.settings.production
-  DEBUG: 1
+  DEBUG: 0
   ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
   PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
   STATIC_URL: /assets/
