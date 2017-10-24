@@ -31,6 +31,9 @@ cf set-env performance-platform-stagecraft-web GOVUK_APP_DOMAIN $GOVUK_APP_DOMAI
 cf set-env performance-platform-stagecraft-web GOVUK_WEBSITE_ROOT $GOVUK_WEBSITE_ROOT
 cf set-env performance-platform-stagecraft-web BACKDROP_PUBLIC_DOMAIN $BACKDROP_PUBLIC_DOMAIN
 cf set-env performance-platform-stagecraft-web REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
+cf set-env performance-platform-stagecraft-web STAGECRAFT_COLLECTION_ENDPOINT_TOKEN $STAGECRAFT_COLLECTION_ENDPOINT_TOKEN
+cf set-env performance-platform-stagecraft-web TRANSFORMED_DATA_SET_TOKEN $TRANSFORMED_DATA_SET_TOKEN
+cf set-env performance-platform-stagecraft-web MIGRATION_SIGNON_TOKEN $MIGRATION_SIGNON_TOKEN
 
 cf set-env performance-platform-stagecraft-celery-worker SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-celery-worker FERNET_KEY $APP_FERNET_KEY

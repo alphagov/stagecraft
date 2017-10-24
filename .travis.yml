@@ -30,7 +30,12 @@ env:
     - secure: h/MQ6/h/j2/GaAuQkAunmlpPe5ZfoKrxTc5vm830XStTxZ3fUU9B6ZKXR93gK2s8ClUccxK/5OEAA8TuNS9qtmzSB37Us6shdtERUc18mydFJUvM22XVNa809QHKrq0D8FbbfC3M85Eu+WAN8H9KYPeI6ExOy//ifJSZz4SYY28=
     # SIGNON_CLIENT_ID_PRODUCTION
     - secure: Qee3LcuMrBCFmjxlG4IVL19XPLa3aehsarodsR7xhK1ZS0LdTfVc8Ynp/ArwexTIDMSLIwq5LlUi6cw6qa/4QNja4eKfw+M36jgSThkTzqAGiwmTKRey/JBl9y2fECE3KHkkRVlIgj2PnuPPpgYepQg5yrzekUODvwGilx+KZTA=
-
+    # STAGECRAFT_COLLECTION_ENDPOINT_TOKEN
+    # Value too large to be encrypted.
+    # TRANSFORMED_DATA_SET_TOKEN
+    - secure: "b/YFwkjJ9+GzL65tD8sk9t3YTw/31Haz4QY6Lk82K8W+C/rcBsBj7k6vpfAYIvICOJeQMycQeMZG7l8UXWgYi6Soqlu/tu8tWnL+bCGJuCYvxCQSOmKKNt7D1783fWWDdqjeHLDENsNfJ+sRERTaTQHeVJ+TXLUo3372nMvUk/I="
+    # MIGRATION_SIGNON_TOKEN
+    - secure: "irGlvzr9zs/nvoeXHMlQUwmNE3DdUarYYw5YBNXD9wW2HNWckJWPRBpVpZh6nJVosBd+AR1Wpz/eBtr/VXwy+6KwxtgbOmbn+I9hXLeb/H7+Ca9NLdZBlg9ToWNqe2jUGOZGDOETy6TO7lrBWOgM8VxSHSLCL9gMLuFrba/8uWQ="
 before_script:
   - psql -c 'create database stagecraft;' -U postgres
 
