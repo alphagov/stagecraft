@@ -150,6 +150,9 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 64
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 15000000
+
 CELERY_RESULT_BACKEND = 'djcelery.backends.database.DatabaseBackend'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYBEAT_SCHEDULE = {
@@ -177,6 +180,7 @@ CELERYBEAT_SCHEDULE = {
         )
     },
 }
+
 
 ROLES = [
     {
