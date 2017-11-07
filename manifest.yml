@@ -5,7 +5,6 @@ services:
   - gds-performance-platform-pg-service
   - redis-poc
 env:
-  DJANGO_SETTINGS_MODULE: stagecraft.settings.production
   DEBUG: 0
   ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
   PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital

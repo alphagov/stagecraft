@@ -59,6 +59,11 @@ cf set-env performance-platform-stagecraft-celery-cam GOVUK_WEBSITE_ROOT $GOVUK_
 cf set-env performance-platform-stagecraft-celery-cam BACKDROP_PUBLIC_DOMAIN $BACKDROP_PUBLIC_DOMAIN
 cf set-env performance-platform-stagecraft-celery-cam REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 
+cf set-env performance-platform-stagecraft-celery-cam DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
+cf set-env performance-platform-stagecraft-celery-beat DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
+cf set-env performance-platform-stagecraft-celery-worker DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
+cf set-env performance-platform-stagecraft-web DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
+
 # deploy apps
 cf push -f manifest.yml
 
