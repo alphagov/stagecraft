@@ -19,21 +19,21 @@ applications:
     health-check-type: none
 
   - name: performance-platform-stagecraft-celery-worker
-    command: python manage.py celeryd --settings=stagecraft.settings.production -E -l debug
+    command: python manage.py celeryd --settings=$DJANGO_SETTINGS_MODULE -E -l debug
     instances: 1
     memory: 1G
     no-route: true
     health-check-type: none
 
   - name: performance-platform-stagecraft-celery-beat
-    command: python manage.py celerybeat --settings=stagecraft.settings.production -l debug
+    command: python manage.py celerybeat --settings=$DJANGO_SETTINGS_MODULE -l debug
     instances: 1
     no-route: true
     memory: 128M
     health-check-type: none
 
   - name: performance-platform-stagecraft-celery-cam
-    command: python manage.py celerycam --settings=stagecraft.settings.production
+    command: python manage.py celerycam --settings=$DJANGO_SETTINGS_MODULE
     instances: 1
     no-route: true
     memory: 128M
