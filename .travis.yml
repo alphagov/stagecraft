@@ -47,7 +47,7 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=staging.performance.service.gov.uk REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=performance-platform-backdrop-read.cloudapps.digital REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
     skip_cleanup: true
     on:
       branch: staging
