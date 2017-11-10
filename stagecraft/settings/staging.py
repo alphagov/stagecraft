@@ -39,8 +39,10 @@ BASE_DIR = abspath(pjoin(dirname(__file__), '..', '..'))
 STATIC_URL = os.getenv('STATIC_URL')
 STATIC_ROOT = abspath(pjoin(BASE_DIR, 'assets/'))
 
+
 BACKDROP_READ_URL = "https://performance-platform-backdrop-read-staging.cloudapps.digital"
 BACKDROP_WRITE_URL = "https://performance-platform-backdrop-write-staging.cloudapps.digital"
+BACKDROP_PUBLIC_URL = BACKDROP_READ_URL
 
 STAGECRAFT_COLLECTION_ENDPOINT_TOKEN = os.getenv('STAGECRAFT_COLLECTION_ENDPOINT_TOKEN')
 TRANSFORMED_DATA_SET_TOKEN = os.getenv('TRANSFORMED_DATA_SET_TOKEN')
