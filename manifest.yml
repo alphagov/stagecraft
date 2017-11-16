@@ -14,7 +14,7 @@ applications:
   - name: performance-platform-stagecraft-web
     command: python manage.py migrate && gunicorn stagecraft.wsgi:application --bind 0.0.0.0:$PORT --workers 4
     instances: 2
-    memory: 512M
+    memory: 1G
     no-route: true
     health-check-type: none
 
