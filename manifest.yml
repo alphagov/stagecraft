@@ -1,5 +1,5 @@
 ---
-buildpack: https://github.com/cloudfoundry/python-buildpack#v1.5.24
+buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.5.24
 memory: 1G
 services:
   - gds-performance-platform-pg-service
