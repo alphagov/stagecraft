@@ -27,7 +27,7 @@ dogslow==0.9.7
 oauth2client==1.5.2
 
 # For performing data operations that require speaking to backdrop
-performanceplatform-client==0.11.3
+performanceplatform-client==0.11.5
 
 # To query for data from google analytics, webtrends, pingdom etc
 performanceplatform-collector==0.3.1
