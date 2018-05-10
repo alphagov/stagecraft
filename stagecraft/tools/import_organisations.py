@@ -168,7 +168,7 @@ def govuk_node_for_record(record, by_title, by_abbr):
             node = by_title['historic england']
         elif abbr == 'hmlr':
             node = by_title['hm land registry']
-       elif abbr == "dh":
+        elif abbr == "dh":
             node = by_abbr['dhsc']
         elif abbr == "dclg":
             node = by_abbr['mhclg']
