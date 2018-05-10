@@ -160,8 +160,8 @@ def govuk_node_for_record(record, by_title, by_abbr):
             node = by_title['visitengland']
         elif abbr == 'arts council':
             node = by_title['arts council england']
-        elif abbr.startswith('planning portal / department'):
-            node = by_abbr['dclg']
+        elif abbr.startswith('planning portal / '):
+            node = by_abbr['mhclg']
         elif abbr == 'ha':
             node = by_title['highways england']
         elif abbr == 'english heritage':
@@ -172,6 +172,10 @@ def govuk_node_for_record(record, by_title, by_abbr):
             node = by_abbr['dhsc']
         elif abbr == "dclg":
             node = by_abbr['mhclg']
+        elif abbr == "national college for teaching and leadership":
+            node = by_abbr['dfe']
+        elif abbr == "glaa":
+            node = by_abbr['home office']
 
     return node
 
