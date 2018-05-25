@@ -2,6 +2,7 @@
 buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.5.24
 memory: 1G
 services:
+  - logit-ssl-drain-stagecraft
   - gds-performance-platform-pg-service
   - redis-poc
 env:
