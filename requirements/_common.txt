@@ -30,4 +30,4 @@ oauth2client==1.5.2
 performanceplatform-client==0.11.5
 
 # To query for data from google analytics, webtrends, pingdom etc
-performanceplatform-collector==0.3.1
+performanceplatform-collector==0.3.2
