@@ -22,6 +22,11 @@ cf bind-service performance-platform-stagecraft-celery-worker redis-poc
 cf bind-service performance-platform-stagecraft-celery-beat redis-poc
 cf bind-service performance-platform-stagecraft-celery-cam redis-poc
 
+cf bind-service performance-platform-stagecraft-web redis
+cf bind-service performance-platform-stagecraft-celery-worker redis
+cf bind-service performance-platform-stagecraft-celery-beat redis
+cf bind-service performance-platform-stagecraft-celery-cam redis
+
 # set environmental variables
 cf set-env performance-platform-stagecraft-web SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-web FERNET_KEY $APP_FERNET_KEY

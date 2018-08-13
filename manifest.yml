@@ -5,6 +5,7 @@ services:
   - logit-ssl-drain
   - gds-performance-platform-pg-service
   - redis-poc
+  - redis
 env:
   DEBUG: 0
   ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
