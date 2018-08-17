@@ -15,20 +15,6 @@ sudo apt-get update && sudo apt-get install cf-cli
 
 cf login -u $PAAS_USER -p $PAAS_PASSWORD -a https://api.cloud.service.gov.uk -o gds-performance-platform -s $PAAS_SPACE
 
-# bind services
-cf bind-service performance-platform-stagecraft-web gds-performance-platform-pg-service
-cf bind-service performance-platform-stagecraft-web redis-poc
-cf bind-service performance-platform-stagecraft-celery-worker redis-poc
-cf bind-service performance-platform-stagecraft-celery-beat redis-poc
-cf bind-service performance-platform-stagecraft-celery-cam redis-poc
-cf bind-service performance-platform-stagecraft-flower redis-poc
-
-cf bind-service performance-platform-stagecraft-web redis
-cf bind-service performance-platform-stagecraft-celery-worker redis
-cf bind-service performance-platform-stagecraft-celery-beat redis
-cf bind-service performance-platform-stagecraft-celery-cam redis
-cf bind-service performance-platform-stagecraft-flower redis
-
 # set environmental variables
 cf set-env performance-platform-stagecraft-web SECRET_KEY $APP_SECRET_KEY
 cf set-env performance-platform-stagecraft-web FERNET_KEY $APP_FERNET_KEY
@@ -79,5 +65,4 @@ cf push -f manifest.yml
 
 # create and map routes
 cf map-route performance-platform-stagecraft-web cloudapps.digital --hostname performance-platform-stagecraft-$PAAS_SPACE
-cf delete-route cloudapps.digital --hostname performance-platform-stagecraft-flower-$PAAS_SPACE -f
 cf map-route performance-platform-stagecraft-flower cloudapps.digital --hostname performance-platform-stagecraft-flower-$PAAS_SPACE
