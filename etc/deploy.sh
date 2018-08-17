@@ -21,11 +21,13 @@ cf bind-service performance-platform-stagecraft-web redis-poc
 cf bind-service performance-platform-stagecraft-celery-worker redis-poc
 cf bind-service performance-platform-stagecraft-celery-beat redis-poc
 cf bind-service performance-platform-stagecraft-celery-cam redis-poc
+cf bind-service performance-platform-stagecraft-flower redis-poc
 
 cf bind-service performance-platform-stagecraft-web redis
 cf bind-service performance-platform-stagecraft-celery-worker redis
 cf bind-service performance-platform-stagecraft-celery-beat redis
 cf bind-service performance-platform-stagecraft-celery-cam redis
+cf bind-service performance-platform-stagecraft-flower redis
 
 # set environmental variables
 cf set-env performance-platform-stagecraft-web SECRET_KEY $APP_SECRET_KEY
@@ -69,8 +71,13 @@ cf set-env performance-platform-stagecraft-celery-beat DJANGO_SETTINGS_MODULE "s
 cf set-env performance-platform-stagecraft-celery-worker DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
 cf set-env performance-platform-stagecraft-web DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
 
+cf set-env performance-platform-stagecraft-flower REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
+cf set-env performance-platform-stagecraft-celery-worker SECRET_KEY $APP_SECRET_KEY
+
 # deploy apps
 cf push -f manifest.yml
 
 # create and map routes
 cf map-route performance-platform-stagecraft-web cloudapps.digital --hostname performance-platform-stagecraft-$PAAS_SPACE
+cf delete-route cloudapps.digital --hostname performance-platform-stagecraft-flower-$PAAS_SPACE -f
+cf map-route performance-platform-stagecraft-flower cloudapps.digital --hostname performance-platform-stagecraft-flower-$PAAS_SPACE

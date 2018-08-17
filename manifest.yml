@@ -40,3 +40,12 @@ applications:
     no-route: true
     memory: 128M
     health-check-type: none
+
+  - name: performance-platform-stagecraft-flower
+    command: etc/run_flower.sh
+    instances: 1
+    memory: 1G
+    no-route: true
+    health-check-type: none
+    env:
+      DISABLE_COLLECTSTATIC: 1
