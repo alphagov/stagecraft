@@ -1,51 +1,43 @@
 ---
-buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.5.24
-memory: 1G
-services:
-  - logit-ssl-drain
-  - gds-performance-platform-pg-service
-  - redis-poc
-  - redis
-env:
-  DEBUG: 0
-  ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
-  PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
-  STATIC_URL: /assets/
+defaults: &defaults
+  buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.5.24
+  memory: 1G
+  no-route: true
+  health-check-type: none
+  instances: 1
+  services:
+    - logit-ssl-drain
+    - gds-performance-platform-pg-service
+    - redis-poc
+    - redis
+  env:
+    DEBUG: 0
+    ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+    PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+    STATIC_URL: /assets/
 
 applications:
   - name: performance-platform-stagecraft-web
+    <<: *defaults
     command: python manage.py migrate && gunicorn stagecraft.wsgi:application --bind 0.0.0.0:$PORT --workers 4
     instances: 2
-    memory: 1G
-    no-route: true
-    health-check-type: none
 
   - name: performance-platform-stagecraft-celery-worker
+    <<: *defaults
     command: python manage.py celeryd --settings=$DJANGO_SETTINGS_MODULE -E -l debug
-    instances: 1
-    memory: 1G
-    no-route: true
-    health-check-type: none
 
   - name: performance-platform-stagecraft-celery-beat
+    <<: *defaults
     command: python manage.py celerybeat --settings=$DJANGO_SETTINGS_MODULE -l debug
-    instances: 1
-    no-route: true
     memory: 128M
-    health-check-type: none
 
   - name: performance-platform-stagecraft-celery-cam
+    <<: *defaults
     command: python manage.py celerycam --settings=$DJANGO_SETTINGS_MODULE
-    instances: 1
-    no-route: true
     memory: 128M
-    health-check-type: none
 
   - name: performance-platform-stagecraft-flower
+    <<: *defaults
     command: etc/run_flower.sh
-    instances: 1
-    memory: 1G
-    no-route: true
-    health-check-type: none
     env:
       DISABLE_COLLECTSTATIC: 1
