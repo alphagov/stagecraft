@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
 import json
-import os
 import sys
 from os.path import abspath, dirname, join as pjoin
+
+from .rediss import *
 
 try:
     from urllib.parse import urlparse  # Python 3
@@ -50,10 +51,10 @@ def load_paas_settings():
         for service in vcap['postgres']:
             if service['name'] == 'gds-performance-platform-pg-service':
                 paas['DATABASE_URL'] = service['credentials']['uri']
-        for service in vcap['user-provided']:
-            if service['name'] == 'redis-poc':
+        for service in vcap['redis']:
+            if service['name'] == 'redis':
                 database_number = os.environ['REDIS_DATABASE_NUMBER']
-                url = service['credentials']['url']
+                url = service['credentials']['uri']
                 url += '/' + database_number
                 paas['REDIS_URL'] = url
     return paas

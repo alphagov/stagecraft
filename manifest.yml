@@ -8,13 +8,13 @@ defaults: &defaults
   services:
     - logit-ssl-drain
     - gds-performance-platform-pg-service
-    - redis-poc
     - redis
   env:
     DEBUG: 0
     ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
     PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
     STATIC_URL: /assets/
+    STAGECRAFT_BROKER_SSL_CERT_REQS: CERT_NONE
 
 applications:
   - name: performance-platform-stagecraft-web
@@ -25,16 +25,22 @@ applications:
   - name: performance-platform-stagecraft-celery-worker
     <<: *defaults
     command: python manage.py celeryd --settings=$DJANGO_SETTINGS_MODULE -E -l debug
+    env:
+      DISABLE_COLLECTSTATIC: 1
 
   - name: performance-platform-stagecraft-celery-beat
     <<: *defaults
     command: python manage.py celerybeat --settings=$DJANGO_SETTINGS_MODULE -l debug
     memory: 128M
+    env:
+      DISABLE_COLLECTSTATIC: 1
 
   - name: performance-platform-stagecraft-celery-cam
     <<: *defaults
     command: python manage.py celerycam --settings=$DJANGO_SETTINGS_MODULE
     memory: 128M
+    env:
+      DISABLE_COLLECTSTATIC: 1
 
   - name: performance-platform-stagecraft-flower
     <<: *defaults
