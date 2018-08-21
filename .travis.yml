@@ -36,6 +36,10 @@ env:
     - secure: "b/YFwkjJ9+GzL65tD8sk9t3YTw/31Haz4QY6Lk82K8W+C/rcBsBj7k6vpfAYIvICOJeQMycQeMZG7l8UXWgYi6Soqlu/tu8tWnL+bCGJuCYvxCQSOmKKNt7D1783fWWDdqjeHLDENsNfJ+sRERTaTQHeVJ+TXLUo3372nMvUk/I="
     # MIGRATION_SIGNON_TOKEN
     - secure: "irGlvzr9zs/nvoeXHMlQUwmNE3DdUarYYw5YBNXD9wW2HNWckJWPRBpVpZh6nJVosBd+AR1Wpz/eBtr/VXwy+6KwxtgbOmbn+I9hXLeb/H7+Ca9NLdZBlg9ToWNqe2jUGOZGDOETy6TO7lrBWOgM8VxSHSLCL9gMLuFrba/8uWQ="
+    # FLOWER_BASIC_AUTH_STAGING
+    - secure: BgXjAUdxFmkGMZnRwFe7Iw8pC4OsQ4oebtpm0/5Upu7cXHuPpa08vh6bwjviKhgGYcHQ0naffMwHy4ghG6Rj5dfPsXgty+9TBeSlI5W1BFBoUcCx+3fA1mfyifMBSjzjkK1LQaMcC6aftLtEJrHEMEqRh+oGvsVOGbkGooRuym8=
+    # FLOWER_BASIC_AUTH_PRODUCTION
+    - secure: dOOqsvqmPZf1N/sjntjJYj6429s2CYAXTWiIOvQMWtO6/ZqQUh42cr42LxcppehULWEz1CMKAF+W03Qx5VfQfjotAw48zBqfGEbf4pdEaXiLsR4q2klmYKa2GKy7Kag2/r0j1YwQ8GzVdmB88PRoIzDYW+g0FZ6YMeVOwQed050=
 before_script:
   - psql -c 'create database stagecraft;' -U postgres
 
@@ -47,13 +51,13 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=performance-platform-backdrop-read.cloudapps.digital REDIS_DATABASE_NUMBER=0 etc/deploy.sh staging
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_FERNET_KEY=$APP_FERNET_KEY_STAGING SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_STAGING GOVUK_APP_DOMAIN=staging.publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www-origin.staging.publishing.service.gov.uk BACKDROP_PUBLIC_DOMAIN=performance-platform-backdrop-read.cloudapps.digital REDIS_DATABASE_NUMBER=0 FLOWER_BASIC_AUTH=$FLOWER_BASIC_AUTH_STAGING etc/deploy.sh staging
     skip_cleanup: true
     on:
       branch: staging
 
   - provider: script
-    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk BACKDROP_PUBLIC_DOMAIN=performance.service.gov.uk REDIS_DATABASE_NUMBER=1 etc/deploy.sh production
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_FERNET_KEY=$APP_FERNET_KEY_PRODUCTION SIGNON_CLIENT_ID=$SIGNON_CLIENT_ID_PRODUCTION GOVUK_APP_DOMAIN=publishing.service.gov.uk GOVUK_WEBSITE_ROOT=https://www.gov.uk BACKDROP_PUBLIC_DOMAIN=performance.service.gov.uk REDIS_DATABASE_NUMBER=1 FLOWER_BASIC_AUTH=$FLOWER_BASIC_AUTH_PRODUCTION etc/deploy.sh production
     skip_cleanup: true
     on:
       branch: production
