@@ -76,7 +76,7 @@ cf start performance-platform-stagecraft-celery-cam
 
 cycle_app performance-platform-stagecraft-flower
 cf set-env performance-platform-stagecraft-flower REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
-cf set-env performance-platform-stagecraft-celery-worker SECRET_KEY $APP_SECRET_KEY
+cf set-env performance-platform-stagecraft-flower FLOWER_BASIC_AUTH $FLOWER_BASIC_AUTH
 cf start performance-platform-stagecraft-flower
 
 # create and map routes
