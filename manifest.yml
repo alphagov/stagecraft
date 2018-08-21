@@ -27,6 +27,11 @@ applications:
     command: python manage.py celeryd --settings=$DJANGO_SETTINGS_MODULE -E -l debug
     env:
       DISABLE_COLLECTSTATIC: 1
+      DEBUG: 0
+      ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      STATIC_URL: /assets/
+      STAGECRAFT_BROKER_SSL_CERT_REQS: CERT_NONE
 
   - name: performance-platform-stagecraft-celery-beat
     <<: *defaults
@@ -34,6 +39,11 @@ applications:
     memory: 128M
     env:
       DISABLE_COLLECTSTATIC: 1
+      DEBUG: 0
+      ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      STATIC_URL: /assets/
+      STAGECRAFT_BROKER_SSL_CERT_REQS: CERT_NONE
 
   - name: performance-platform-stagecraft-celery-cam
     <<: *defaults
@@ -41,9 +51,19 @@ applications:
     memory: 128M
     env:
       DISABLE_COLLECTSTATIC: 1
+      DEBUG: 0
+      ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      STATIC_URL: /assets/
+      STAGECRAFT_BROKER_SSL_CERT_REQS: CERT_NONE
 
   - name: performance-platform-stagecraft-flower
     <<: *defaults
     command: etc/run_flower.sh
     env:
       DISABLE_COLLECTSTATIC: 1
+      DEBUG: 0
+      ENV_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      PUBLIC_HOSTNAME: performance-platform-stagecraft.cloudapps.digital
+      STATIC_URL: /assets/
+      STAGECRAFT_BROKER_SSL_CERT_REQS: CERT_NONE
