@@ -5,6 +5,7 @@ defaults: &defaults
   no-route: true
   health-check-type: none
   instances: 1
+  stack: cflinuxfs3
   services:
     - logit-ssl-drain
     - gds-performance-platform-pg-service
