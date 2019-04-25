@@ -13,12 +13,12 @@ jsonfield==2.0.1
 requests==2.13.0
 logstash_formatter==0.5.16
 jsonschema==2.6.0
-cryptography==1.8.1
+cryptography==1.9
 redis==2.10.5
 git+git://github.com/alphagov/flower.git@0.9.2-rediss#egg=flower
 
 # psycopg2 requires the libpq-dev package
-psycopg2==2.7.1
+psycopg2==2.7.4
 
 # For writing stats out about our code
 django-statsd-mozilla==0.3.16
