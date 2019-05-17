@@ -16,11 +16,7 @@ if [ -z "$1" ]; then
     echo "  deploy.sh staging|production"
     exit 1
 fi
-
 PAAS_SPACE=$1
-wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-echo "deb http://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
-sudo apt-get update && sudo apt-get install cf-cli
 
 cf login -u $PAAS_USER -p $PAAS_PASSWORD -a https://api.cloud.service.gov.uk -o gds-performance-platform -s $PAAS_SPACE
 
@@ -35,8 +31,6 @@ cf set-env performance-platform-stagecraft-web GOVUK_WEBSITE_ROOT $GOVUK_WEBSITE
 cf set-env performance-platform-stagecraft-web BACKDROP_PUBLIC_DOMAIN $BACKDROP_PUBLIC_DOMAIN
 cf set-env performance-platform-stagecraft-web REDIS_DATABASE_NUMBER $REDIS_DATABASE_NUMBER
 cf set-env performance-platform-stagecraft-web STAGECRAFT_COLLECTION_ENDPOINT_TOKEN $STAGECRAFT_COLLECTION_ENDPOINT_TOKEN
-cf set-env performance-platform-stagecraft-web TRANSFORMED_DATA_SET_TOKEN $TRANSFORMED_DATA_SET_TOKEN
-cf set-env performance-platform-stagecraft-web MIGRATION_SIGNON_TOKEN $MIGRATION_SIGNON_TOKEN
 cf set-env performance-platform-stagecraft-web DJANGO_SETTINGS_MODULE "stagecraft.settings.$PAAS_SPACE"
 # now rerun with the environment variables
 cf push performance-platform-stagecraft-web
