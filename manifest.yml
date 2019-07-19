@@ -1,7 +1,7 @@
 ---
 defaults: &defaults
   buildpacks:
-    - python_buildpack
+    - https://github.com/cloudfoundry/python-buildpack#v1.6.29
 
   memory: 1G
   no-route: true
