@@ -1,6 +1,7 @@
 # requirements/common.txt: Used on *all* environments.
 
 pyOpenSSL==17.0.0
+idna==2.8
 django==1.11.1
 django-celery==3.2.1
 git+git://github.com/alphagov/celery.git@3.1.25-rediss#egg=celery
