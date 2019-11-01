@@ -2,7 +2,7 @@
 
 pyOpenSSL==17.0.0
 idna==2.8
-django==1.11.1
+django==1.11.23
 django-celery==3.2.1
 git+git://github.com/alphagov/celery.git@3.1.25-rediss#egg=celery
 git+git://github.com/alphagov/kombu.git@3.0.37-rediss#egg=kombu
